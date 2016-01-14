@@ -16,7 +16,9 @@ type
     fBaseFormData: TfrmBaseData;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure Initialize(App: TBaseApp); virtual;   
+    procedure Initialize(App: TBaseApp); virtual;  
+    procedure SetData(ADataType: integer; AData: Pointer); virtual;
+    function GetData(ADataType: integer; AParam: Pointer): Pointer; virtual;   
     property App: TBaseApp read fBaseFormData.App write fBaseFormData.App;    
   end;
 
@@ -35,6 +37,15 @@ end;
 procedure TfrmBase.Initialize(App: TBaseApp);
 begin
   fBaseFormData.App := App;
+end;
+
+function TfrmBase.GetData(ADataType: integer; AParam: Pointer): Pointer;
+begin
+  Result := nil;
+end;
+
+procedure TfrmBase.SetData(ADataType: integer; AData: Pointer);
+begin
 end;
 
 end.
