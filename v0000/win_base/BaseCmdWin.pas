@@ -4,6 +4,7 @@ interface
 
 uses
   Windows,
+  BaseApp,
   BaseWinThread;
 
 type
@@ -15,16 +16,25 @@ type
     WinThread       : PSysWinThread;
   end;
                     
-  function CreateCmdWnd(ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean;
+  function CreateCmdWndA(ABaseApp: TBaseApp; ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean; overload;
 
 implementation
 
-function CreateCmdWnd(ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean;
+function CreateCmdWndA(AWndClassName: AnsiString; ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean; overload;
 var
   tmpRegWndClass: TWndClassA;
   tmpCheckWndClass: TWndClassA;
   tmpIsRegistered: Boolean;
+  tmpRegWndAtom: ATOM;
 begin
+  Result := False;
+  if not Assigned(AWndProc) then
+    exit;
+  FillChar(tmpRegWndClass, SizeOf(tmpRegWndClass), 0);
+  FillChar(tmpCheckWndClass, SizeOf(tmpCheckWndClass), 0);
+                                       
+  tmpRegWndClass.lpszClassName := PAnsiChar(AWndClassName);
+    
   tmpIsRegistered := Windows.GetClassInfoA(HInstance, tmpRegWndClass.lpszClassName, tmpCheckWndClass);
   if tmpIsRegistered then
   begin
@@ -36,7 +46,9 @@ begin
   end;
   if not tmpIsRegistered then
   begin
-    Windows.RegisterClassA(tmpRegWndClass);
+    tmpRegWndClass.lpfnWndProc := AWndProc;
+    if 0 = Windows.RegisterClassA(tmpRegWndClass) then
+      exit;
   end;
 
   ACmdWnd.CmdWndHandle := Windows.CreateWindowExA(
@@ -48,7 +60,17 @@ begin
     0,
     0,
     0, 0, 0, HInstance, nil);
-  Result := IsWindow(ACmdWnd.CmdWndHandle);  
+  Result := IsWindow(ACmdWnd.CmdWndHandle);
+  if Result then
+  begin
+    SetParent(ACmdWnd.CmdWndHandle, HWND_MESSAGE);
+  end;
+end;
+
+ 
+function CreateCmdWndA(ABaseApp: TBaseApp; ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean;
+begin
+  Result := CreateCmdWndA(ABaseApp.ClassName, ACmdWnd, AWndProc);
 end;
 
 end.

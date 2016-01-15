@@ -26,13 +26,18 @@ const
   Cmd_S2C_ClientShutdown  = Cmd_AppBase + 1;
   // 外部通知自身 重启
   Cmd_S2C_ClientRestart   = Cmd_AppBase + 2;
-                
+
+  // client 通知监控添加自己
+  Cmd_Monitor_C2S_AddMonitor      = Cmd_AppBase + 101;
+  // client 通知监控移除自己
+  Cmd_Monitor_C2S_RemoveMonitor   = Cmd_AppBase + 102;
+
   // client 状态正常通知
-  Cmd_Monitor_C2S_StatusOK        = Cmd_AppBase + 101; 
+  Cmd_Monitor_C2S_StatusOK        = Cmd_AppBase + 111;
   // client 将要关闭 请监控
-  Cmd_Monitor_C2S_MonitorShutDown = Cmd_AppBase + 102;
+  Cmd_Monitor_C2S_MonitorShutDown = Cmd_AppBase + 112;
   // client 将要重启 请监控
-  Cmd_Monitor_C2S_MonitorRestart  = Cmd_AppBase + 103;
+  Cmd_Monitor_C2S_MonitorRestart  = Cmd_AppBase + 113;
   
   Cmd_CustomAppBase   = 500;
 
