@@ -33,7 +33,7 @@ const
   Cmd_Monitor_C2S_RemoveMonitor   = Cmd_AppBase + 102;
 
   // client 状态正常通知
-  Cmd_Monitor_C2S_StatusOK        = Cmd_AppBase + 111;
+  Cmd_Monitor_C2S_StatusOKReport  = Cmd_AppBase + 111;
   // client 将要关闭 请监控
   Cmd_Monitor_C2S_MonitorShutDown = Cmd_AppBase + 112;
   // client 将要重启 请监控

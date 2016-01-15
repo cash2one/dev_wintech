@@ -17,7 +17,8 @@ type
   end;
                     
   function CreateCmdWndA(ABaseApp: TBaseApp; ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean; overload;
-
+  function CreateCmdWndA(AWndClassName: AnsiString; ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean; overload;
+  
 implementation
 
 function CreateCmdWndA(AWndClassName: AnsiString; ACmdWnd: PBaseCmdWnd; AWndProc: TFNWndProc): Boolean; overload;
@@ -25,7 +26,6 @@ var
   tmpRegWndClass: TWndClassA;
   tmpCheckWndClass: TWndClassA;
   tmpIsRegistered: Boolean;
-  tmpRegWndAtom: ATOM;
 begin
   Result := False;
   if not Assigned(AWndProc) then
@@ -47,6 +47,7 @@ begin
   if not tmpIsRegistered then
   begin
     tmpRegWndClass.lpfnWndProc := AWndProc;
+    //tmpRegWndAtom: ATOM;
     if 0 = Windows.RegisterClassA(tmpRegWndClass) then
       exit;
   end;
