@@ -19,9 +19,16 @@ type
     procedure Initialize(App: TBaseApp); virtual;  
     procedure SetData(ADataType: integer; AData: Pointer); virtual;
     function GetData(ADataType: integer; AParam: Pointer): Pointer; virtual;   
+    procedure DoActivate; virtual;             
+    procedure DoDeactivate; virtual;
+    
+    procedure SaveLayout; virtual;
+    procedure RestoreLayout; virtual;
     property App: TBaseApp read fBaseFormData.App write fBaseFormData.App;    
   end;
 
+  TBaseFormClass = class of TfrmBase;
+  
 implementation
 
 {$R *.dfm}
@@ -45,6 +52,22 @@ begin
 end;
 
 procedure TfrmBase.SetData(ADataType: integer; AData: Pointer);
+begin
+end;
+
+procedure TfrmBase.DoActivate;
+begin
+end;
+
+procedure TfrmBase.DoDeactivate;
+begin
+end;
+       
+procedure TfrmBase.RestoreLayout;
+begin
+end;
+
+procedure TfrmBase.SaveLayout;
 begin
 end;
 
