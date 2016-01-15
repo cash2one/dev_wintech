@@ -1,0 +1,105 @@
+(*
+          1    0 0000A0B9 LogonIdFromWinStationNameA
+          2    1 00007169 LogonIdFromWinStationNameW
+          3    2 000093E1 RemoteAssistancePrepareSystemRestore
+          4    3 0000B565 ServerGetInternetConnectorStatus
+          5    4 0000A517 ServerLicensingClose
+          6    5 0000AA78 ServerLicensingDeactivateCurrentPolicy
+          7    6 0000A571 ServerLicensingFreePolicyInformation
+          8    7 0000A7D1 ServerLicensingGetAvailablePolicyIds
+          9    8 0000A889 ServerLicensingGetPolicy
+         10    9 0000AA21 ServerLicensingGetPolicyInformationA
+         11    A 0000A931 ServerLicensingGetPolicyInformationW
+         12    B 0000A5FB ServerLicensingLoadPolicy
+         13    C 0000A4C9 ServerLicensingOpenA
+         14    D 0000A336 ServerLicensingOpenW
+         15    E 0000A729 ServerLicensingSetPolicy
+         16    F 0000A691 ServerLicensingUnloadPolicy
+         17   10 0000B6C1 ServerQueryInetConnectorInformationA
+         18   11 0000B6C1 ServerQueryInetConnectorInformationW
+         19   12 0000B611 ServerSetInternetConnectorStatus
+         20   13 00008011 WinStationActivateLicense
+         21   14 00009A81 WinStationAutoReconnect
+         22   15 00004165 WinStationBroadcastSystemMessage
+         23   16 00009839 WinStationCheckLoopBack
+         24   17 00005294 WinStationCloseServer
+         25   18 0000A14A WinStationConnectA
+         26   19 00009901 WinStationConnectCallback
+         27   1A 00007251 WinStationConnectW
+         28   1B 000074C1 WinStationDisconnect
+         29   1C 00004808 WinStationEnumerateA
+         30   1D 00007E61 WinStationEnumerateLicenses
+         31   1E 00006C38 WinStationEnumerateProcesses
+         32   1F 00003C79 WinStationEnumerateW
+         33   20 00009BF9 WinStationEnumerate_IndexedA
+         34   21 00005231 WinStationEnumerate_IndexedW
+         35   22 00004359 WinStationFreeGAPMemory
+         36   23 00003DD0 WinStationFreeMemory
+         37   24 00007C91 WinStationGenerateLicense
+         38   25 000044BA WinStationGetAllProcesses
+         39   26 00006B71 WinStationGetLanAdapterNameA
+         40   27 00006AA9 WinStationGetLanAdapterNameW
+         41   28 00009559 WinStationGetMachinePolicy
+         42   29 000069E1 WinStationGetProcessSid
+         43   2A 000052CA WinStationGetTermSrvCountersValue
+         44   2B 00007DA9 WinStationInstallLicense
+         45   2C 00009489 WinStationIsHelpAssistantSession
+         46   2D 0000A0FE WinStationNameFromLogonIdA
+         47   2E 000051DF WinStationNameFromLogonIdW
+         48   2F 00009049 WinStationNtsdDebug
+         49   30 000068BB WinStationOpenServerA
+         50   31 00003BBB WinStationOpenServerW
+         51   32 00009D06 WinStationQueryInformationA
+         52   33 00004ADF WinStationQueryInformationW
+         53   34 00008129 WinStationQueryLicense
+         54   35 00009311 WinStationQueryLogonCredentialsW
+         55   36 000081F9 WinStationQueryUpdateRequired
+         56   37 00003AFB WinStationRegisterConsoleNotification
+         57   38 000082B1 WinStationRemoveLicense
+         58   39 00009CA9 WinStationRenameA
+         59   3A 00006D99 WinStationRenameW
+         60   3B 00009B31 WinStationRequestSessionsList
+         61   3C 00007599 WinStationReset
+         62   3D 0000A015 WinStationSendMessageA
+         63   3E 00007001 WinStationSendMessageW
+         64   3F 00009177 WinStationSendWindowMessage
+         65   40 00006925 WinStationServerPing
+         66   41 00009E9F WinStationSetInformationA
+         67   42 00006EC1 WinStationSetInformationW
+         68   43 00008369 WinStationSetPoolCount
+         69   44 00007999 WinStationShadow
+         70   45 00007671 WinStationShadowStop
+         71   46 00007749 WinStationShutdownSystem
+         72   47 00007819 WinStationTerminateProcess
+         73   48 00003820 WinStationUnRegisterConsoleNotification
+         74   49 000073B9 WinStationVirtualOpen
+         75   4A 000078D9 WinStationWaitSystemEvent
+         76   4B 00008CE1 _NWLogonQueryAdmin
+         77   4C 00008BD1 _NWLogonSetAdmin
+         78   4D 00008421 _WinStationAnnoyancePopup
+         79   4E 00005360 _WinStationBeepOpen
+         80   4F 00008629 _WinStationBreakPoint
+         81   50 000084F9 _WinStationCallback
+         82   51 00008DF1 _WinStationCheckForApplicationName
+         83   52 00009739 _WinStationFUSCanRemoteUserDisconnect
+         84   53 00008F89 _WinStationGetApplicationInfo
+         85   54 000099C1 _WinStationNotifyDisconnectPipe
+         86   55 00008A39 _WinStationNotifyLogoff
+         87   56 000045D7 _WinStationNotifyLogon
+         88   57 00008B01 _WinStationNotifyNewSession
+         89   58 00008861 _WinStationReInitializeSecurity
+         90   59 00008701 _WinStationReadRegistry
+         91   5A 00007BA1 _WinStationShadowTarget
+         92   5B 00007AD1 _WinStationShadowTargetSetup
+         93   5C 00009609 _WinStationUpdateClientCachedCredentials
+         94   5D 000087B1 _WinStationUpdateSettings
+         95   5E 00003C35 _WinStationUpdateUserConfig
+         96   5F 00008911 _WinStationWaitForConnect
+*)
+unit dll_winsta;
+
+interface
+
+implementation
+
+end.

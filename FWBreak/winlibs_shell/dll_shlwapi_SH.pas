@@ -1,0 +1,111 @@
+(*
+          7   A1 00019AA5 SHAllocShared
+        345   A2 0003E218 SHAnsiToAnsi
+        215   A3 0001AF47 SHAnsiToUnicode
+        750   A4 0002835B SHAutoComplete
+        751   A5 0003E554 SHCopyKeyA
+        752   A6 0002C2C2 SHCopyKeyW
+         12   A7 00011999 SHCreateMemStream
+        753   A8 00003CAC SHCreateShellPalette
+        754   A9 00045B49 SHCreateStreamOnFileA
+        755   AA 00012A4E SHCreateStreamOnFileEx
+        756   AB 0000E5E5 SHCreateStreamOnFileW
+        757   AC          SHCreateStreamWrapper (forwarded to SHUNIMPL.#UNIMPL_SHCreateStreamWrapper)
+         16   AD 00014870 SHCreateThread
+        758   AE 0000E92B SHCreateThreadRef
+        615   AF 0000E16B SHCreateThreadWithHandle
+        759   B0 00039732 SHDeleteEmptyKeyA
+        760   B1 0003BC99 SHDeleteEmptyKeyW
+        761   B2 0002C15F SHDeleteKeyA
+        762   B3 00002404 SHDeleteKeyW
+        763   B4 00042A29 SHDeleteOrphanKeyA
+        764   B5 00042A71 SHDeleteOrphanKeyW
+        765   B6 000397C8 SHDeleteValueA
+        766   B7 0000F46E SHDeleteValueW
+        767   B8 0003E2C6 SHEnumKeyExA
+        768   B9 0000C754 SHEnumKeyExW
+        769   BA 0003E2EC SHEnumValueA
+        770   BB 0000C729 SHEnumValueW
+        353   BC 0003BD2F SHFormatDateTimeA
+        354   BD 0002507A SHFormatDateTimeW
+         10   BE 00019BCF SHFreeShared
+        771   BF 00003D72 SHGetInverseCMAP
+        772   C0 00011854 SHGetThreadRef
+        773   C1 0000D1A1 SHGetValueA
+        774   C2 0001AEB1 SHGetValueW
+        515   C3 0000F619 SHGetViewStatePropertyBag
+        204   C4 0001B5F7 SHIsChildOrSelf
+        775   C5 00046EF9 SHIsLowMemoryMachine
+        487   C6 000136A2 SHLoadIndirectString
+          8   C7 0000EA59 SHLockShared
+        185   C8 0003F824 SHMessageBoxCheckA
+        191   C9 0003F6F7 SHMessageBoxCheckW
+        776   CA 000196E4 SHOpenRegStream2A
+        777   CB 0001961D SHOpenRegStream2W
+        778   CC 00044F95 SHOpenRegStreamA
+        779   CD 00044F6D SHOpenRegStreamW
+        567   CE 0002E58D SHPropertyBag_ReadStrAlloc
+        570   CF 0002E068 SHPropertyBag_WriteBSTR
+        780   D0 0003E317 SHQueryInfoKeyA
+        781   D1 0000C77A SHQueryInfoKeyW
+        782   D2 0002AF95 SHQueryValueExA
+        783   D3 0001B88E SHQueryValueExW
+        784   D4 00011E3A SHRegCloseUSKey
+        785   D5 0004A146 SHRegCreateUSKeyA
+        786   D6 0004A0C5 SHRegCreateUSKeyW
+        787   D7 00049C62 SHRegDeleteEmptyUSKeyA
+        788   D8 00049C44 SHRegDeleteEmptyUSKeyW
+        789   D9 00049BDF SHRegDeleteUSValueA
+        790   DA 00049BC1 SHRegDeleteUSValueW
+        791   DB 0003E5B8 SHRegDuplicateHKey
+        792   DC 000388E3 SHRegEnumUSKeyA
+        793   DD 00025676 SHRegEnumUSKeyW
+        794   DE 000389AF SHRegEnumUSValueA
+        795   DF 0003BB24 SHRegEnumUSValueW
+        796   E0 00049CC7 SHRegGetBoolUSValueA
+        797   E1 00012164 SHRegGetBoolUSValueW
+        280   E2 0003E5F5 SHRegGetIntW
+        798   E3 0003E662 SHRegGetPathA
+        799   E4 000259D1 SHRegGetPathW
+        800   E5 00038799 SHRegGetUSValueA
+        801   E6 000120B5 SHRegGetUSValueW
+        802   E7 0000D0CB SHRegGetValueA
+        803   E8 0001E894 SHRegGetValueW
+        804   E9 000251C6 SHRegOpenUSKeyA
+        805   EA 00011E9A SHRegOpenUSKeyW
+        806   EB 00038AB5 SHRegQueryInfoUSKeyA
+        807   EC 0002591A SHRegQueryInfoUSKeyW
+        808   ED 000385C7 SHRegQueryUSValueA
+        809   EE 00011F10 SHRegQueryUSValueW
+        810   EF 0003E471 SHRegSetPathA
+        811   F0 0003E3DF SHRegSetPathW
+        812   F1 0003887A SHRegSetUSValueA
+        813   F2 0003BABB SHRegSetUSValueW
+        814   F3 000386B4 SHRegWriteUSValueA
+        815   F4 0003B9D6 SHRegWriteUSValueW
+        816   F5 0004A646 SHRegisterValidateTemplate
+        817   F6 000284F5 SHReleaseThreadRef
+        467   F7 0003AF99 SHRunIndirectRegClientCommand
+        432   F8 0003FD19 SHSendMessageBroadcastA
+        433   F9 0003FD3B SHSendMessageBroadcastW
+        818   FA 0000F2D5 SHSetThreadRef
+        819   FB 000396A3 SHSetValueA
+        820   FC 000123AB SHSetValueW
+        821   FD 0001879F SHSkipJunction
+        822   FE 0002E2EA SHStrDupA
+        823   FF 0001AE3C SHStrDupW
+        203  100 000407A1 SHStripMneumonicA
+        225  101 000142DD SHStripMneumonicW
+        217  102 00017A2D SHUnicodeToAnsi
+        346  103 0003E273 SHUnicodeToUnicode
+          9  104 00019A7E SHUnlockShared
+        824  105 0003988D ShellMessageBoxA
+        388  106 0003C2DD ShellMessageBoxW
+*)
+unit dll_shlwapi;
+
+interface
+
+implementation
+
+end.
