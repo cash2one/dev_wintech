@@ -11,17 +11,17 @@ interface
 implementation
 
 uses
-  Http_Indy;
+  UtilsHttp_Indy;
 
 function GetHttpUrlData(AUrl: string): string;
 begin
   //Result := Http_WinInet.Http_GetString(AUrl);     
-  Result := Http_Indy.Http_GetString(AUrl);
+  Result := UtilsHttp_Indy.Http_GetString(AUrl);
 end;
 
 function GetHttpUrlFile(AUrl: string; AOutputFile: string): Boolean;
 begin    
-  Result := Http_Indy.Http_GetFile(AUrl, AOutputFile);
+  Result := UtilsHttp_Indy.Http_GetFile(AUrl, AOutputFile);
 end;
 
 function GetHttpUrlData(AUrl: string; APost: string): string;
