@@ -7,6 +7,7 @@ type
   TSysThread          = record
     ThreadHandle      : THandle;
     ThreadId          : Cardinal;
+    IsActiveStatus    : Integer;
   end;
   
 implementation
