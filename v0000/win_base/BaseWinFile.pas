@@ -28,6 +28,9 @@ type
     function OpenFileMap: Pointer;
     procedure CloseFileMap;
 
+    procedure ReadTest();
+    procedure WriteTest();
+
     property FileHandle: THandle read fWinFileData.FileHandle;
   end;
 
@@ -93,6 +96,14 @@ begin
   begin
      // OpenFileMapping
     fWinFileData.FileMapRootView := Windows.MapViewOfFile(fWinFileData.FileMapHandle, Windows.FILE_MAP_ALL_ACCESS, 0, 0, 0);
+//    fWinFileData.FileMapRootView := MapViewOfFileEx(
+//      fWinFileData.FileMapHandle, //hFileMappingObject: THandle;
+//      Windows.FILE_MAP_ALL_ACCESS, //dwDesiredAccess,
+//      0, //dwFileOffsetHigh,
+//      0, //dwFileOffsetLow,
+//      0, //dwNumberOfBytesToMap: DWORD;
+//      nil //lpBaseAddress: Pointer
+//      );
   end;
   Result := fWinFileData.FileMapRootView;
 end;
@@ -128,6 +139,69 @@ end;
 function TWinFile.GetFileSize: integer;
 begin
   Result := fWinFileData.FileSizeLow;
+end;
+
+procedure Proc_ReadCompletion(); stdcall;
+begin
+
+end;
+
+procedure Proc_WriteCompletion(); stdcall;
+begin
+
+end;
+
+procedure TWinFile.ReadTest();
+var
+  tmpBytesRead: Cardinal;
+  tmpBytesReaded: Cardinal;
+  tmpOverlap: TOverlapped;
+  tmpError: DWORD;
+  tmpReadedBuffer: array[0..4 * 1024 - 1] of AnsiChar;
+begin
+  if Windows.ReadFile(fWinFileData.FileHandle, tmpReadedBuffer, tmpBytesRead, tmpBytesReaded, @tmpOverlap) then
+  begin
+
+  end else
+  begin
+    tmpError := Windows.GetLastError();
+    case tmpError of
+      ERROR_HANDLE_EOF: begin      
+      end;
+      ERROR_IO_PENDING: begin
+        if Windows.GetOverlappedResult(fWinFileData.FileHandle, tmpOverlap, tmpBytesReaded, false) then
+        begin
+
+        end else
+        begin
+        
+        end;
+      end;
+    end;
+  end;
+  // ReadFileEx 与 ReadFile相似
+  // 只是它只能用于异步读操作，并包含了一个完整的回调
+  if Windows.ReadFileEx(fWinFileData.FileHandle, @tmpReadedBuffer, tmpBytesRead, @tmpOverlap, @Proc_ReadCompletion) then
+  begin
+
+  end;
+end;
+
+procedure TWinFile.WriteTest();     
+var
+  tmpBytesWrite: Cardinal;
+  tmpBytesWritten: Cardinal;
+  tmpOverlap: TOverlapped;
+  tmpWriteBuffer: array[0..4 * 1024 - 1] of AnsiChar;
+begin
+  if Windows.WriteFile(fWinFileData.FileHandle, tmpWriteBuffer, tmpBytesWrite, tmpBytesWritten, @tmpOverlap) then
+  begin
+
+  end;
+  if Windows.WriteFileEx(fWinFileData.FileHandle, @tmpWriteBuffer, tmpBytesWrite, tmpOverlap, @Proc_WriteCompletion) then
+  begin
+
+  end;  
 end;
 
 end.
