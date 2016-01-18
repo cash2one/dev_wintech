@@ -91,10 +91,16 @@ type
 
 implementation
 
+uses
+  BaseMemory;
+  
 function CheckOutWinLock: PWinLock;
 begin
-  Result := System.New(PWinLock);
-  FillChar(Result^, SizeOf(TWinLock), 0);
+  Result := GetMemory(nil, SizeOf(TWinLock));
+  if nil <> Result then
+  begin
+    FillChar(Result^, SizeOf(TWinLock), 0);
+  end;
 end;
 
 procedure CheckInWinLock(var AWinLock: PWinLock);
@@ -127,9 +133,12 @@ begin
 end;
 
 function CheckOutMutex: PMutex;
-begin
-  Result := System.New(PMutex);
-  FillChar(Result^, SizeOf(TMutex), 0);
+begin           
+  Result := GetMemory(nil, SizeOf(TMutex));
+  if nil <> Result then
+  begin
+    FillChar(Result^, SizeOf(TMutex), 0);
+  end;
 end;
 
 procedure CheckInMutex(var AMutex: PMutex);
@@ -155,9 +164,12 @@ begin
 end;
 
 function CheckOutEvent: PEvent;
-begin
-  Result := System.New(PEvent);
-  FillChar(Result^, SizeOf(TEvent), 0);
+begin                 
+  Result := GetMemory(nil, SizeOf(TEvent));
+  if nil <> Result then
+  begin
+    FillChar(Result^, SizeOf(TEvent), 0);
+  end;
 end;
 
 procedure CheckInEvent(var AEvent: PEvent);
@@ -177,8 +189,11 @@ end;
 
 function CheckOutSemaphore: PSemaphore;
 begin
-  Result := System.New(PSemaphore);
-  FillChar(Result^, SizeOf(TSemaphore), 0);
+  Result := GetMemory(nil, SizeOf(TSemaphore));
+  if nil <> Result then
+  begin
+    FillChar(Result^, SizeOf(TSemaphore), 0);
+  end;
 end;
 
 procedure CheckInSemaphore(var ASemaphore: PSemaphore);

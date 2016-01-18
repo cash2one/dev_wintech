@@ -3,7 +3,7 @@ unit BaseWinProcess;
 interface
        
 uses
-  Windows;
+  Windows, BaseMemory;
   
 type
   POwnProcess     = ^TOwnProcess;
@@ -45,8 +45,11 @@ implementation
 
 function CheckOutOwnProcess: POwnProcess;
 begin
-  Result := System.New(POwnProcess);
-  FillChar(Result^, SizeOf(TOwnProcess), 0);
+  Result := GetMemory(nil, SizeOf(TOwnProcess));
+  if nil <> Result then
+  begin
+    FillChar(Result^, SizeOf(TOwnProcess), 0);
+  end;
 end;
 
 procedure CheckInOwnProcess(var AProcess: POwnProcess);
@@ -54,9 +57,12 @@ begin
 end;
                    
 function CheckOutExProcess: PExProcess;
-begin
-  Result := System.New(PExProcess);
-  FillChar(Result^, SizeOf(TExProcess), 0);
+begin               
+  Result := GetMemory(nil, SizeOf(TExProcess));
+  if nil <> Result then
+  begin
+    FillChar(Result^, SizeOf(TExProcess), 0);
+  end;
 end;
 
 procedure CheckInExProcess(var AProcess: PExProcess);

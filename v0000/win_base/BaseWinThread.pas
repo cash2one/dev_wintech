@@ -4,13 +4,13 @@ interface
 
 uses
   BaseRun,
+  BaseThread,
   Windows;
   
 type
   PSysWinThread       = ^TSysWinThread;
   TSysWinThread       = record
-    ThreadHandle      : THandle;
-    ThreadId          : DWORD;
+    Core              : TSysThread;
     RunStatus         : TThreadRunStatus;
   end;
   
