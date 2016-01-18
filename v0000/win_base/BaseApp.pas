@@ -6,45 +6,6 @@ uses
   BasePath;
   
 type
-  // LogicSessionStep
-  PProcStep     = ^TProcStep;
-  TProcStep     = record
-    MainStep    : integer;
-    ChildStep   : integer;
-    StepIParam  : integer;
-    StepPParam  : Pointer;
-  end;
-
-  // application has many sessions at same time
-  PLogicSession = ^TLogicSession;
-  TLogicSession = record
-    CurrentStep : PProcStep;
-  end;
-
-  PLogicBaseStep  = ^TLogicBaseStep;
-  TLogicBaseStep  = record
-    StepType    : Integer;
-  end;
-
-  PLogicStep1   = ^TLogicStep1;
-  TLogicStep1   = record
-    Base        : TLogicBaseStep;
-    NextStep    : PLogicBaseStep;
-  end;
-  
-  PLogicStep2   = ^TLogicStep2;
-  TLogicStep2   = record
-    Base        : TLogicBaseStep;
-    NextStep1   : PLogicBaseStep;
-    NextStep2   : PLogicBaseStep;    
-  end;
-  // logic model
-  PLogicModel   = ^TLogicModel;
-  TLogicModel  = record
-    // Èë¿Ú
-    FirstStep   : PLogicBaseStep;
-  end;
-
   PBaseAppData      = ^TBaseAppData;
   TBaseAppData      = packed record
     IsActiveStatus  : Byte;
