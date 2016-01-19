@@ -3,77 +3,82 @@ unit UIBaseWinMemDC;
 interface
 
 uses
-  Windows;
+  Windows,
+  uiwin.gdi,
+  UIWinColor;
   
 type            
-  PMemDC            = ^TMemDC;
-  TMemDC            = record
-    Handle          : HDC;
-    CurrentBitmap   : HBITMAP;
-    OldBitmap       : HBITMAP;
-    CurrentFont     : HFont;
+  PWinMemDC           = ^TWinMemDC;
+  TWinMemDC           = record
+    DCHandle          : HDC;
+    OldBitmap         : HBITMAP;
+    CurrentFont       : HFont;
 
-    OldFont         : HFont;
-    Width           : Integer;
-    Height          : Integer;
-
-    ActualWidth     : Integer;
-    ActualHeight    : Integer;
-
-    BytesPerRow     : Integer;
-    Bmpinfo         : TBitmapInfo;
-    MemData         : Pointer;
+    OldFont           : HFont;
+    Width             : Integer;
+    Height            : Integer;
+    BytesPerRow       : Integer;
+    MemBitmap         : TWinBitmap;
   end;
              
-  procedure UpdateMemDC(AMemDC: PMemDC; AWidth, AHeight: integer);
+  procedure UpdateMemDC(AMemDC: PWinMemDC; AWidth, AHeight: integer);
   
 implementation
 
-procedure UpdateMemDC(AMemDC: PMemDC; AWidth, AHeight: integer);
+procedure UpdateMemDC(AMemDC: PWinMemDC; AWidth, AHeight: integer);
 begin
 //  AMemDC.Bitmap := CreateCompatibleBitmap();
-  if AMemDC.Handle = 0 then
+  if 0 = AMemDC.DCHandle then
   begin
-    AMemDC.Handle := CreateCompatibleDC(0);
+    AMemDC.DCHandle := CreateCompatibleDC(0);
   end;
-  if (AWidth > AMemDC.ActualWidth) or (AHeight > AMemDC.ActualHeight) then
+  if (AWidth > AMemDC.MemBitmap.Width) or (AHeight > AMemDC.MemBitmap.Height) then
   begin
     if AMemDC.OldBitmap <> 0 then
     begin
-      SelectObject(AMemDC.Handle, AMemDC.OldBitmap);
-      if AMemDC.CurrentBitmap <> 0 then
+      SelectObject(AMemDC.DCHandle, AMemDC.OldBitmap);
+      if AMemDC.MemBitmap.BitmapHandle <> 0 then
       begin
-        DeleteObject(AMemDC.CurrentBitmap);
-        AMemDC.CurrentBitmap := 0;
+        DeleteObject(AMemDC.MemBitmap.BitmapHandle);
+        AMemDC.MemBitmap.BitmapHandle := 0;
       end;
     end;
-    AMemDC.bmpinfo.bmiHeader.biSize := SizeOf(TbitmapinfoHeader);
-    AMemDC.bmpinfo.bmiHeader.biPlanes := 1;
-    AMemDC.bmpinfo.bmiHeader.biBitCount := 32;//32;
-    AMemDC.bmpinfo.bmiHeader.biCompression := BI_RGB;
+    AMemDC.MemBitmap.BitmapInfo.bmiHeader.biSize := SizeOf(TbitmapinfoHeader);
+    AMemDC.MemBitmap.BitmapInfo.bmiHeader.biPlanes := 1;
+    AMemDC.MemBitmap.BitmapInfo.bmiHeader.biBitCount := 32;//32;
+    AMemDC.MemBitmap.BitmapInfo.bmiHeader.biCompression := BI_RGB;
 
-    if AMemDC.ActualWidth < AWidth then
+    if AMemDC.MemBitmap.Width < AWidth then
     begin
       // 这个再 resize 的时候很有用
-      AMemDC.ActualWidth := AWidth;    
+      AMemDC.MemBitmap.Width := AWidth;    
 //      AMemDC.ActualWidth := AWidth + 5;
     end;
-    if AMemDC.ActualHeight < AHeight then
+    if AMemDC.MemBitmap.Height < AHeight then
     begin
-      AMemDC.ActualHeight := AHeight;
+      AMemDC.MemBitmap.Height := AHeight;
 //      AMemDC.ActualHeight := AHeight + 5;
     end;
-    AMemDC.bmpinfo.bmiHeader.biWidth := AMemDC.ActualWidth;
-    AMemDC.bmpinfo.bmiHeader.biHeight := -AMemDC.ActualHeight;
-    AMemDC.CurrentBitmap := CreateDIBSection(0, AMemDC.bmpinfo, DIB_RGB_COLORS, Pointer(AMemDC.MemData), 0, 0);
-    if AMemDC.CurrentBitmap <> 0 then
+    AMemDC.MemBitmap.BitmapInfo.bmiHeader.biWidth := AMemDC.MemBitmap.Width;
+    AMemDC.MemBitmap.BitmapInfo.bmiHeader.biHeight := -AMemDC.MemBitmap.Height;
+    AMemDC.MemBitmap.BitmapHandle := CreateDIBSection(0, AMemDC.MemBitmap.BitmapInfo, DIB_RGB_COLORS, Pointer(AMemDC.MemBitmap.BitsData), 0, 0);
+    if 0 <> AMemDC.MemBitmap.BitmapHandle then
     begin
       AMemDC.BytesPerRow := 0;
-      AMemDC.OldBitmap := SelectObject(AMemDC.Handle, AMemDC.CurrentBitmap);
+      AMemDC.OldBitmap := SelectObject(AMemDC.DCHandle, AMemDC.MemBitmap.BitmapHandle);
       AMemDC.Width := AWidth;
       AMemDC.Height := AHeight;
     end;
   end;
+end;
+
+procedure CloseWinMemDC(AMemDC: PWinMemDC);
+begin
+  SelectObject(AMemDC.DCHandle, AMemDC.OldBitmap);
+  DeleteDC(AMemDC.DCHandle);
+  AMemDC.DCHandle := 0;
+  DeleteObject(AMemDC.MemBitmap.BitmapHandle);
+  AMemDC.MemBitmap.BitmapHandle := 0;
 end;
   
 end.
