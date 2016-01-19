@@ -10,7 +10,8 @@ uses
 type
   PSysWinThread       = ^TSysWinThread;
   TSysWinThread       = record
-    Core              : TSysThread;
+    Core              : TSysThread;        
+    OleInitStatus     : Integer; // CoInitialize(nil);
     RunStatus         : TThreadRunStatus;
   end;
   
