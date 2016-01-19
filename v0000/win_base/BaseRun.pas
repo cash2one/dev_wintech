@@ -52,7 +52,13 @@ type
     LoopForMax        : Cardinal; // for i := 0 to LoopMax
     LoopCounter       : Cardinal; // for
   end;
+            
+  TStringObjFunc = function(AParam: Pointer): string of object;
+  TStringFunc = function(AParam: Pointer): string;
 
+  TObjProc = procedure (AParam: Pointer) of object;
+  TProc = procedure (AParam: Pointer);
+  
 implementation
 
 end.
