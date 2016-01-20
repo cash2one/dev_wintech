@@ -4,17 +4,19 @@ interface
 
 uses
   Windows,
-  uiwin.gdi,
-  UIWinColor;
+  uiwin.gdi;
   
 type            
   PWinMemDC           = ^TWinMemDC;
   TWinMemDC           = record
     DCHandle          : HDC;
-    OldBitmap         : HBITMAP;
     CurrentFont       : HFont;
 
+    OldBitmap         : HBITMAP;
     OldFont           : HFont;
+    OldBrush          : HBRUSH;
+    OldPen            : HPen;
+    
     Width             : Integer;
     Height            : Integer;
     BytesPerRow       : Integer;

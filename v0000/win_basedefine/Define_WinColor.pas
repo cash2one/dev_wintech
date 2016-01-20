@@ -3,7 +3,7 @@ unit Define_WinColor;
 interface
 
 uses
-  UIWinColor;
+  uiwin.color;
 
 const                             
   Black         = TColor($000000);
