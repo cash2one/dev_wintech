@@ -10,7 +10,7 @@ unit cef_apilib;
 interface
 
 uses
-  Windows, Messages, Sysutils, Classes,
+  Windows, Messages, Sysutils, //Classes,
   //sdlogutils, 
   Cef_api,
   cef_type;
@@ -113,14 +113,14 @@ type
     IntfPtr           : PCefReadHandler;
     CefReadReader     : TCefReadHandler;
     FileUrl           : AnsiString;
-    FileStream        : TFileStream;
+    //FileStream        : TFileStream;
   end;
 
   PCefExReadHandler   = ^TCefExReadHandler;
   TCefExReadHandler   = record
     CefReadHandler   : TCefReadHandler;
     FileUrl           : AnsiString;
-    FileStream        : TFileStream;
+    //FileStream        : TFileStream;
   end;
 
   PCefIntfRequestHandler = ^TCefIntfRequestHandler;
@@ -145,14 +145,14 @@ type
     IntfPtr           : PCefStreamReader;
     CefStreamReader   : TCefStreamReader;
     FileUrl           : AnsiString;
-    FileStream        : TFileStream;
+    //FileStream        : TFileStream;
   end;
 
   PCefExStreamReader = ^TCefExStreamReader;
   TCefExStreamReader = record
     CefStreamReader   : TCefStreamReader;
     FileUrl           : AnsiString;
-    FileStream        : TFileStream;
+    //FileStream        : TFileStream;
   end;
 
   PCefIntfDisplayHandler = ^TCefIntfDisplayHandler;
@@ -992,7 +992,7 @@ procedure Cef_Content_Filter_process_data(self: PCefContentFilter;
         var substitute_data: PCefStreamReader); stdcall;
 //(*//
 var
-  fFileStream: TFileStream;
+  //fFileStream: TFileStream;
   tmpUrl: string;
   tmpfile: string;
   tmpstr: string;
@@ -1052,16 +1052,16 @@ begin
           begin
             if FileExists(tmpfile) then
             begin
-              fFileStream := TFileStream.Create(tmpfile, fmOpenReadWrite or fmShareDenyNone);
+              //fFileStream := TFileStream.Create(tmpfile, fmOpenReadWrite or fmShareDenyNone);
             end else
             begin
-              fFileStream := TFileStream.Create(tmpfile, fmCreate or fmShareDenyNone);
+              //fFileStream := TFileStream.Create(tmpfile, fmCreate or fmShareDenyNone);
             end;
             try
-              fFileStream.Position := fFileStream.Size;
-              fFileStream.Write(Data^, data_size);
+              //fFileStream.Position := fFileStream.Size;
+              //fFileStream.Write(Data^, data_size);
             finally
-              fFileStream.Free;
+              //fFileStream.Free;
             end;
           end else
           begin
@@ -1100,20 +1100,20 @@ end;
 function Cef_Stream_Reader_read(self: PCefStreamReader; ptr: Pointer; size, n: Cardinal): Cardinal; stdcall;
 begin
   Result := 0;
-  if PCefExStreamReader(self).FileStream = nil then
-  begin
-    if PCefExStreamReader(self).FileUrl <> '' then
-    begin
-      if FileExists(PCefExStreamReader(self).FileUrl) then
-      begin
-        PCefExStreamReader(self).FileStream := TFileStream.Create(PCefExStreamReader(self).FileUrl, fmOpenRead or fmShareDenyNone);
-      end;
-    end;
-  end;
-  if PCefExStreamReader(self).FileStream <> nil then
-  begin
-    Result := PCefExStreamReader(self).FileStream.Read(ptr^, size);
-  end;
+//  if PCefExStreamReader(self).FileStream = nil then
+//  begin
+//    if PCefExStreamReader(self).FileUrl <> '' then
+//    begin
+//      if FileExists(PCefExStreamReader(self).FileUrl) then
+//      begin
+//        PCefExStreamReader(self).FileStream := TFileStream.Create(PCefExStreamReader(self).FileUrl, fmOpenRead or fmShareDenyNone);
+//      end;
+//    end;
+//  end;
+//  if PCefExStreamReader(self).FileStream <> nil then
+//  begin
+//    Result := PCefExStreamReader(self).FileStream.Read(ptr^, size);
+//  end;
 end;
 
     // Seek to the specified offset position. |whence| may be any one of SEEK_CUR,
@@ -1121,21 +1121,21 @@ end;
 function Cef_Stream_Reader_seek(self: PCefStreamReader; offset: Int64; whence: Integer): Integer; stdcall;
 begin
   Result := 1;
-  if PCefExStreamReader(self).FileStream <> nil then
-  begin
-    PCefExStreamReader(self).FileStream.Position := offset;
-    Result := 0;
-  end;
+//  if PCefExStreamReader(self).FileStream <> nil then
+//  begin
+//    PCefExStreamReader(self).FileStream.Position := offset;
+//    Result := 0;
+//  end;
 end;
 
     // Return the current offset position.
 function Cef_Stream_Reader_tell(self: PCefStreamReader): Int64; stdcall;
 begin
   Result := 0;
-  if PCefExStreamReader(self).FileStream <> nil then
-  begin
-    Result := PCefExStreamReader(self).FileStream.Position;
-  end;
+//  if PCefExStreamReader(self).FileStream <> nil then
+//  begin
+//    Result := PCefExStreamReader(self).FileStream.Position;
+//  end;
 end;
 
 // Return non-zero if at end of file.
@@ -1146,14 +1146,14 @@ begin
   begin
     if PCefExStreamReader(self).FileUrl <> '' then
     begin
-      if PCefExStreamReader(self).FileStream <> nil then
-      begin
-        Result := 0;
-        if PCefExStreamReader(self).FileStream.Position >= PCefExStreamReader(self).FileStream.Size - 1 then
-        begin
-          Result := 1;
-        end;
-      end;
+//      if PCefExStreamReader(self).FileStream <> nil then
+//      begin
+//        Result := 0;
+//        if PCefExStreamReader(self).FileStream.Position >= PCefExStreamReader(self).FileStream.Size - 1 then
+//        begin
+//          Result := 1;
+//        end;
+//      end;
     end;
   end;
 end;
@@ -1176,21 +1176,21 @@ function Cef_Read_Handler_read(self: PCefReadHandler; ptr: Pointer;
       size, n: Cardinal): Cardinal; stdcall;
 begin
   Result := 0;
-  if PCefExReadHandler(self).FileStream = nil then
-  begin
-    if PCefExReadHandler(self).FileUrl <> '' then
-    begin
-      if FileExists(PCefExReadHandler(self).FileUrl) then
-      begin
-        PCefExReadHandler(self).FileStream := TFileStream.Create(PCefExReadHandler(self).FileUrl, fmOpenRead or fmShareDenyNone);
-      end;
-    end;
-  end;
-  // size = 1 n = 999999
-  if PCefExReadHandler(self).FileStream <> nil then
-  begin
-    result := Cardinal(PCefExReadHandler(self).FileStream.Read(ptr^, n * size)) div size;
-  end;
+//  if PCefExReadHandler(self).FileStream = nil then
+//  begin
+//    if PCefExReadHandler(self).FileUrl <> '' then
+//    begin
+//      if FileExists(PCefExReadHandler(self).FileUrl) then
+//      begin
+//        PCefExReadHandler(self).FileStream := TFileStream.Create(PCefExReadHandler(self).FileUrl, fmOpenRead or fmShareDenyNone);
+//      end;
+//    end;
+//  end;
+//  // size = 1 n = 999999
+//  if PCefExReadHandler(self).FileStream <> nil then
+//  begin
+//    result := Cardinal(PCefExReadHandler(self).FileStream.Read(ptr^, n * size)) div size;
+//  end;
 end;
 
 const
@@ -1204,43 +1204,43 @@ function Cef_Read_Handler_seek(self: PCefReadHandler; offset: Int64;
       whence: Integer): Integer; stdcall;
 begin
   Result := 1;
-  if PCefExReadHandler(self).FileStream = nil then
-  begin
-    if PCefExReadHandler(self).FileUrl <> '' then
-    begin
-      if FileExists(PCefExReadHandler(self).FileUrl) then
-      begin
-        PCefExReadHandler(self).FileStream := TFileStream.Create(PCefExReadHandler(self).FileUrl, fmOpenRead or fmShareDenyNone);
-      end;
-    end;
-  end;
-  if PCefExReadHandler(self).FileStream <> nil then
-  begin
-    case whence of
-      SEEK_SET: begin
-        PCefExReadHandler(self).FileStream.Position := offset;
-        Result := 0;
-      end;
-      SEEK_CUR: begin
-        PCefExReadHandler(self).FileStream.Position := PCefExReadHandler(self).FileStream.Position + offset;
-        Result := 0;
-      end;
-      SEEK_END: begin
-        PCefExReadHandler(self).FileStream.Position := PCefExReadHandler(self).FileStream.Size;
-        Result := 0;
-      end;
-    end;
-  end;
+//  if PCefExReadHandler(self).FileStream = nil then
+//  begin
+//    if PCefExReadHandler(self).FileUrl <> '' then
+//    begin
+//      if FileExists(PCefExReadHandler(self).FileUrl) then
+//      begin
+//        PCefExReadHandler(self).FileStream := TFileStream.Create(PCefExReadHandler(self).FileUrl, fmOpenRead or fmShareDenyNone);
+//      end;
+//    end;
+//  end;
+//  if PCefExReadHandler(self).FileStream <> nil then
+//  begin
+//    case whence of
+//      SEEK_SET: begin
+//        PCefExReadHandler(self).FileStream.Position := offset;
+//        Result := 0;
+//      end;
+//      SEEK_CUR: begin
+//        PCefExReadHandler(self).FileStream.Position := PCefExReadHandler(self).FileStream.Position + offset;
+//        Result := 0;
+//      end;
+//      SEEK_END: begin
+//        PCefExReadHandler(self).FileStream.Position := PCefExReadHandler(self).FileStream.Size;
+//        Result := 0;
+//      end;
+//    end;
+//  end;
 end;
 
     // Return the current offset position.
 function Cef_Read_Handler_tell(self: PCefReadHandler): Int64; stdcall;
 begin
   Result := 0;
-  if PCefExReadHandler(self).FileStream <> nil then
-  begin
-    Result := PCefExReadHandler(self).FileStream.Position;
-  end;
+//  if PCefExReadHandler(self).FileStream <> nil then
+//  begin
+//    Result := PCefExReadHandler(self).FileStream.Position;
+//  end;
 end;
     // Return non-zero if at end of file.
 function Cef_Read_Handler_eof(self: PCefReadHandler): Integer; stdcall;
@@ -1248,14 +1248,14 @@ begin
   Result := 1;
   if PCefExReadHandler(self).FileUrl <> '' then
   begin
-      if PCefExReadHandler(self).FileStream <> nil then
-      begin
-        Result := 0;
-        if PCefExReadHandler(self).FileStream.Position >= PCefExReadHandler(self).FileStream.Size - 1 then
-        begin
-          Result := 1;
-        end;
-      end;
+//      if PCefExReadHandler(self).FileStream <> nil then
+//      begin
+//        Result := 0;
+//        if PCefExReadHandler(self).FileStream.Position >= PCefExReadHandler(self).FileStream.Size - 1 then
+//        begin
+//          Result := 1;
+//        end;
+//      end;
   end;
 end;
 

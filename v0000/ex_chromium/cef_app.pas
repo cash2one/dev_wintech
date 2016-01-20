@@ -5,7 +5,7 @@ interface
 uses
   Windows,
   BaseApp,
-  SysThread,
+  BaseThread,
   cef_apilib;
 
 type
