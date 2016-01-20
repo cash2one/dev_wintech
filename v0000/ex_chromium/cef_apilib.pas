@@ -2385,6 +2385,14 @@ begin
   end;
   if not FileExists(CefLibraryName) then
   begin
+    CefLibraryName := '.\Chromium\1.1364.1123.0\libcef.dll';
+  end;          
+  if not FileExists(CefLibraryName) then
+  begin
+    CefLibraryName := '.\Chromium\1.1364.1123\libcef.dll';
+  end;
+  if not FileExists(CefLibraryName) then
+  begin
     CefLibraryName := '.\libcef.dll';
   end;
   if not FileExists(CefLibraryName) then

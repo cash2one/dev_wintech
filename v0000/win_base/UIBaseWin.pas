@@ -18,16 +18,23 @@ type
     WinThread       : PSysWinThread;
   end;
 
-  function CreateUIWnd(AUIWnd: PUIBaseWnd; AWndProc: TFNWndProc): Boolean;
-  
+  function CreateUIWndA(AUIWnd: PUIBaseWnd; AWndProc: TFNWndProc): Boolean;
+
 implementation
 
-function CreateUIWnd(AUIWnd: PUIBaseWnd; AWndProc: TFNWndProc): Boolean;
+function CreateUIWndA(AUIWnd: PUIBaseWnd; AWndProc: TFNWndProc): Boolean;
 var
   tmpRegWndClass: TWndClassA;
   tmpCheckWndClass: TWndClassA;
   tmpIsRegistered: Boolean;
+  tmpRegAtom: ATOM;
 begin
+  FillChar(tmpRegWndClass, SizeOf(tmpRegWndClass), 0);
+  
+  tmpRegWndClass.lpszClassName := 'testwnd';
+  tmpRegWndClass.lpfnWndProc := AWndProc;
+  tmpRegWndClass.hbrBackground := GetStockObject(GRAY_BRUSH);
+  tmpRegWndClass.hCursor := LoadCursorA(0, IDC_ARROW);
   tmpIsRegistered := Windows.GetClassInfoA(HInstance, tmpRegWndClass.lpszClassName, tmpCheckWndClass);
   if tmpIsRegistered then
   begin
@@ -39,7 +46,11 @@ begin
   end;
   if not tmpIsRegistered then
   begin
-    Windows.RegisterClassA(tmpRegWndClass);
+    tmpRegAtom := Windows.RegisterClassA(tmpRegWndClass);
+    if 0 = tmpRegAtom then
+    begin
+      exit;
+    end;
   end;
 
   AUIWnd.UIWndHandle := Windows.CreateWindowExA(
