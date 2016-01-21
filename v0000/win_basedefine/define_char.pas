@@ -25,8 +25,8 @@ const
   AC_PLUS_SIGN    = AnsiChar(#$2B);      //
   AC_COMMA        = AnsiChar(#$2C);      //
   AC_HYPHEN_MINUS = AnsiChar(#$2D);      //
-  AC_FULL_STOP    = AnsiChar(#$2E);      //
-  AC_SOLIDUS      = AnsiChar(#$2F);      //
+  AC_FULL_STOP    = AnsiChar(#$2E);      //  .
+  AC_SOLIDUS      = AnsiChar(#$2F);      //  /
                                          //
   AC_DIGIT_ZERO   = AnsiChar(#$30);      //
   AC_DIGIT_ONE    = AnsiChar(#$31);      //
@@ -38,17 +38,28 @@ const
   AC_DIGIT_SEVEN  = AnsiChar(#$37);      //
   AC_DIGIT_EIGHT  = AnsiChar(#$38);      //
   AC_DIGIT_NINE   = AnsiChar(#$39);      //
-                                         //
+  
+  AC_DIGIT_0      = AC_DIGIT_ZERO;      //
+  AC_DIGIT_1      = AC_DIGIT_ONE;      //
+  AC_DIGIT_2      = AC_DIGIT_TWO;      //
+  AC_DIGIT_3      = AC_DIGIT_THREE;      //
+  AC_DIGIT_4      = AC_DIGIT_FOUR;      //
+  AC_DIGIT_5      = AC_DIGIT_FIVE;      //
+  AC_DIGIT_6      = AC_DIGIT_SIX;      //
+  AC_DIGIT_7      = AC_DIGIT_SEVEN;      //
+  AC_DIGIT_8      = AC_DIGIT_EIGHT;      //
+  AC_DIGIT_9      = AC_DIGIT_NINE;      //
+  
   AC_COLON        = AnsiChar(#$3A);      // : Ã°ºÅ
   AC_SEMICOLON    = AnsiChar(#$3B);      // ; ·ÖºÅ
 
   AC_LESS_THAN_SIGN = AnsiChar(#$3C);       // <
   AC_EQUALS_SIGN  = AnsiChar(#$3D);         // =
-  AC_GREATER_THAN_SIGN = AnsiChar(#$3E);    //
-  AC_QUESTION_MARK = AnsiChar(#$3F);        //
-  AC_COMMERCIAL_AT = AnsiChar(#$40);        //
-  AC_REVERSE_SOLIDUS = AnsiChar(#$5C);      //
-  AC_LOW_LINE     = AnsiChar(#$5F);         //
+  AC_GREATER_THAN_SIGN = AnsiChar(#$3E);    // >
+  AC_QUESTION_MARK = AnsiChar(#$3F);        // ?
+  AC_COMMERCIAL_AT = AnsiChar(#$40);        // @
+  AC_REVERSE_SOLIDUS = AnsiChar(#$5C);      // \
+  AC_LOW_LINE     = AnsiChar(#$5F);         // _
   AC_SOFT_HYPHEN  = AnsiChar(#$AD);         //
 
   AC_CAPITAL_A    = AnsiChar(#$41);         //
@@ -146,6 +157,17 @@ const
   WC_DIGIT_SEVEN  = WideChar(#$0037);
   WC_DIGIT_EIGHT  = WideChar(#$0038);
   WC_DIGIT_NINE   = WideChar(#$0039);
+                                    
+  WC_DIGIT_0      = WC_DIGIT_ZERO;
+  WC_DIGIT_1      = WC_DIGIT_ONE;
+  WC_DIGIT_2      = WC_DIGIT_TWO;
+  WC_DIGIT_3      = WC_DIGIT_THREE;
+  WC_DIGIT_4      = WC_DIGIT_FOUR;
+  WC_DIGIT_5      = WC_DIGIT_FIVE;
+  WC_DIGIT_6      = WC_DIGIT_SIX;
+  WC_DIGIT_7      = WC_DIGIT_SEVEN;
+  WC_DIGIT_8      = WC_DIGIT_EIGHT;
+  WC_DIGIT_9      = WC_DIGIT_NINE;
   
   WC_COLON        = WideChar(#$003A);
   WC_SEMICOLON    = WideChar(#$003B);
