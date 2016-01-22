@@ -3,6 +3,7 @@ unit BaseMemory;
 interface
 
 uses
+  Types,
   BaseThread;
 
 type
@@ -12,9 +13,22 @@ type
   end;
   
   function GetMemoryNode(AThread: PSysThread; ASize: Integer): PMemoryNode;
-  function GetMemory(AThread: PSysThread; ASize: Integer): Pointer;  
+  function GetMemory(AThread: PSysThread; ASize: Integer): Pointer;
+    
+  procedure CopyMemory(ADestination: Pointer; ASource: Pointer; ALength: DWORD);
+  procedure ZeroMemory(ADestination: Pointer; ALength: DWORD);
 
 implementation
+
+procedure CopyMemory(ADestination: Pointer; ASource: Pointer; ALength: DWORD);
+begin
+  Move(ASource^, ADestination^, ALength);
+end;
+
+procedure ZeroMemory(ADestination: Pointer; ALength: DWORD);
+begin
+  FillChar(ADestination^, ALength, 0);
+end;
 
 function GetMemoryNode(AThread: PSysThread; ASize: Integer): PMemoryNode;
 begin
