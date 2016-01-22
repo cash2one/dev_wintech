@@ -42,7 +42,8 @@ type
   //procedure MD5UpdateW(var AContext: TMD5Context; AInput: PWideChar; ALength: LongWord);
   procedure MD5Final(var AContext: TMD5Context; var ADigest: TMD5Digest);
 
-  function MD5StringA(const Str: AnsiString): TMD5Digest;
+  function MD5StringA(const Str: AnsiString): TMD5Digest;  
+  function MD5Print(const ADigest: TMD5Digest): AnsiString;
                  
 var
   MD5_PADDING: TMD5Buffer = (
