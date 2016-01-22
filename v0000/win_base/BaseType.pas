@@ -44,7 +44,8 @@ type
   TByteX    = array[0..High(Integer) - 1] of Byte;
   //TByteX    = array[0..High(Integer) - 1] of Byte;
 
-  PDWORD    = ^DWORD;
+  PDWORD    = ^DWORD;   
+  PInteger  = ^Integer;
   
 implementation
 
