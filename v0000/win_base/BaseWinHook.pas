@@ -3,7 +3,7 @@ unit BaseWinHook;
 interface
 
 uses
-  Types, Windows;
+  Types, Windows, Messages;
   
 type             
   PImportCode         = ^TImportCode;
@@ -39,9 +39,19 @@ type
     AllowChange       : boolean; {是否允许安装、卸载Hook，只用于改引入表式}
     Newcode           : TLongJmp; {将要写在系统函数的前5个字节}
   end;
-                  
-  procedure HookChange(AHookRecord: PHookRecord);  
-  procedure HookRestore(AHookRecord: PHookRecord);
+
+  PWinHook            = ^TWinHook;
+  TWinHook            = record
+    HookHandle        : HHOOK;
+    HookThreadId      : DWORD;
+  end;
+  
+  procedure HookRecordInitialize(AHookRecord: PHookRecord; IsTrap:boolean; OldFun, NewFun: pointer);
+  procedure HookRecordChange(AHookRecord: PHookRecord);
+  procedure HookRecordRestore(AHookRecord: PHookRecord);
+
+  procedure OpenWinHook(AWinHook: PWinHook);
+  procedure CloseWinHook(AWinHook: PWinHook);
 
 implementation
                
@@ -55,6 +65,168 @@ type
     StartHookProcessID: DWORD;
     Hooks             : array[ProcID_BeginPaint..ProcID_BeginPaint] of THookRecord;{API HOOK类}
   end;
+
+var
+  WinHook_Keyboard: TWinHook;
+  WinHook_Mouse: TWinHook;
+  WinHook_CallWndProc: TWinHook;
+  WinHook_Shell: TWinHook;
+    
+function HookProc_Keyboard(ACode: integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  if (wParam = 65) then
+  begin
+    //Beep; {每拦截到字母 A 会发声}
+  end;
+  Result := CallNextHookEx(WinHook_Keyboard.HookHandle, ACode, wParam, lParam);   
+end;
+
+{钩子函数, 鼠标消息太多(譬如鼠标移动), 必须要有选择, 这里选择了鼠标左键按下}   
+function HookProc_Mouse(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  if wParam = WM_LBUTTONDOWN then
+  begin
+    MessageBeep(0);
+  end;
+  Result := CallNextHookEx(WinHook_Mouse.HookHandle, nCode, wParam, lParam);
+end;
+            
+function HookProc_CALLWNDPROC(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  if(nCode < 0) then
+  begin
+    Result := CallNextHookEx(WinHook_CallWndProc.HookHandle, nCode, wParam, lParam);
+    exit;
+  end;
+  if nCode <> HC_ACTION then
+  begin
+    Result := CallNextHookEx(WinHook_CallWndProc.HookHandle, nCode, wParam, lParam);
+    exit;
+  end;
+  Result := CallNextHookEx(WinHook_CallWndProc.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_Shell(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  // HSHELL_ACCESSIBILITYSTATE
+  // HSHELL_ACTIVATESHELLWINDOW
+  // HSHELL_GETMINRECT
+  // HSHELL_LANGUAGE
+  // HSHELL_REDRAW
+  // HSHELL_TASKMAN
+  // HSHELL_WINDOWACTIVATED
+  // HSHELL_WINDOWCREATED
+  // HSHELL_WINDOWDESTROYED
+  // HSHELL_ACCESSIBILITYSTATE
+  if HSHELL_GETMINRECT = nCode then
+  begin
+  end;
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_SYSMSGFILTER(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  if MSGF_DIALOGBOX = nCode then
+  begin
+    // MSGF_MENU
+    // MSGF_SCROLLBAR
+    // MSGF_NEXTWINDOW  
+  end;
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_CBT(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+{
+    1激活，建立，销毁，最小化，最大化，移动，改变尺寸等窗口事件；
+　　2完成系统指令；
+　  3来自系统消息队列中的移动鼠标，键盘事件；
+　　4设置输入焦点事件；
+　　5同步系统消息队列事件
+}
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_JournalRecord(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_JournalPlayBack(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_GetMessage(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_Hardware(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_Debug(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_ForegroundIdle(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+{
+  当应用程序的前台线程处于空闲状态时
+  可以使用WH_FOREGROUNDIDLEHook执行低优先级的任务
+  当应用程序的前台线程大概要变成空闲状态时
+  系统就会调用WH_FOREGROUNDIDLE Hook子程
+}
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+
+function HookProc_CallWndProcRet(nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+begin
+  Result := CallNextHookEx(WinHook_Shell.HookHandle, nCode, wParam, lParam);
+end;
+(*
+  我们在动态链接库中挂上WH_GETMESSAGE
+  消息钩子，当其他的进程发出WH_GETMESSAGE 消息时，就
+  会加载我们的动态链接库，如果在我们的DLL 加载时自动运
+  行API_Hook，不就可以让其他的进程挂上我们的API Hook吗
+*)
+
+// 不要在Hook里写MessageBox等函数，否则会循环的！！退出都来不及
+
+procedure OpenWinHook(AWinHook: PWinHook);
+begin
+  AWinHook.HookHandle := Windows.SetWindowsHookEx(
+      WH_MOUSE,
+        // WH_JOURNALRECORD
+        // WH_JOURNALPLAYBACK
+        // WH_KEYBOARD        键盘钩子
+        // WH_GETMESSAGE
+        // WH_CALLWNDPROC
+        // WH_CBT             线程或系统
+        // WH_SYSMSGFILTER
+        // WH_MOUSE
+        // WH_HARDWARE
+        // WH_DEBUG
+        // WH_SHELL
+        // WH_FOREGROUNDIDLE
+        // WH_CALLWNDPROCRET
+      nil, // HOOKPROC
+      HInstance,
+      AWinHook.HookThreadId  // 可以专门针对某一线程 hook
+      // GetCurrentThreadId
+  );
+end;
+
+procedure CloseWinHook(AWinHook: PWinHook);
+begin
+  if UnhookWindowsHookEx(AWinHook.HookHandle) then
+  begin
+    AWinHook.HookHandle := 0;
+  end;
+end;
 
 {取函数的实际地址。如果函数的第一个指令是Jmp，则取出它的跳转地址（实际地址），这往往是由于程序中含有Debug调试信息引起的}
 function FinalFunctionAddress(Code: Pointer): Pointer;
@@ -78,7 +250,7 @@ var
   HookLibCore: THookCore;
 
 {HOOK的入口，其中IsTrap表示是否采用陷阱式}
-procedure HookInitialize(AHookRecord: PHookRecord; IsTrap:boolean; OldFun, NewFun: pointer);
+procedure HookRecordInitialize(AHookRecord: PHookRecord; IsTrap:boolean; OldFun, NewFun: pointer);
 begin
    {求被截函数、自定义函数的实际地址}
    AHookRecord.OldFunction := FinalFunctionAddress(OldFun);
@@ -106,7 +278,7 @@ begin
    begin
      AHookRecord.AllowChange := true;
    end;
-   HookChange(AHookRecord); {开始HOOK}
+   HookRecordChange(AHookRecord); {开始HOOK}
    {如果是改引入表式，将暂时不允许HOOK}
    if 2 = AHookRecord.TrapMode then
      AHookRecord.AllowChange := false;
@@ -201,7 +373,7 @@ begin
   end;
 end;
 
-procedure HookChange(AHookRecord: PHookRecord);
+procedure HookRecordChange(AHookRecord: PHookRecord);
 var
   tmpCount: DWORD;
   tmpBeenDone: TPatchedAddress;
@@ -231,7 +403,7 @@ begin
 end;
 
 {恢复系统函数的调用}
-procedure HookRestore(AHookRecord: PHookRecord);
+procedure HookRecordRestore(AHookRecord: PHookRecord);
 var
    nCount: DWORD;
    BeenDone: TPatchedAddress;
@@ -259,7 +431,7 @@ function NewBeginPaint(AWnd: HWND; var APaint: TPaintStruct): HDC; stdcall;
 type
    TBeginPaint=function (Wnd: HWND; var lpPaint: TPaintStruct): HDC; stdcall;
 begin
-  HookRestore(@HookLibCore.Hooks[ProcID_BeginPaint]);
+  HookRecordRestore(@HookLibCore.Hooks[ProcID_BeginPaint]);
   result:=TBeginPaint(HookLibCore.Hooks[ProcID_BeginPaint].OldFunction)(AWnd, APaint);
 //  if AWnd = HookLibCore.ShareMem.ShareMemData^.hHookWnd then{如果是当前鼠标的窗口句柄}
 //  begin
@@ -268,12 +440,12 @@ begin
 //  begin
 //    HookLibCore.ShareMem.ShareMemData^.DCMouse:=0;
 //  end;
-  HookChange(@HookLibCore.Hooks[ProcID_BeginPaint]);
+  HookRecordChange(@HookLibCore.Hooks[ProcID_BeginPaint]);
 end;
 
 procedure TestHook(ATrapMode: Integer);
 begin
-  HookInitialize(@HookLibCore.Hooks[ProcID_BeginPaint], 1 = ATrapMode, @Windows.BeginPaint, @NewBeginPaint);
+  HookRecordInitialize(@HookLibCore.Hooks[ProcID_BeginPaint], 1 = ATrapMode, @Windows.BeginPaint, @NewBeginPaint);
 end;
 
 end.
