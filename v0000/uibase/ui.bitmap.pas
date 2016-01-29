@@ -3,7 +3,7 @@ unit ui.bitmap;
 interface
 
 uses
-  Types, uiwin.color;
+  Types, ui.color;
   
 type          
   PBitmapCoreHeader = ^TBitmapCoreHeader;
@@ -35,7 +35,7 @@ type
     bmiHeader     : TBitmapInfoHeader;
     bmiColors     : array[0..0] of TRGBQuad;
   end;
-            
+
   PBitmapCoreInfo = ^TBitmapCoreInfo;
   TBitmapCoreInfo = record
     bmciHeader    : TBitmapCoreHeader;
@@ -51,7 +51,14 @@ type
     bfReserved2   : Word;
     bfOffBits     : DWORD;
   end;
-  
+              
+  PBitmap32   = ^TBitmap32;
+  TBitmap32   = record
+    Width     : integer;
+    Height    : integer;
+    Bits      : PColor32Array;
+  end;
+
 implementation
 
 end.
