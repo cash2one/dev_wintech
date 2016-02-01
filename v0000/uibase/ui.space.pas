@@ -27,7 +27,10 @@ type
       0: (Left, Top, Right, Bottom: TFloat);
       1: (TopLeft, BottomRight: TUIFloatPoint);
   end;
-          
+             
+  PUIRects      = ^TUIRects;
+  TUIRects      = array[0..Maxint div 32 - 1] of TUIRect;
+
 const
   ZERO_RECT: TUIRect = (Left: 0; Top: 0; Right: 0; Bottom: 0);
 
