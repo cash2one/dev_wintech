@@ -17,6 +17,10 @@ type
     
   procedure CopyMemory(ADestination: Pointer; ASource: Pointer; ALength: DWORD);
   procedure ZeroMemory(ADestination: Pointer; ALength: DWORD);
+               
+{ An analogue of FillChar for 32 bit values }
+var
+  FillLongword: procedure(var X; Count: Cardinal; Value: Longword);
 
 implementation
 

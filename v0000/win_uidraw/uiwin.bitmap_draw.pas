@@ -14,7 +14,7 @@ implementation
 
 uses
   ui.bitmap_pixel,
-  win.memory;
+  BaseMemory;
   
 procedure Bitmap32HorzLine(ABitmap32: PBitmap32; X1, Y, X2: Integer; Value: TColor32);
 begin
