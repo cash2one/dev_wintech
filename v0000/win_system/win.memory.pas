@@ -1,11 +1,28 @@
 unit win.memory;
 
 interface
-                        
+
+uses
+  Types;
+
+type
+  PMemoryBasicInformation = ^TMemoryBasicInformation;
+  TMemoryBasicInformation = record
+    BaseAddress       : Pointer;
+    AllocationBase    : Pointer;
+    AllocationProtect : DWORD;
+    RegionSize        : DWORD;
+    State             : DWORD;
+    Protect           : DWORD;
+    Type_9            : DWORD;
+  end;
+            
   procedure FillLongword_Pas(var X; Count: Cardinal; Value: Longword);
   procedure FillLongword_ASM(var X; Count: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}    
   procedure FillLongword_MMX(var X; Count: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}  
   procedure FillLongword_SSE2(var X; Count: Integer; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+
+  //function  VirtualQuery(lpAddress: Pointer; var lpBuffer: TMemoryBasicInformation; dwLength: DWORD): DWORD; stdcall; external kernel32 name 'VirtualQuery';
 
 implementation
 
