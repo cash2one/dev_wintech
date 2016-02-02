@@ -22,6 +22,22 @@ type
   procedure FillLongword_MMX(var X; Count: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}  
   procedure FillLongword_SSE2(var X; Count: Integer; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
 
+  procedure FillWord(var X; Count: Cardinal; Value: Longword);
+  { An analogue of Move for 32 bit values }
+  {$IFDEF USEMOVE}
+  procedure MoveLongword(const Source; var Dest; Count: Integer); {$IFDEF USEINLINING} inline; {$ENDIF}
+  {$ELSE}
+  procedure MoveLongword(const Source; var Dest; Count: Integer);
+  {$ENDIF}
+  procedure MoveWord(const Source; var Dest; Count: Integer);
+
+  procedure Swap(var A, B: Pointer); overload;{$IFDEF USEINLINING} inline; {$ENDIF}
+  procedure Swap(var A, B: Integer); overload;{$IFDEF USEINLINING} inline; {$ENDIF}
+  procedure Swap32(var A, B); overload;{$IFDEF USEINLINING} inline; {$ENDIF}
+
+  { Exchange A <-> B only if B < A }
+  procedure TestSwap(var A, B: Integer); overload;{$IFDEF USEINLINING} inline; {$ENDIF}
+  
   //function  VirtualQuery(lpAddress: Pointer; var lpBuffer: TMemoryBasicInformation; dwLength: DWORD): DWORD; stdcall; external kernel32 name 'VirtualQuery';
 
 implementation
@@ -249,6 +265,174 @@ asm
         JNZ        @SmallLoop
 @Exit:
 {$ENDIF}
+end;
+
+procedure FillWord(var X; Count: Cardinal; Value: LongWord);
+{$IFDEF USENATIVECODE}
+var
+  I: Integer;
+  P: PWords;
+begin
+  P := PWords(@X);
+  for I := Count - 1 downto 0 do
+    P[I] := Value;
+{$ELSE}
+{$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+asm
+{$IFDEF TARGET_x86}
+        // EAX = X;   EDX = Count;   ECX = Value
+        PUSH    EDI
+
+        MOV     EDI,EAX  // Point EDI to destination
+        MOV     EAX,ECX
+        MOV     ECX,EDX
+        TEST    ECX,ECX
+        JZ      @exit
+
+        REP     STOSW    // Fill count words
+@exit:
+        POP     EDI
+{$ENDIF}
+
+{$IFDEF TARGET_x64}
+        // ECX = X;   EDX = Count;   R8D = Value
+        PUSH    RDI
+
+        MOV     RDI,RCX  // Point EDI to destination
+        MOV     EAX,R8D
+        MOV     ECX,EDX
+        TEST    ECX,ECX
+        JZ      @exit
+
+        REP     STOSW    // Fill count words
+@exit:
+        POP     RDI
+{$ENDIF}
+{$ENDIF}
+end;
+
+procedure MoveLongword(const Source; var Dest; Count: Integer);
+{$IFDEF USEMOVE}
+begin
+  Move(Source, Dest, Count shl 2);
+{$ELSE}
+{$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+asm
+{$IFDEF TARGET_x86}
+        // EAX = Source;   EDX = Dest;   ECX = Count
+        PUSH    ESI
+        PUSH    EDI
+
+        MOV     ESI,EAX
+        MOV     EDI,EDX
+        CMP     EDI,ESI
+        JE      @exit
+
+        REP     MOVSD
+@exit:
+        POP     EDI
+        POP     ESI
+{$ENDIF}
+
+{$IFDEF TARGET_x64}
+        // RCX = Source;   RDX = Dest;   R8 = Count
+        PUSH    RSI
+        PUSH    RDI
+
+        MOV     RSI,RCX
+        MOV     RDI,RDX
+        MOV     RCX,R8
+        CMP     RDI,RSI
+        JE      @exit
+
+        REP     MOVSD
+@exit:
+        POP     RDI
+        POP     RSI
+{$ENDIF}
+{$ENDIF}
+end;
+
+procedure MoveWord(const Source; var Dest; Count: Integer);
+{$IFDEF USEMOVE}
+begin
+  Move(Source, Dest, Count shl 1);
+{$ELSE}
+{$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+asm
+{$IFDEF TARGET_x86}
+        // EAX = X;   EDX = Count;   ECX = Value
+        PUSH    ESI
+        PUSH    EDI
+
+        MOV     ESI,EAX
+        MOV     EDI,EDX
+        MOV     EAX,ECX
+        CMP     EDI,ESI
+        JE      @exit
+
+        REP     MOVSW
+@exit:
+        POP     EDI
+        POP     ESI
+{$ENDIF}
+
+{$IFDEF TARGET_x64}
+        // ECX = X;   EDX = Count;   R8 = Value
+        PUSH    RSI
+        PUSH    RDI
+
+        MOV     RSI,RCX
+        MOV     RDI,RDX
+        MOV     RAX,R8
+        CMP     RDI,RSI
+        JE      @exit
+
+        REP     MOVSW
+@exit:
+        POP     RDI
+        POP     RSI
+{$ENDIF}
+{$ENDIF}
+end;
+
+procedure Swap(var A, B: Pointer);
+var
+  T: Pointer;
+begin
+  T := A;
+  A := B;
+  B := T;
+end;
+
+procedure Swap(var A, B: Integer);
+var
+  T: Integer;
+begin
+  T := A;
+  A := B;
+  B := T;
+end;
+
+procedure Swap32(var A, B);
+var
+  T: Integer;
+begin
+  T := Integer(A);
+  Integer(A) := Integer(B);
+  Integer(B) := T;
+end;
+
+procedure TestSwap(var A, B: Integer);
+var
+  T: Integer;
+begin
+  if B < A then
+  begin
+    T := A;
+    A := B;
+    B := T;
+  end;
 end;
 
 end.
