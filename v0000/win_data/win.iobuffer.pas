@@ -143,6 +143,10 @@ type
   procedure CheckInIOBuffer(var AIOBuffer: PIOBuffer);  
   function CheckOutIOBufferExNode(AIOBuffer: PIOBuffer): PIOBufferExNode; 
   procedure CheckInIOBufferExNode(AIOBufferExNode: PIOBufferExNode);
+  
+  function RepackIOBuffer(AIOBuffer: PIOBuffer): PIOBuffer;
+  
+  function GetSizeMode(ASize: Integer): Integer;
 
 implementation
 
@@ -156,9 +160,27 @@ begin
   Result := PIOBuffer(tmpBuffer);  
 end;
 
+function GetSizeMode(ASize: Integer): Integer;
+var
+  tmpSize: Integer;
+begin
+  Result := 2;
+  tmpSize := 1;
+  while tmpSize < ASize do
+  begin
+    Result := Result + 1;
+    tmpSize := tmpSize + tmpSize;
+  end;
+end;
+
 procedure CheckInIOBuffer(var AIOBuffer: PIOBuffer);
 begin
 
+end;
+
+function RepackIOBuffer(AIOBuffer: PIOBuffer): PIOBuffer;
+begin
+  Result := CheckOutIOBuffer(GetSizeMode(AIOBuffer.BufferHead.Length));
 end;
 
 function CheckOutIOBufferExNode(AIOBuffer: PIOBuffer): PIOBufferExNode;
