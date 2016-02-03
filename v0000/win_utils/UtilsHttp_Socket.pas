@@ -2,28 +2,33 @@ unit UtilsHttp_Socket;
 
 interface
 
+uses
+  UtilsHttp;
+  
 type
   PSocketConnectionSession = ^TSocketConnectionSession;
   TSocketConnectionSession = record
+    IsKeepAlive : Boolean;
     Connection  : Pointer;
   end;
                   
   function CheckOutSocketConnection: PSocketConnectionSession;    
   procedure CheckInSocketConnection(var AConnection: PSocketConnectionSession);
                           
-  function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): string;
+  function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PHttpBuffer;
   function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PSocketConnectionSession): Boolean;
-  
+
 implementation
 
 uses
-  Classes, Sysutils, Winsock2, Windows, UtilsHttp, xlClientSocket, xlNetwork, xlTcpClient;
+  Classes, Sysutils, Winsock2, Windows, xlClientSocket, xlNetwork, xlTcpClient;
 
 function CheckOutSocketConnection: PSocketConnectionSession;
 begin
   Result := System.New(PSocketConnectionSession);
   FillChar(Result^, SizeOf(TSocketConnectionSession), 0);
   Result.Connection := CheckOutTcpClient;
+  Result.IsKeepAlive := True;
   InitializeNetwork(@Network);
 end;
 
@@ -31,7 +36,7 @@ procedure CheckInSocketConnection(var AConnection: PSocketConnectionSession);
 begin
 end;
 
-function GenHttpHeader(const AUrl: AnsiString; AHttpUrlInfo: THttpUrlInfo): AnsiString;
+function GenHttpHeader(const AUrl: AnsiString; AHttpUrlInfo: THttpUrlInfo; AIsKeepAlive: Boolean): AnsiString;
 var
   strVersion:AnsiString;
 begin
@@ -81,9 +86,13 @@ begin
   //Referer
   //if Self.Referer <> '' then
   //  Headers.Add('Referer: ' + Referer);
-
-  Result := Result + 'Connection:' + #32 + 'keep-alive';
-  //Result := Result + 'Connection:' + #32 + 'close';
+  if AIsKeepAlive then
+  begin
+    Result := Result + 'Connection:' + #32 + 'keep-alive';
+  end else
+  begin
+    Result := Result + 'Connection:' + #32 + 'close';
+  end;
   Result := Result + #13#10;
 
 
@@ -122,7 +131,7 @@ begin
   //end;        
 end;
 
-procedure NetClientSendBuf(ANetClient: PxlTcpClient; ABuf: Pointer; ABufSize: Integer; var ASendCount:Integer);  
+function NetClientSendBuf(ANetClient: PxlTcpClient; ABuf: Pointer; ABufSize: Integer; var ASendCount:Integer): Boolean;  
 const
   SF_SOCKET_BUFF_SIZE = 1024 * 32;
   INT_BUF_SIZE = SF_SOCKET_BUFF_SIZE;
@@ -132,6 +141,7 @@ var
   tmpLen: Integer;
   iRet: Integer;
 begin
+  Result := false;
   P := ABuf;
   //FErrorCode := 0;
   //gLock();
@@ -156,7 +166,8 @@ begin
       //end;
       //gLock();
       //Inc(FSendCount, iRet);
-      //gUnLock();
+      //gUnLock();  
+      Result := true;
     end;
 
     if WinSock2.SOCKET_ERROR = iRet then
@@ -284,87 +295,47 @@ begin
   end;//while end
 end;
 
-type
-  PBuffer = ^TBuffer;
-  TBuffer = record
-    Length  : Integer;
-    Size    : Integer;
-    Data    : array[0..256 *1024 - 1] of AnsiChar;
-  end;
-
-  PHttpHeadParseSession = ^THttpHeadParseSession;
-  THttpHeadParseSession = record
-    RetCode: integer;
-    LastPos_CRLF: Integer;
-  end;
-  
-function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): string;
+function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PHttpBuffer;
 var
   tmpHttpInfo: THttpUrlInfo;
   tmpTcpClient: PxlTcpClient;
   tmpAddress: TxlNetServerAddress;   
   tmpStr: AnsiString; 
   tmpRet: Integer;        
-  tmpBuffer: PBuffer;
-  tmpHttpHeadParse: THttpHeadParseSession;
-  tmpHttpHeadBuffer: array[0..256 - 1] of AnsiChar;
-  i: integer;
-  tmpPos: integer;
+  tmpBuffer: PHttpBuffer;
 begin
-  Result := '';
+  Result := nil;
   FillChar(tmpHttpInfo, SizeOf(tmpHttpInfo), 0);
   if ParseHttpUrlInfo(AURL, @tmpHttpInfo) then
   begin
     tmpTcpClient := AConnection.Connection;
-    
-    tmpAddress.Host := tmpHttpInfo.Host;
-    tmpAddress.Port := StrToIntDef(tmpHttpInfo.Port, 80);
-    TcpClientConnect(tmpTcpClient, @tmpAddress);
-
-    tmpStr := GenHttpHeader(AUrl, tmpHttpInfo);
-    NetClientSendBuf(tmpTcpClient, Pointer(@tmpStr[1]),Length(tmpStr), tmpRet);
-    tmpRet := 0;
-    tmpBuffer := System.New(PBuffer);
-    FillChar(tmpBuffer^, SizeOf(TBuffer), 0);
-    
-    NetClientRecvBuf(tmpTcpClient, @tmpBuffer.Data[0], SizeOf(TBuffer), tmpRet);
-    Sleep(500);
-    FillChar(tmpHttpHeadParse, SizeOf(tmpHttpHeadParse), 0);
-    FillChar(tmpHttpHeadBuffer, SizeOf(tmpHttpHeadBuffer), 0);
-    for i := 0 to SizeOf(tmpBuffer.Data) - 1 do
-    begin                             
-      if (#32 = tmpBuffer.Data[i]) then
+    if AConnection.IsKeepAlive then
+    begin
+      if (0 = tmpTcpClient.Base.ConnectSocketHandle) then
       begin
-      
+        tmpAddress.Host := tmpHttpInfo.Host;
+        tmpAddress.Port := StrToIntDef(tmpHttpInfo.Port, 80);
+        TcpClientConnect(tmpTcpClient, @tmpAddress);
       end;
-      if (#13 = tmpBuffer.Data[i]) then
-      begin
-        //#13#10
-        if 0 = tmpHttpHeadParse.LastPos_CRLF then
-        begin
-          CopyMemory(@tmpHttpHeadBuffer[0], @tmpBuffer.Data[0], i);
-          tmpStr := tmpHttpHeadBuffer;          
-          FillChar(tmpHttpHeadBuffer, SizeOf(tmpHttpHeadBuffer), 0);
-          tmpPos := Pos(#32, tmpStr);
-          if tmpPos > 0 then
-          begin
-            tmpStr := Copy(tmpStr, tmpPos + 1, maxint);
-            tmpPos := Pos(#32, tmpStr);
-            if tmpPos > 0 then
-            begin          
-              tmpStr := Copy(tmpStr, 1, tmpPos - 1); 
-              tmpHttpHeadParse.RetCode := StrToIntDef(tmpStr, 0);
-            end;
-          end;
-        end;                               
-        if i - tmpHttpHeadParse.LastPos_CRLF < 3 then
-        begin
-          Result := String(AnsiString((@tmpBuffer.Data[i + 2])));
-          exit;
-        end;
-        tmpHttpHeadParse.LastPos_CRLF := i;
-      end;
+    end else
+    begin
+      tmpAddress.Host := tmpHttpInfo.Host;
+      tmpAddress.Port := StrToIntDef(tmpHttpInfo.Port, 80);
+      TcpClientConnect(tmpTcpClient, @tmpAddress);
     end;
+
+    tmpStr := GenHttpHeader(AUrl, tmpHttpInfo, AConnection.IsKeepAlive);
+    if not NetClientSendBuf(tmpTcpClient, Pointer(@tmpStr[1]),Length(tmpStr), tmpRet) then
+    begin
+      TcpClientDisconnect(tmpTcpClient);
+      exit;
+    end;
+    tmpRet := 0;
+    tmpBuffer := System.New(PHttpBuffer);
+    FillChar(tmpBuffer^, SizeOf(PHttpBuffer), 0);
+    
+    NetClientRecvBuf(tmpTcpClient, @tmpBuffer.Data[0], SizeOf(THttpBuffer), tmpRet);
+    Result := tmpBuffer;
   end;
 end;
 
@@ -372,5 +343,5 @@ function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PSocketConnect
 begin
   Result := false;
 end;
-
+                
 end.

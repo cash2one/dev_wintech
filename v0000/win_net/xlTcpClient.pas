@@ -15,7 +15,8 @@ type
   procedure CheckInTcpClient(var AClient: PxlTcpClient);
   
   procedure TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress);
-    
+  procedure TcpClientDisconnect(ATcpClient: PxlTcpClient);
+
 implementation
 
 uses
@@ -137,18 +138,18 @@ begin
   //ATcpClient.SendCount := 0;
 end;
 
-procedure NetClientDisconnect(ATcpClient: PxlNetClient);
+procedure TcpClientDisconnect(ATcpClient: PxlTcpClient);
 var
   ErrCode:Integer;
   tmpLinger: TLinger;
 begin
-  if Winsock2.INVALID_SOCKET = ATcpClient.ConnectSocketHandle then
+  if Winsock2.INVALID_SOCKET = ATcpClient.Base.ConnectSocketHandle then
     Exit;
-  WinSock2.Shutdown(ATcpClient.ConnectSocketHandle, SD_SEND);
+  WinSock2.Shutdown(ATcpClient.Base.ConnectSocketHandle, SD_SEND);
   //Self.FErrorCode := 0;
   tmpLinger.l_onoff  := 1;
   tmpLinger.l_linger := 0;
-  if SOCKET_ERROR = Winsock2.SetSockOpt(ATcpClient.ConnectSocketHandle,
+  if SOCKET_ERROR = Winsock2.SetSockOpt(ATcpClient.Base.ConnectSocketHandle,
                         SOL_SOCKET,
                         SO_LINGER,
                         @tmpLinger,
@@ -158,8 +159,8 @@ begin
    // TmpStr := IntToStr(ErrCode);
    // MessageBox(0,'aaaaaaaaaaaaaaaaaaa',PChar(TmpStr),0);
   end;
-  Winsock2.CloseSocket(ATcpClient.ConnectSocketHandle);
-  ATcpClient.ConnectSocketHandle := Winsock2.INVALID_SOCKET;
+  Winsock2.CloseSocket(ATcpClient.Base.ConnectSocketHandle);
+  ATcpClient.Base.ConnectSocketHandle := Winsock2.INVALID_SOCKET;
 //  FConnected := FALSE;
 //  FInputStream.Position := 0;
 //  FInputStream.ReadEndPosition := 0;

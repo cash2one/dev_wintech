@@ -20,18 +20,33 @@ type
     UserName    : AnsiString;
     Password    : AnsiString;
   end;
+          
+  PHttpBuffer   = ^THttpBuffer;
+  THttpBuffer   = record
+    Length      : Integer;
+    Size        : Integer;
+    Data        : array[0..256 * 1024 - 1] of AnsiChar;
+  end;
 
+  PHttpHeadParseSession = ^THttpHeadParseSession;
+  THttpHeadParseSession = record
+    RetCode: integer;
+    HeadEndPos: integer;
+  end;
+  
   function CheckOutNetClientSession: PNetClientSession;
   procedure CheckInNetClientSession(var ANetClientSession: PNetClientSession);
 
-  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PNetClientSession): string; overload;      
-  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): string; overload;
+  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PNetClientSession): PHttpBuffer; overload;      
+  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PHttpBuffer; overload;
   function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PNetClientSession): Boolean; overload;
 
-  function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): string;
+  function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PHttpBuffer;
 
   function GetDefaultUserAgent: AnsiString;    
   function ParseHttpUrlInfo(AUrl: AnsiString; AInfo: PHttpUrlInfo): Boolean;
+                             
+  procedure HttpBufferHeader_Parser(AHttpBuffer: PHttpBuffer; AHttpHeadParseSession: PHttpHeadParseSession);
 
 implementation
 
@@ -124,7 +139,7 @@ begin
   end;
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; ANetSession: PNetClientSession): string;
+function GetHttpUrlData(AUrl: AnsiString; ANetSession: PNetClientSession): PHttpBuffer;
 var
   tmpIConnection: PIndyConnectionSession;
   tmpConnection: PSocketConnectionSession;
@@ -163,16 +178,60 @@ begin
   Result := UtilsHttp_Socket.Http_GetFile(AUrl, AOutputFile, tmpConnection);
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): string;
+function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PHttpBuffer;
 begin          
-  Result := '';
+  Result := nil;
 //  Result := Http_WinInet.Http_GetString(AUrl);
 end;
 
-function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): string;
+function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PHttpBuffer;
 begin
-  Result := '';
+  Result := nil;
 //  Result := Http_WinInet.Http_GetString(AUrl);
+end;
+
+procedure HttpBufferHeader_Parser(AHttpBuffer: PHttpBuffer; AHttpHeadParseSession: PHttpHeadParseSession);
+var  
+  tmpHttpHeadBuffer: array[0..256 - 1] of AnsiChar; 
+  i: integer;
+  tmpStr: AnsiString;
+  tmpPos: integer;
+  tmpLastPos_CRLF: integer;
+begin
+  if nil = AHttpBuffer then
+    exit;
+  FillChar(tmpHttpHeadBuffer, SizeOf(tmpHttpHeadBuffer), 0);
+  tmpLastPos_CRLF := 0;
+  for i := 0 to SizeOf(AHttpBuffer.Data) - 1 do
+  begin            
+    if (#13 = AHttpBuffer.Data[i]) then
+    begin
+      //#13#10
+      if 0 = tmpLastPos_CRLF then
+      begin
+        CopyMemory(@tmpHttpHeadBuffer[0], @AHttpBuffer.Data[0], i);
+        tmpStr := tmpHttpHeadBuffer;          
+        FillChar(tmpHttpHeadBuffer, SizeOf(tmpHttpHeadBuffer), 0);
+        tmpPos := Pos(#32, tmpStr);
+        if tmpPos > 0 then
+        begin
+          tmpStr := Copy(tmpStr, tmpPos + 1, maxint);
+          tmpPos := Pos(#32, tmpStr);
+          if tmpPos > 0 then
+          begin          
+            tmpStr := Copy(tmpStr, 1, tmpPos - 1); 
+            AHttpHeadParseSession.RetCode := StrToIntDef(tmpStr, 0);
+          end;
+        end;
+      end;                               
+      if i - tmpLastPos_CRLF < 3 then
+      begin
+        AHttpHeadParseSession.HeadEndPos := i + 1;
+        exit;
+      end;
+      tmpLastPos_CRLF := i;
+    end;
+  end;
 end;
 
 end.
