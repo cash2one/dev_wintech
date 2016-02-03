@@ -172,7 +172,11 @@ begin
 
     if WinSock2.SOCKET_ERROR = iRet then
     begin
-      //FErrorCode := Winsock2.WSAGetLastError();
+      ANetClient.Base.LastErrorCode := Winsock2.WSAGetLastError();
+      // http://my.oschina.net/limodou/blog/142430
+      // http://bbs.csdn.net/topics/390786814
+      // 10053  后台服务器抛出异常，说前端主动断开
+      // 
       //raise Exception.CreateFmt('SendBuf ErrorCode = %d',[FErrorCode]);
       Break;
     end;
