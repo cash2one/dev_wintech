@@ -1,14 +1,47 @@
 unit xlNetwork;
 
 interface
-
+          
 uses
-  Winsock2;
+  Windows, Winsock2;
+            
+type
+  PNetwork  = ^TNetwork;
+  TNetwork  = record
+    Status  : Integer;
+    WSA     : TWSAData;
+  end;
+  
+  function Host2Ip(const AHostName: AnsiString): AnsiString;  
+  procedure InitializeNetwork(ANet: PNetwork);     
+  procedure FinalizeNetwork(ANet: PNetwork);
 
-  function Host2Ip(const AHostName: AnsiString): AnsiString;
-
+var
+  Network: TNetwork;
+    
 implementation
-              
+
+procedure InitializeNetwork(ANet: PNetwork);
+begin
+  if 0 = ANet.Status then
+  begin
+    FillChar(ANet.WSA, SizeOf(ANet.WSA), 0);
+    //WinSock2.WSAStartup(MAKEWORD(1, 1), ANet.WSA);
+    WinSock2.WSAStartup(MAKEWORD(2, 2), ANet.WSA);
+    ANet.Status := 1;
+  end;
+  //WinSock2.WSAStartup($0202, ANet.WSA);
+end;
+
+procedure FinalizeNetwork(ANet: PNetwork);
+begin
+  if 1 = ANet.Status then
+  begin
+    WinSock2.WSACleanup;
+    ANet.Status := 0;
+  end;
+end;
+
 function Host2Ip(const AHostName: AnsiString): AnsiString;
 type
   TAddr = array[0..100] of Winsock2.PInAddr;

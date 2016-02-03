@@ -3,43 +3,43 @@ unit UtilsHttp_Indy;
 interface
 
 type
-  PIndyConnection = ^TIndyConnection;
-  TIndyConnection = record
+  PIndyConnectionSession = ^TIndyConnectionSession;
+  TIndyConnectionSession = record
     ConnectionObj : TObject;
   end;
 
-  function CheckOutIndyConnection: PIndyConnection;   
-  procedure CheckInIndyConnection(var AIndyConnection: PIndyConnection);
+  function CheckOutIndyConnection: PIndyConnectionSession;   
+  procedure CheckInIndyConnection(var AConnection: PIndyConnectionSession);
   
-  function Http_GetString(AURL: AnsiString; AIndyConnection: PIndyConnection): string;
-  function Http_GetFile(AUrl, AOutputFile: AnsiString; AIndyConnection: PIndyConnection): Boolean;
+  function Http_GetString(AURL: AnsiString; AConnection: PIndyConnectionSession): string;
+  function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PIndyConnectionSession): Boolean;
 
 implementation
 
 uses
   Classes, Sysutils, IdHttp;
 
-function CheckOutIndyConnection: PIndyConnection;
+function CheckOutIndyConnection: PIndyConnectionSession;
 begin
-  Result := System.New(PIndyConnection);
-  FillChar(Result^, SizeOf(TIndyConnection), 0);
+  Result := System.New(PIndyConnectionSession);
+  FillChar(Result^, SizeOf(TIndyConnectionSession), 0);
   Result.ConnectionObj := TIdHttp.Create(nil);
 end;
 
-procedure CheckInIndyConnection(var AIndyConnection: PIndyConnection);
+procedure CheckInIndyConnection(var AConnection: PIndyConnectionSession);
 begin
 end;
 
-function Http_GetString(AURL: AnsiString; AIndyConnection: PIndyConnection): string;
+function Http_GetString(AURL: AnsiString; AConnection: PIndyConnectionSession): string;
 var
   tmpHttp: TIdHttp;
   tmpIsOwned: Boolean;
 begin
   tmpHttp := nil;
   tmpIsOwned := false;
-  if nil <> AIndyConnection then
+  if nil <> AConnection then
   begin
-    tmpHttp := TIdHttp(AIndyConnection.ConnectionObj);
+    tmpHttp := TIdHttp(AConnection.ConnectionObj);
   end;
   if nil = tmpHttp then
   begin
@@ -56,17 +56,31 @@ begin
   end;
 end;
 
-function Http_GetFile(AUrl, AOutputFile: AnsiString; AIndyConnection: PIndyConnection): Boolean; 
+function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PIndyConnectionSession): Boolean; 
 var
-  tmpHttp: TIdHttp;
+  tmpHttp: TIdHttp;        
+  tmpIsOwned: Boolean;
   tmpOutputFile: TFileStream;
-begin
+begin          
+  tmpHttp := nil;
+  tmpIsOwned := false;
+  if nil <> AConnection then
+  begin
+    tmpHttp := TIdHttp(AConnection.ConnectionObj);
+  end;
   tmpOutputFile := TFileStream.Create(AOutputFile, fmCreate);
-  tmpHttp := TIdHttp.Create(nil);
+  if nil = tmpHttp then
+  begin
+    tmpIsOwned := true;
+    tmpHttp := TIdHttp.Create(nil);
+  end;
   try
     tmpHttp.get(AURL, tmpOutputFile);
   finally
-    tmpHttp.Free;
+    if tmpIsOwned then
+    begin
+      tmpHttp.Free;
+    end;
     tmpOutputFile.Free;
   end;
   Result := FileExists(AOutputFile);

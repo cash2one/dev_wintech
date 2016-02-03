@@ -159,6 +159,8 @@ var
   tmpError: DWORD;
   tmpReadedBuffer: array[0..4 * 1024 - 1] of AnsiChar;
 begin
+  tmpBytesRead := 0;
+  tmpBytesReaded := 0;
   if Windows.ReadFile(fWinFileData.FileHandle, tmpReadedBuffer, tmpBytesRead, tmpBytesReaded, @tmpOverlap) then
   begin
 

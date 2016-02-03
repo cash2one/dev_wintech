@@ -11,13 +11,27 @@ type
     Base        : TxlNetClient
   end;
 
+  function CheckOutTcpClient: PxlTcpClient;
+  procedure CheckInTcpClient(var AClient: PxlTcpClient);
+  
   procedure TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress);
     
 implementation
 
 uses
   Windows, WinSock2, xlNetwork;
-  
+
+function CheckOutTcpClient: PxlTcpClient;
+begin
+  Result := System.New(PxlTcpClient);
+  FillChar(Result^, SizeOf(TxlTcpClient), 0);
+end;
+
+procedure CheckInTcpClient(var AClient: PxlTcpClient);
+begin
+
+end;
+
 procedure TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress);
 var
   tmpRet: DWORD;
