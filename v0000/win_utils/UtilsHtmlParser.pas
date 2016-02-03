@@ -92,7 +92,8 @@ type
     property Items[Index: Integer]: IHtmlElement read GetItems; default;
   end;
 
-function ParserHTML(const Source: WideString): IHtmlElement; stdcall;
+function ParserHTML(const ASource: WideString): IHtmlElement; overload; //stdcall;
+function ParserHTML(const ASource: PChar; ALength: integer): IHtmlElement; overload; //stdcall;
 
 implementation
 
@@ -1582,12 +1583,22 @@ begin
   Result.FClosed := True;
 end;
 
-function ParserHTML(const Source: WideString): IHtmlElement; stdcall;
+function ParserHTML(const ASource: WideString): IHtmlElement; //stdcall;
 var
   ElementList: THtmlElementList;
 begin
   ElementList := THtmlElementList.Create;
-  _ParserHTML(Source, ElementList);
+  _ParserHTML(ASource, ElementList);
+  Result := BuildTree(ElementList);
+  ElementList.Free;
+end;
+
+function ParserHTML(const ASource: PChar; ALength: integer): IHtmlElement; //stdcall;
+var
+  ElementList: THtmlElementList;
+begin
+  ElementList := THtmlElementList.Create;
+  _ParserHTML(ASource, ElementList);
   Result := BuildTree(ElementList);
   ElementList.Free;
 end;
