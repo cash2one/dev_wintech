@@ -118,7 +118,7 @@ const
   tpInlineOrEmpty = TpInline or TpEmpty;
 
 type
-  TStringDynArray = array of string;
+  TStringDynArray = array of AnsiString;
   TPointerList = array [0 .. MaxListSize - 1] of Pointer;
   PPointerList = ^TPointerList;
 
@@ -222,7 +222,7 @@ type
   TStringBuilder = class(TObject)
   private
     FBuffMax, FBuffSize, FIndex: Integer;
-    FBuffer: array of Char;
+    FBuffer: array of AnsiChar;
     procedure ExpandBuffer(MinSize: Integer);
 
   public
@@ -846,7 +846,10 @@ end;
 
 {$IF NOT Declared(CharInSet)}
 
-function CharInSet(C: AnsiChar; const CharSet: TSysCharSet): Boolean; overload;
+type
+  TSysCharSetA = set of AnsiChar;
+
+function CharInSetA(C: AnsiChar; const CharSet: TSysCharSetA): Boolean; overload;
 // inline;
 begin
   Result := C in CharSet;
@@ -862,7 +865,7 @@ begin
   _End := -1;
   for I := 1 to Length(Str) do
   begin
-    if not CharInSet(Str[I], ACharSet) then
+    if not CharInSetA(Str[I], ACharSet) then
     begin
       if _begin < 0 then
         _begin := I;
@@ -891,13 +894,13 @@ begin
   StrChar := #0;
   while I <= Length(AStr) do
   begin
-    if CharInSet(AStr[I], ['''', '"']) then
+    if CharInSetA(AStr[I], ['''', '"']) then
       if StrChar = #0 then
         StrChar := AStr[1]
       else if StrChar = AStr[1] then
         StrChar := #0;
     if StrChar = #0 then
-      if CharInSet(AStr[I], ACharSet) then
+      if CharInSetA(AStr[I], ACharSet) then
       begin
         if I > L then
         begin
@@ -919,7 +922,7 @@ end;
 
 procedure _SkipBlank(var P: PAnsiChar);
 begin
-  while CharInSet(P^, WhiteSpace) do
+  while CharInSetA(P^, WhiteSpace) do
     Inc(P);
 end;
 
@@ -930,7 +933,7 @@ var
 begin
   _SkipBlank(P);
   oldP := P;
-  if CharInSet(P^, ['"', '''']) then
+  if CharInSetA(P^, ['"', '''']) then
     stringChar := P^
   else
     stringChar := #0;
@@ -939,7 +942,7 @@ begin
   begin
     if stringChar = #0 then
     begin
-      if CharInSet(P^, UntilChars) then
+      if CharInSetA(P^, UntilChars) then
         Break;
     end
     else if (P^ = stringChar) then
@@ -986,7 +989,7 @@ var
   P: PAnsiChar;
 
 begin
-  P := PChar(S);
+  P := PAnsiChar(S);
   _SkipBlank(P);
   ATagName := UpperCase(_ReadStr(P, (WhiteSpace + [#0, '/', '>'])));
 
@@ -1111,7 +1114,7 @@ var
 
   procedure SkipBlank(var P: PAnsiChar);
   begin
-    while CharInSet(P^, WhiteSpace) do
+    while CharInSetA(P^, WhiteSpace) do
       IncSrc(P);
   end;
 
@@ -1121,7 +1124,7 @@ var
   begin
     Result := '';
     Lp := P;
-    while not CharInSet(Lp^, (WhiteSpace + ['/', '>'])) do
+    while not CharInSetA(Lp^, (WhiteSpace + ['/', '>'])) do
       Inc(Lp);
     SetString(Result, P, Lp - P);
   end;
@@ -1269,7 +1272,7 @@ var
                   begin
                     while True do
                     begin
-                      if CharInSet(P^, [#0, #$0A]) then
+                      if CharInSetA(P^, [#0, #$0A]) then
                       begin
                         Break;
                       end;
@@ -1316,7 +1319,7 @@ var
 begin
   LineNum := 1;
   ColNum := 1;
-  P := PChar(Source);
+  P := PAnsiChar(Source);
   while P^ <> #0 do
   begin
     ElementType := EtUnknow;
@@ -1422,7 +1425,7 @@ begin
       ElementType := EtText;
       while True do
       begin
-        if CharInSet(P^, [#0, '<']) then
+        if CharInSetA(P^, [#0, '<']) then
           Break;
         IncSrc(P);
       end;
@@ -1776,7 +1779,7 @@ var
   Attrs: AnsiString;
 begin
   Attrs := AAttributes;
-  P := PChar(Attrs);
+  P := PAnsiChar(Attrs);
   _ParserAttrs(P, LAttributes);
   List := TIHtmlElementList.Create;
   _FindElements(List, ATagName, LAttributes, AOnlyInTopElement);
@@ -2027,7 +2030,7 @@ var
   end;
   procedure SkipBlank(var P: PAnsiChar);
   begin
-    while CharInSet(P^, WhiteSpace) do
+    while CharInSetA(P^, WhiteSpace) do
       IncSrc(P);
   end;
 
@@ -2036,7 +2039,7 @@ var
     oldP: PAnsiChar;
   begin
     oldP := P;
-    while not(CharInSet(P^, Chars)) do
+    while not(CharInSetA(P^, Chars)) do
       IncSrc(P);
     SetString(Result, oldP, P - oldP);
   end;
@@ -2060,7 +2063,7 @@ var
     // Key
     SkipBlank(P);
     oldP := P;
-    while not CharInSet(P^, (WhiteSpace + OperatorChar + [']', #0])) do
+    while not CharInSetA(P^, (WhiteSpace + OperatorChar + [']', #0])) do
       IncSrc(P);
     SetString(Result.Key, oldP, P - oldP);
     Result.Key := LowerCase(Result.Key);
@@ -2110,7 +2113,7 @@ var
     // Value
     SkipBlank(P);
     oldP := P;
-    if CharInSet(P^, ['"', '''']) then
+    if CharInSetA(P^, ['"', '''']) then
       stringChar := P^
     else
       stringChar := #0;
@@ -2119,7 +2122,7 @@ var
     begin
       if stringChar = #0 then
       begin
-        if CharInSet(P^, (WhiteSpace + [#0, ']'])) then
+        if CharInSetA(P^, (WhiteSpace + [#0, ']'])) then
           Break;
       end
       else if (P^ = stringChar) then
@@ -2226,7 +2229,7 @@ var
   pitems: PCSSSelectorItems;
   pItem: PCSSSelectorItem;
 begin
-  P := PChar(Value);
+  P := PAnsiChar(Value);
   LineNum := 1;
   ColNum := 1;
   //
@@ -2493,7 +2496,7 @@ begin
   PreIssWhite := false;
   for I := 1 to Length(S) do
   begin
-    ThisIsWhite := CharInSet(S[I], WhiteSpace);
+    ThisIsWhite := CharInSetA(S[I], WhiteSpace);
     if ThisIsWhite then
     begin
       if not PreIssWhite then
@@ -2511,7 +2514,7 @@ begin
 end;
 
 const
-  BlockTags: array [0 .. 59 - 1] of string = ('HTML', 'HEAD', 'BODY',
+  BlockTags: array [0 .. 59 - 1] of AnsiString = ('HTML', 'HEAD', 'BODY',
     'FRAMESET', 'SCRIPT', 'NOSCRIPT', 'STYLE', 'META', 'LINK', 'TITLE', 'FRAME',
     'NOFRAMES', 'SECTION', 'NAV', 'ASIDE', 'HGROUP', 'HEADER', 'FOOTER', 'P',
     'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'PRE', 'DIV', 'BLOCKQUOTE',
@@ -2519,20 +2522,20 @@ const
     'S', 'DL', 'DT', 'DD', 'LI', 'TABLE', 'CAPTION', 'THEAD', 'TFOOT', 'TBODY',
     'COLGROUP', 'COL', 'TR', 'TH', 'TD', 'VIDEO', 'AUDIO', 'CANVAS', 'DETAILS',
     'MENU', 'PLAINTEXT');
-  InlineTags: array [0 .. 56 - 1] of string = ('OBJECT', 'BASE', 'FONT', 'TT',
+  InlineTags: array [0 .. 56 - 1] of AnsiString = ('OBJECT', 'BASE', 'FONT', 'TT',
     'I', 'B', 'U', 'BIG', 'SMALL', 'EM', 'STRONG', 'DFN', 'CODE', 'SAMP', 'KBD',
     'VAR', 'CITE', 'ABBR', 'TIME', 'ACRONYM', 'MARK', 'RUBY', 'RT', 'RP', 'A',
     'IMG', 'BR', 'WBR', 'MAP', 'Q', 'SUB', 'SUP', 'BDO', 'IFRAME', 'EMBED',
     'SPAN', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL', 'BUTTON', 'OPTGROUP',
     'OPTION', 'LEGEND', 'DATALIST', 'KEYGEN', 'OUTPUT', 'PROGRESS', 'METER',
     'AREA', 'PARAM', 'SOURCE', 'TRACK', 'SUMMARY', 'COMMAND', 'DEVICE');
-  EmptyTags: array [0 .. 14 - 1] of string = ('META', 'LINK', 'BASE', 'FRAME',
+  EmptyTags: array [0 .. 14 - 1] of AnsiString = ('META', 'LINK', 'BASE', 'FRAME',
     'IMG', 'BR', 'WBR', 'EMBED', 'HR', 'INPUT', 'KEYGEN', 'COL', 'COMMAND',
     'DEVICE');
-  FormatAsInlineTags: array [0 .. 19 - 1] of string = ('TITLE', 'A', 'P', 'H1',
+  FormatAsInlineTags: array [0 .. 19 - 1] of AnsiString = ('TITLE', 'A', 'P', 'H1',
     'H2', 'H3', 'H4', 'H5', 'H6', 'PRE', 'ADDRESS', 'LI', 'TH', 'TD', 'SCRIPT',
     'STYLE', 'INS', 'DEL', 'S');
-  PreserveWhitespaceTags: array [0 .. 4 - 1] of string = ('PRE', 'PLAINTEXT',
+  PreserveWhitespaceTags: array [0 .. 4 - 1] of AnsiString = ('PRE', 'PLAINTEXT',
     'TITLE', 'TEXTAREA');
 
 var
@@ -2578,7 +2581,7 @@ begin
       S := GTagProperty[Key]
     else
       S := #0;
-    S[1] := Char(Ord(S[1]) or TpEmpty);
+    S[1] := AnsiChar(Ord(S[1]) or TpEmpty);
     GTagProperty.AddOrSetValue(Key, S);
   end;
 
@@ -2589,7 +2592,7 @@ begin
       S := GTagProperty[Key]
     else
       S := #0;
-    S[1] := Char(Ord(S[1]) or TpFormatAsInline);
+    S[1] := AnsiChar(Ord(S[1]) or TpFormatAsInline);
     GTagProperty.AddOrSetValue(Key[I], S);
   end;
   for I := low(PreserveWhitespaceTags) to high(PreserveWhitespaceTags) do
@@ -2599,7 +2602,7 @@ begin
       S := GTagProperty[Key]
     else
       S := #0;
-    S[1] := Char(Ord(S[1]) or TpPreserveWhitespace);
+    S[1] := AnsiChar(Ord(S[1]) or TpPreserveWhitespace);
     GTagProperty.AddOrSetValue(PreserveWhitespaceTags[I], S);
   end;
 end;

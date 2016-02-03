@@ -845,11 +845,14 @@ begin
 end;
 
 {$IF NOT Declared(CharInSet)}
+                     
+type
+  TSysCharSetA = set of AnsiChar;
 
-function CharInSetW(C: WideChar; const CharSet: TSysCharSet): Boolean; overload;
+function CharInSetW(C: WideChar; const CharSet: TSysCharSetA): Boolean; overload;
 // inline;
 begin
-  Result := C in CharSet;
+  Result := AnsiChar(C) in CharSet;
 end;
 
 {$IFEND}
