@@ -3,7 +3,7 @@ unit UtilsHttp_Socket;
 interface
 
 uses
-  UtilsHttp;
+  UtilsHttp, win.iobuffer;
   
 type
   PSocketConnectionSession = ^TSocketConnectionSession;
@@ -15,7 +15,7 @@ type
   function CheckOutSocketConnection: PSocketConnectionSession;    
   procedure CheckInSocketConnection(var AConnection: PSocketConnectionSession);
                           
-  function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PHttpBuffer;
+  function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PIOBuffer;
   function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PSocketConnectionSession): Boolean;
 
 implementation
@@ -207,106 +207,79 @@ begin
   end;
 end;
 
-function NetClientRecvBuf(ANetClient: PxlTcpClient; const ABuffer: PAnsiChar; ABufLen: Integer; ATimeOut:Integer): Integer; //单位 秒
+function NetClientRecvBuf(ATcpClient: PxlTcpClient; AHttpBuffer: PIOBuffer; ATimeOut:Integer): Integer; //单位 秒
 const
   eof:AnsiString = #13#10#13#10;
 var
-  iRet,Len:Integer;
-  P:PAnsiChar;
+  iRet: Integer;
+  Len: Integer;
+  tmpReadedBytes: Integer;
+  tmpReadBufSize: integer;   
+  tmpReadBufPos: integer;
+  tmpReadExNode: PIOBufferExNode;
+  P: PAnsiChar;
 begin
   Result := -1;
 
   if ATimeOut > 0 then
-    NetClientSetReadTimeOut(ANetClient, ATimeOut)
+    NetClientSetReadTimeOut(ATcpClient, ATimeOut)
   else
-    NetClientSetReadTimeOut(ANetClient, ANetClient.Base.TimeOutRead); //设置读超时
-  (*//
-  if FInputStream.Datalen >= 4 then
+    NetClientSetReadTimeOut(ATcpClient, ATcpClient.Base.TimeOutRead); //设置读超时
+
+  tmpReadedBytes := 1;
+  tmpReadBufSize := AHttpBuffer.BufferHead.Size;
+  tmpReadBufPos := 0;
+  tmpReadExNode := nil;
+  while (0 < tmpReadedBytes) do
   begin
-    P := FInputStream.Memory;
-    Inc(P,FInputStream.Position);
-    Result := sfString.PosBuff(P,PAnsiChar(eof),FInputStream.Datalen,4);
-    if Result > 0 then
+    if nil <> tmpReadExNode then
     begin
-      if (Result - 1) <= BufLen then
-      begin
-        FInputStream.Read(Bufffer^,Result - 1);
-        FInputStream.Position := FInputStream.Position + 4;
-      end
-      else if Len < 1 then raise exception.Create('ReadLnII 缓冲区内未收到#13#10#13#10');
-      Exit;
-    end;
-  end;
-  //*)
-  //数据归位
-  (*//
-  P := FInputStream.Memory;
-  Inc(P,FInputStream.Position);
-  Windows.MoveMemory(FInputStream.Memory,P,FInputStream.Datalen);
-  FInputStream.ReadEndPosition := FInputStream.Datalen;
-  FInputStream.Position := 0;
-  //*)
-  //\\
-  while(TRUE) do
-  begin
-    (*//
-    P := FInputStream.Memory;
-    Inc(P,FInputStream.ReadEndPosition);
-    Len := FInputStream.Size - FInputStream.ReadEndPosition;
-    if Len <= 0 then Break;
-    //*)
-    //iRet := Winsock2.recv(Socket,P^,Len,0);
-    //iRet := Inner_Recv(P^,Len);   
-    iRet := WinSock2.recv(ANetClient.Base.ConnectSocketHandle, ABuffer^, ABufLen, 0); 
-    if iRet > 0 then
-    begin
-    
-    end;
-    Break;
-    if iRet > 0 then
-    begin
-      (*//
-      FInputStream.ReadEndPosition := FInputStream.ReadEndPosition + iRet;
-      P := FInputStream.Memory;
-      Result := sfString.PosBuff(P,PAnsiChar(eof),FInputStream.Datalen,4);
-      if Result > 0 then
-      begin
-        if (Result - 1) <= BufLen then
-        begin
-          FInputStream.Read(Bufffer^,Result - 1);
-          FInputStream.Position := FInputStream.Position + 4;
-          Break;
-        end else
-          raise exception.Create('ReadLnII 缓冲区内未收到#13#10#13#10');
-      end;
-      //*)
-    end else if iRet = 0 then
-    begin
-      //对方已经优雅的关闭了连接
-      Result := 0;
-      //FErrorCode := ERROR_GRACEFUL_DISCONNECT;//对方优雅关闭
-      //raise exception.Create('ReadLnII 对方已经优雅的关闭了连接');
+      iRet := WinSock2.recv(ATcpClient.Base.ConnectSocketHandle, tmpReadExNode.Data[tmpReadBufPos], tmpReadBufSize, 0);
     end else
     begin
-      (*//
-      Result := -1;
-      FErrorCode := WSAGetLastError();
-      if FErrorCode <> 0 then
-        raise exception.Create('ReadLnII ErrorCode=' + IntToStr(FErrorCode));
-      break;
-      //*)
+      iRet := WinSock2.recv(ATcpClient.Base.ConnectSocketHandle, AHttpBuffer.Data[tmpReadBufPos], tmpReadBufSize, 0);
+    end;
+    if iRet > 0 then
+    begin
+      AHttpBuffer.BufferHead.Length := AHttpBuffer.BufferHead.Length + iRet;
+      tmpReadedBytes := iRet;
+      tmpReadBufSize := tmpReadBufSize - tmpReadedBytes;
+      if 1 > tmpReadBufSize then
+      begin
+        tmpReadExNode := CheckOutIOBufferExNode(AHttpBuffer);
+        tmpReadBufSize := tmpReadExNode.Size;
+        tmpReadBufPos := 0;
+      end else
+      begin
+        tmpReadBufPos := tmpReadBufPos + tmpReadedBytes;
+      end;
+    end else
+    begin
+      if iRet = 0 then
+      begin
+        //对方已经优雅的关闭了连接
+        Result := 0;
+        tmpReadedBytes := 0;
+        //FErrorCode := ERROR_GRACEFUL_DISCONNECT;//对方优雅关闭
+        //raise exception.Create('ReadLnII 对方已经优雅的关闭了连接');
+      end else
+      begin
+        Result := -1;
+        tmpReadedBytes := 0;
+        ATcpClient.Base.LastErrorCode := WSAGetLastError();
+      end;
     end;
   end;//while end
 end;
 
-function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PHttpBuffer;
+function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PIOBuffer;
 var
   tmpHttpInfo: THttpUrlInfo;
   tmpTcpClient: PxlTcpClient;
   tmpAddress: TxlNetServerAddress;   
   tmpStr: AnsiString; 
   tmpRet: Integer;        
-  tmpBuffer: PHttpBuffer;
+  tmpBuffer: PIOBuffer;
 begin
   Result := nil;
   FillChar(tmpHttpInfo, SizeOf(tmpHttpInfo), 0);
@@ -335,10 +308,8 @@ begin
       exit;
     end;
     tmpRet := 0;
-    tmpBuffer := System.New(PHttpBuffer);
-    FillChar(tmpBuffer^, SizeOf(PHttpBuffer), 0);
-    
-    NetClientRecvBuf(tmpTcpClient, @tmpBuffer.Data[0], SizeOf(THttpBuffer), tmpRet);
+    tmpBuffer := CheckOutIOBuffer;
+    NetClientRecvBuf(tmpTcpClient, tmpBuffer, tmpRet);
     Result := tmpBuffer;
   end;
 end;
