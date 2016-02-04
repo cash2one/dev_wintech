@@ -195,7 +195,7 @@ begin
     exit;
   FillChar(tmpHttpHeadBuffer, SizeOf(tmpHttpHeadBuffer), 0);
   tmpLastPos_CRLF := 0;
-  for i := 0 to AHttpBuffer.BufferHead.Length - 1 do
+  for i := 0 to AHttpBuffer.BufferHead.TotalLength - 1 do
   begin            
     if (#13 = AHttpBuffer.Data[i]) then
     begin

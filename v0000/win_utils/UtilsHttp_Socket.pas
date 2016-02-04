@@ -241,9 +241,16 @@ begin
     end;
     if iRet > 0 then
     begin
-      AHttpBuffer.BufferHead.Length := AHttpBuffer.BufferHead.Length + iRet;
+      AHttpBuffer.BufferHead.TotalLength := AHttpBuffer.BufferHead.TotalLength + iRet;
       tmpReadedBytes := iRet;
       tmpReadBufSize := tmpReadBufSize - tmpReadedBytes;
+      if nil = tmpReadExNode then
+      begin
+        AHttpBuffer.BufferHead.BufDataLength := AHttpBuffer.BufferHead.BufDataLength + iRet;
+      end else
+      begin
+        tmpReadExNode.Length := tmpReadExNode.Length + iRet;
+      end;
       if 1 > tmpReadBufSize then
       begin
         tmpReadExNode := CheckOutIOBufferExNode(AHttpBuffer);
@@ -309,8 +316,18 @@ begin
     end;
     tmpRet := 0;
     tmpBuffer := CheckOutIOBuffer;
-    NetClientRecvBuf(tmpTcpClient, tmpBuffer, tmpRet);
-    Result := tmpBuffer;
+    if nil <> tmpBuffer then
+    begin
+      NetClientRecvBuf(tmpTcpClient, tmpBuffer, tmpRet);
+      if 0 < tmpBuffer.BufferHead.ExNodeCount then
+      begin
+        Result := RepackIOBuffer(tmpBuffer);
+        CheckInIOBuffer(tmpBuffer);
+      end else
+      begin
+        Result := tmpBuffer;
+      end;
+    end;
   end;
 end;
 

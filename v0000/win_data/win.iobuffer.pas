@@ -63,71 +63,80 @@ type
   PIOBufferExNode = ^TIOBufferExNode;
           
   PIOBufferHead   = ^TIOBufferHead;
-  TIOBufferHead   = record
+  TIOBufferHead   = packed record
     FirstExNode   : PIOBufferExNode;
     LastExNode    : PIOBufferExNode;
+    ExNodeCount   : Integer;
     Size          : DWORD;
-    Length        : DWORD;
+    TotalLength   : DWORD;
+    BufDataLength : DWORD;
+    DataPointer   : Pointer;
   end;
 
   PIOBuffer       = ^TIOBuffer;
-  TIOBuffer       = record
+  TIOBuffer       = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..0] of AnsiChar;
   end;
                                  
   PIOBuffer4k     = ^TIOBuffer4k;
-  TIOBuffer4k     = record
+  TIOBuffer4k     = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..4 * 1024 - 1] of AnsiChar;
   end;
   
   PIOBuffer8k     = ^TIOBuffer8k;
-  TIOBuffer8k     = record
+  TIOBuffer8k     = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..8 * 1024 - 1] of AnsiChar;
   end;
 
   PIOBuffer16k    = ^TIOBuffer16k;
-  TIOBuffer16k    = record
+  TIOBuffer16k    = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..16 * 1024 - 1] of AnsiChar;
   end;
                         
   PIOBuffer32k    = ^TIOBuffer32k;
-  TIOBuffer32k    = record
+  TIOBuffer32k    = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..32 * 1024 - 1] of AnsiChar;
   end;
                          
   PIOBuffer64k    = ^TIOBuffer32k;
-  TIOBuffer64k    = record
+  TIOBuffer64k    = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..64 * 1024 - 1] of AnsiChar;
   end;
                          
   PIOBuffer128k   = ^TIOBuffer128k;
-  TIOBuffer128k   = record
+  TIOBuffer128k   = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..128 * 1024 - 1] of AnsiChar;
   end;
           
   PIOBuffer256k   = ^TIOBuffer256k;
-  TIOBuffer256k   = record
+  TIOBuffer256k   = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..256 * 1024 - 1] of AnsiChar;
   end;
                        
   PIOBuffer512k   = ^TIOBuffer512k;
-  TIOBuffer512k   = record
+  TIOBuffer512k   = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..512 * 1024 - 1] of AnsiChar;
   end;
 
   PIOBuffer1m     = ^TIOBuffer1m;
-  TIOBuffer1m     = record
+  TIOBuffer1m     = packed record
     BufferHead    : TIOBufferHead;
     Data          : array[0..1024 * 1024 - 1] of AnsiChar;
+  end;
+          
+  PIOBufferX      = ^TIOBufferX;
+  TIOBufferX      = packed record
+    BufferHead    : TIOBufferHead;
+    Data          : array[0..MaxInt - SizeOf(TIOBufferHead) - 1] of AnsiChar;
   end;
   
   TIOBufferExNode = record
@@ -139,7 +148,7 @@ type
     Data          : array[0..16 * 1024 - 1] of AnsiChar;
   end;
                   
-  function CheckOutIOBuffer(ASizeMode: Integer = SizeMode_256k): PIOBuffer;    
+  function CheckOutIOBuffer(ASizeMode: Integer = SizeMode_16k): PIOBuffer;    
   procedure CheckInIOBuffer(var AIOBuffer: PIOBuffer);  
   function CheckOutIOBufferExNode(AIOBuffer: PIOBuffer): PIOBufferExNode; 
   procedure CheckInIOBufferExNode(AIOBufferExNode: PIOBufferExNode);
@@ -150,14 +159,32 @@ type
 
 implementation
 
-function CheckOutIOBuffer(ASizeMode: Integer = SizeMode_256k): PIOBuffer;
+uses
+  math,
+  Windows;
+  
+function CheckOutIOBuffer(ASizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
-  tmpBuffer: PIOBuffer256k;
+//  tmpBuffer256k: PIOBuffer256k;
+//  tmpBuffer16k: PIOBuffer16k;
+  tmpSize: integer;
 begin
-  tmpBuffer := System.New(PIOBuffer256k);
-  FillChar(tmpBuffer^, SizeOf(TIOBuffer256k), 0);
-  tmpBuffer.BufferHead.Size := SizeOf(tmpBuffer.Data);
-  Result := PIOBuffer(tmpBuffer);  
+//  tmpBuffer256k := System.New(PIOBuffer256k);
+//  FillChar(tmpBuffer256k^, SizeOf(TIOBuffer256k), 0);
+//  tmpBuffer256k.BufferHead.Size := SizeOf(tmpBuffer256k.Data);
+//  Result := PIOBuffer(tmpBuffer16k);
+  if 2 < ASizeMode then
+  begin
+    tmpSize := Trunc(math.power(2, (ASizeMode - 2))) + SizeOf(TIOBufferHead);
+    
+    GetMem(Result, tmpSize);    
+    FillChar(Result^, tmpSize, 0);         
+    Result.BufferHead.Size := tmpSize - SizeOf(TIOBufferHead);
+  end else
+  begin
+    Result := System.New(PIOBuffer);
+    FillChar(Result, SizeOf(TIOBuffer), 0);
+  end;
 end;
 
 function GetSizeMode(ASize: Integer): Integer;
@@ -175,12 +202,30 @@ end;
 
 procedure CheckInIOBuffer(var AIOBuffer: PIOBuffer);
 begin
-
 end;
 
 function RepackIOBuffer(AIOBuffer: PIOBuffer): PIOBuffer;
+var
+  tmpSizeMode: integer;
+  tmpBeginPos: integer;
+  tmpNode: PIOBufferExNode;
 begin
-  Result := CheckOutIOBuffer(GetSizeMode(AIOBuffer.BufferHead.Length));
+  tmpSizeMode := GetSizeMode(AIOBuffer.BufferHead.TotalLength);
+  Result := CheckOutIOBuffer(tmpSizeMode);
+  tmpBeginPos := 0;
+  CopyMemory(@PIOBufferX(Result).Data[tmpBeginPos], @AIOBuffer.Data[0], AIOBuffer.BufferHead.BufDataLength);
+  Result.BufferHead.TotalLength := Result.BufferHead.TotalLength + AIOBuffer.BufferHead.BufDataLength;
+  tmpBeginPos := tmpBeginPos + AIOBuffer.BufferHead.BufDataLength;
+
+  tmpNode := AIOBuffer.BufferHead.FirstExNode;
+  while nil <> tmpNode do
+  begin
+    CopyMemory(@PIOBufferX(Result).Data[tmpBeginPos], @tmpNode.Data[0], tmpNode.Length);
+    Result.BufferHead.TotalLength := Result.BufferHead.TotalLength + tmpNode.Length;
+    tmpBeginPos := tmpBeginPos + tmpNode.Length;
+    tmpNode := tmpNode.NextSibling;
+  end;
+  Result.BufferHead.BufDataLength := Result.BufferHead.TotalLength;
 end;
 
 function CheckOutIOBufferExNode(AIOBuffer: PIOBuffer): PIOBufferExNode;
@@ -199,6 +244,7 @@ begin
     AIOBuffer.BufferHead.LastExNode.NextSibling := tmpNode;
   end;
   AIOBuffer.BufferHead.LastExNode := tmpNode;
+  AIOBuffer.BufferHead.ExNodeCount := AIOBuffer.BufferHead.ExNodeCount + 1;
   Result := tmpNode;
 end;
 
