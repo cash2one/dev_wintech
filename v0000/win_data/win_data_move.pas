@@ -1,7 +1,10 @@
 unit win_data_move;
 
 interface
-               
+
+uses
+  Types;
+                 
 //{$I GR32.inc}
 //
 //{$IFDEF PUREPASCAL}
@@ -25,6 +28,13 @@ interface
   procedure FillLongword_ASM(var X; ACount: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
   procedure FillLongword_MMX(var X; ACount: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
   procedure FillLongword_SSE2(var X; ACount: Integer; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+                    
+  procedure CopyMemory(ADestination: Pointer; ASource: Pointer; ALength: DWORD);
+  procedure ZeroMemory(ADestination: Pointer; ALength: DWORD);
+               
+{ An analogue of FillChar for 32 bit values }
+var
+  FillLongword: procedure(var X; Count: Cardinal; Value: Longword);
 
 implementation
 
@@ -390,6 +400,16 @@ asm
         JNZ        @SmallLoop
 @Exit:
 {$ENDIF}
+end;
+
+procedure CopyMemory(ADestination: Pointer; ASource: Pointer; ALength: DWORD);
+begin
+  Move(ASource^, ADestination^, ALength);
+end;
+
+procedure ZeroMemory(ADestination: Pointer; ALength: DWORD);
+begin
+  FillChar(ADestination^, ALength, 0);
 end;
 
 end.
