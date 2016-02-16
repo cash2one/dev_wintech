@@ -62,7 +62,7 @@ implementation
 uses
   define_char,
   BaseType,
-  BaseMemory;
+  win_data_move;
 
 function MD5_F(x, y, z: DWORD): DWORD;
 begin
