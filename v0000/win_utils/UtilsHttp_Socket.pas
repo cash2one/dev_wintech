@@ -322,7 +322,8 @@ begin
     
     if AConnection.IsKeepAlive then
     begin
-      if (0 = tmpTcpClient.Base.ConnectSocketHandle) then
+      if (0 = tmpTcpClient.Base.ConnectSocketHandle) or
+         (0 > tmpTcpClient.Base.ConnectSocketHandle) then
       begin
         tmpAddress.Host := tmpHttpInfo.Host;
         tmpAddress.Port := StrToIntDef(tmpHttpInfo.Port, 80);
