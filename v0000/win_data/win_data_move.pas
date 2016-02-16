@@ -1,20 +1,30 @@
 unit win_data_move;
 
 interface
-       
-  procedure FillWord(var X; Count: Cardinal; Value: Longword);  
+               
+//{$I GR32.inc}
+//
+//{$IFDEF PUREPASCAL}
+//  {$DEFINE USENATIVECODE}
+//  {$DEFINE USEMOVE}
+//{$ENDIF}
+//{$IFDEF USEINLINING}
+//  {$DEFINE USENATIVECODE}
+//{$ENDIF}
+
+  procedure FillWord(var X; Count: Cardinal; Value: Longword);
   procedure MoveWord(const Source; var Dest; Count: Integer);
 
   { An analogue of Move for 32 bit values }
   {$IFDEF USEMOVE}
   procedure MoveLongword(const Source; var Dest; Count: Integer); {$IFDEF USEINLINING} inline; {$ENDIF}
   {$ELSE}
-  procedure MoveLongword(const Source; var Dest; Count: Integer);
+  procedure MoveLongword(const ASource; var ADest; ACount: Integer);  
   {$ENDIF}                                                   
-  procedure FillLongword_Pas(var X; Count: Cardinal; Value: Longword);  
-  procedure FillLongword_ASM(var X; Count: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}   
-  procedure FillLongword_MMX(var X; Count: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}  
-  procedure FillLongword_SSE2(var X; Count: Integer; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+  procedure FillLongword_Pas(var X; ACount: Cardinal; Value: Longword);
+  procedure FillLongword_ASM(var X; ACount: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+  procedure FillLongword_MMX(var X; ACount: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+  procedure FillLongword_SSE2(var X; ACount: Integer; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
 
 implementation
 
@@ -105,14 +115,13 @@ asm
 {$ENDIF}
 end;
 
-procedure MoveLongword(const Source; var Dest; Count: Integer);
-{$IFDEF USEMOVE}
+procedure MoveLongword_Move(const Source; var Dest; Count: Integer);
 begin
   Move(Source, Dest, Count shl 2);
-{$ELSE}
-{$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+end;
+       
+procedure MoveLongword_x86(const Source; var Dest; Count: Integer); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
 asm
-{$IFDEF TARGET_x86}
         // EAX = Source;   EDX = Dest;   ECX = Count
         PUSH    ESI
         PUSH    EDI
@@ -126,9 +135,11 @@ asm
 @exit:
         POP     EDI
         POP     ESI
-{$ENDIF}
-
-{$IFDEF TARGET_x64}
+end;
+                      
+{$IFDEF TARGET_x64}   
+procedure MoveLongword_x64(const Source; var Dest; Count: Integer); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+asm
         // RCX = Source;   RDX = Dest;   R8 = Count
         PUSH    RSI
         PUSH    RDI
@@ -143,21 +154,30 @@ asm
 @exit:
         POP     RDI
         POP     RSI
+end; 
 {$ENDIF}
+
+procedure MoveLongword(const ASource; var ADest; ACount: Integer);
+begin
+//{$IFDEF TARGET_x86}
+  MoveLongword_x86(ASource, ADest, ACount);
+//{$ENDIF}
+{$IFDEF TARGET_x64}
+  MoveLongword_x64(ASource, ADest, ACount);
 {$ENDIF}
 end;
 
-procedure FillLongword_Pas(var X; Count: Cardinal; Value: Longword);
+procedure FillLongword_Pas(var X; ACount: Cardinal; Value: Longword);
 var
   I: Integer;
   P: PIntegerArray;
 begin
   P := PIntegerArray(@X);
-  for I := Count - 1 downto 0 do
+  for I := ACount - 1 downto 0 do
     P[I] := Integer(Value);
 end;
 
-procedure FillLongword_ASM(var X; Count: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+procedure FillLongword_ASM(var X; ACount: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
 asm
 {$IFDEF TARGET_x86}
         // EAX = X;   EDX = Count;   ECX = Value
@@ -187,7 +207,7 @@ asm
 {$ENDIF}
 end;
 
-procedure FillLongword_MMX(var X; Count: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+procedure FillLongword_MMX(var X; ACount: Cardinal; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
 asm
 {$IFDEF TARGET_x86}
         // EAX = X;   EDX = Count;   ECX = Value
@@ -256,7 +276,7 @@ asm
 {$ENDIF}
 end;
 
-procedure FillLongword_SSE2(var X; Count: Integer; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
+procedure FillLongword_SSE2(var X; ACount: Integer; Value: Longword); {$IFDEF FPC} assembler; nostackframe; {$ENDIF}
 asm
 {$IFDEF TARGET_x86}
         // EAX = X;   EDX = Count;   ECX = Value
