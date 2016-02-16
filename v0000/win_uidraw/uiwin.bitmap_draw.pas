@@ -18,6 +18,8 @@ uses
   procedure Bitmap32Clear(ABitmap32: PBitmap32; AFillColor: TColor32); overload;
   procedure Bitmap32Clear(ABitmap32: PBitmap32; ARect: TUIRect; AFillColor: TColor32); overload;
 
+  procedure Bitmap32Draw(ADstBitmap32: PBitmap32;  ADstRect: TUIRect; ASrcBitmap32: PBitmap32; ASrcX, ASrcY: Integer);
+
 implementation
 
 uses
@@ -247,6 +249,24 @@ end;
 procedure Bitmap32Clear(ABitmap32: PBitmap32; ARect: TUIRect; AFillColor: TColor32);
 begin
   Bitmap32FillRect(ABitmap32, ARect.Left, ARect.Top, ARect.Right, ARect.Bottom, AFillColor);
+end;
+
+procedure Bitmap32Draw(ADstBitmap32: PBitmap32;  ADstRect: TUIRect; ASrcBitmap32: PBitmap32; ASrcX, ASrcY: Integer);
+var
+  SrcP, DstP: PColor32;
+  W, DstY: Integer;
+begin
+  { Internal routine }
+  W := ADstRect.Right - ADstRect.Left;
+  SrcP := Bitmap32GetPixelPtr(ASrcBitmap32, ASrcX, ASrcY);
+  DstP := Bitmap32GetPixelPtr(ADstBitmap32, ADstRect.Left, ADstRect.Top);
+  for DstY := ADstRect.Top to ADstRect.Bottom - 1 do
+  begin
+    //Move(SrcP^, DstP^, W shl 2); // for FastCode
+    MoveLongWord(SrcP^, DstP^, W);
+    Inc(SrcP, ASrcBitmap32.Width);
+    Inc(DstP, ADstBitmap32.Width);
+  end;
 end;
 
 end.
