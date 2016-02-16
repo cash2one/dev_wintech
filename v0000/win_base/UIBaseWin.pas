@@ -4,7 +4,7 @@ interface
 
 uses
   Windows,
-  BaseWinThread;
+  win.thread;
                 
 type
   PUIBaseWnd        = ^TUIBaseWnd;

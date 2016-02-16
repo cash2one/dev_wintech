@@ -45,7 +45,7 @@ implementation
 
 uses
   Sysutils,
-  UtilsHttp_Indy,
+  //UtilsHttp_Indy,
   UtilsHttp_Socket;
 
 function CheckOutNetClientSession: PNetClientSession;
@@ -134,10 +134,12 @@ end;
 
 function GetHttpUrlData(AUrl: AnsiString; ANetSession: PNetClientSession): PIOBuffer;
 var
-  tmpIConnection: PIndyConnectionSession;
+//  tmpIConnection: PIndyConnectionSession;
   tmpConnection: PSocketConnectionSession;
+  tmpOwnedConnection: Boolean;
 begin    
   tmpConnection := nil;
+  tmpOwnedConnection := false;
   if nil <> ANetSession then
   begin
     if nil = ANetSession.Connection then
@@ -147,9 +149,18 @@ begin
     end;
     tmpConnection := ANetSession.Connection;
   end;
+  if nil = tmpConnection then
+  begin
+    tmpConnection := CheckOutSocketConnection;
+    tmpOwnedConnection := true;
+  end;
   //Result := Http_WinInet.Http_GetString(AUrl);
   //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
   Result := UtilsHttp_Socket.Http_GetString(AUrl, tmpConnection);
+  if tmpOwnedConnection then
+  begin
+    CheckInSocketConnection(tmpConnection);
+  end;
 end;
 
 function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PNetClientSession): Boolean;

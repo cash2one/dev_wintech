@@ -52,11 +52,12 @@ type
     bfOffBits     : DWORD;
   end;
               
-  PBitmap32   = ^TBitmap32;
-  TBitmap32   = record
-    Width     : integer;
-    Height    : integer;
-    Bits      : PColor32Array;
+  PBitmap32       = ^TBitmap32;
+  TBitmap32       = record
+    Width         : integer;
+    Height        : integer;
+    Bits          : PColor32Array;
+    //BackendExData : Pointer;  this data should save on draw session ????
   end;
 
 implementation

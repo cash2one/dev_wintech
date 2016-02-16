@@ -10,7 +10,7 @@ interface
 *)
 uses
   Windows,
-  uiwin.color;
+  ui.color;
   
 type               
   PWinBitmap          = ^TWinBitmap;

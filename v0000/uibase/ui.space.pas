@@ -11,13 +11,20 @@ type
 
   PUIPoints     = ^TUIPoints;
   TUIPoints     = array [0..0] of TUIPoint;
-
+                                
   PUIFloatPoint = ^TUIFloatPoint;
   TUIFloatPoint = record
     X           : TFloat;
     Y           : TFloat;
   end;
-         
+  (*//
+  PUIRect       = ^TUIRect;
+  TUIRect       = packed record
+    case Integer of
+      0: (Left, Top, Right, Bottom: Longint);
+      1: (TopLeft, BottomRight: TPoint);
+  end;
+  //*)
   PUIRect       = Types.PRect;
   TUIRect       = Types.TRect;
           
