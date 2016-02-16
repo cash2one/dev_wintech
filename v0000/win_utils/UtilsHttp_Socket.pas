@@ -14,6 +14,7 @@ type
                   
   function CheckOutSocketConnection: PSocketConnectionSession;    
   procedure CheckInSocketConnection(var AConnection: PSocketConnectionSession);
+  procedure CloseSocketConnection(AConnection: PSocketConnectionSession);
                           
   function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PIOBuffer;
   function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PSocketConnectionSession): Boolean;
@@ -34,6 +35,12 @@ end;
 
 procedure CheckInSocketConnection(var AConnection: PSocketConnectionSession);
 begin
+  if nil <> AConnection then
+  begin
+    CloseSocketConnection(AConnection);
+    FreeMem(AConnection);
+    AConnection := nil;
+  end;
 end;
 
 function GenHttpHeader(const AUrl: AnsiString; AHttpUrlInfo: THttpUrlInfo; AIsKeepAlive: Boolean): AnsiString;
@@ -192,22 +199,19 @@ procedure NetClientSetReadTimeOut(ANetClient: PxlTcpClient; const Value: Integer
 var
   tmpNetTimeout: Integer;
 begin
-  if ANetClient.Base.TimeOutSend <> Value then
-  begin
-    tmpNetTimeout := Value;
-    if SOCKET_ERROR = WinSock2.Setsockopt(
+  tmpNetTimeout := Value;
+  if SOCKET_ERROR = WinSock2.Setsockopt(
                ANetClient.Base.ConnectSocketHandle,
                SOL_SOCKET,
                SO_RCVTIMEO,
                PAnsiChar(@tmpNetTimeout),
                Sizeof(tmpNetTimeout)) then
-    begin
+  begin
       //RaiseWSExcption();
-    end;
   end;
 end;
 
-function NetClientRecvBuf(ATcpClient: PxlTcpClient; AHttpBuffer: PIOBuffer; ATimeOut:Integer): Integer; //单位 秒
+function NetClientRecvBuf(ATcpClient: PxlTcpClient; AHttpBuffer: PIOBuffer; AReadTimeOut:Integer): Integer; //单位 秒
 const
   eof:AnsiString = #13#10#13#10;
 var
@@ -221,8 +225,8 @@ var
 begin
   Result := -1;
 
-  if ATimeOut > 0 then
-    NetClientSetReadTimeOut(ATcpClient, ATimeOut)
+  if AReadTimeOut > 0 then
+    NetClientSetReadTimeOut(ATcpClient, AReadTimeOut)
   else
     NetClientSetReadTimeOut(ATcpClient, ATcpClient.Base.TimeOutRead); //设置读超时
 
@@ -261,22 +265,41 @@ begin
         tmpReadBufPos := tmpReadBufPos + tmpReadedBytes;
       end;
     end else
-    begin
+    begin           
+      tmpReadedBytes := 0;
       if iRet = 0 then
       begin
         //对方已经优雅的关闭了连接
         Result := 0;
-        tmpReadedBytes := 0;
         //FErrorCode := ERROR_GRACEFUL_DISCONNECT;//对方优雅关闭
         //raise exception.Create('ReadLnII 对方已经优雅的关闭了连接');
       end else
       begin
         Result := -1;
-        tmpReadedBytes := 0;
         ATcpClient.Base.LastErrorCode := WSAGetLastError();
+        {
+          Socket error 10060 - Connection timed out
+          要访问的网站有问题，关机了或者服务未启动等等；
+          到网站的网络有问题，连接不上；
+          防火墙阻挡了连接。
+        }
       end;
     end;
   end;//while end
+end;
+
+procedure CloseSocketConnection(AConnection: PSocketConnectionSession);
+var
+  tmpTcpClient: PxlTcpClient;
+begin
+  if nil <> AConnection then
+  begin
+    tmpTcpClient := AConnection.Connection;
+    if nil <> tmpTcpClient then
+    begin
+      TcpClientDisconnect(tmpTcpClient);
+    end;
+  end;
 end;
 
 function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PIOBuffer;
@@ -292,7 +315,11 @@ begin
   FillChar(tmpHttpInfo, SizeOf(tmpHttpInfo), 0);
   if ParseHttpUrlInfo(AURL, @tmpHttpInfo) then
   begin
-    tmpTcpClient := AConnection.Connection;
+    tmpTcpClient := AConnection.Connection;   
+    tmpTcpClient.Base.TimeOutConnect := 3000;
+    tmpTcpClient.Base.TimeOutRead := 100;
+    tmpTcpClient.Base.TimeOutSend := 100;
+    
     if AConnection.IsKeepAlive then
     begin
       if (0 = tmpTcpClient.Base.ConnectSocketHandle) then

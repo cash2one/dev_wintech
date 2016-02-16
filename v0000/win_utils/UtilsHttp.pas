@@ -152,6 +152,7 @@ begin
   if nil = tmpConnection then
   begin
     tmpConnection := CheckOutSocketConnection;
+    tmpConnection.IsKeepAlive := false;
     tmpOwnedConnection := true;
   end;
   //Result := Http_WinInet.Http_GetString(AUrl);
