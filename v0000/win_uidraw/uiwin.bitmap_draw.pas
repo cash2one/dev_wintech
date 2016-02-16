@@ -3,17 +3,28 @@ unit uiwin.bitmap_draw;
 interface
 
 uses
-  ui.color, ui.bitmap;
+  ui.color, ui.bitmap, ui.space;
                 
   procedure Bitmap32Line(ABitmap32: PBitmap32; X1, Y1, X2, Y2: Integer; Value: TColor32; L: Boolean = false);
   procedure Bitmap32HorzLine(ABitmap32: PBitmap32; X1, Y, X2: Integer; Value: TColor32);
   procedure Bitmap32VertLine(ABitmap32: PBitmap32; X, Y1, Y2: Integer; Value: TColor32);
   procedure Bitmap32FillRect(ABitmap32: PBitmap32; X1, Y1, X2, Y2: Integer; Value: TColor32);
-  
+
+  procedure Bitmap32ResetAlpha(ABitmap32: PBitmap32; const AlphaValue: Byte); overload;
+  procedure Bitmap32ResetAlpha(ABitmap32: PBitmap32); overload;
+  function Bitmap32Empty(ABitmap32: PBitmap32): Boolean;
+                      
+  procedure Bitmap32Clear(ABitmap32: PBitmap32); overload;
+  procedure Bitmap32Clear(ABitmap32: PBitmap32; AFillColor: TColor32); overload;
+  procedure Bitmap32Clear(ABitmap32: PBitmap32; ARect: TUIRect; AFillColor: TColor32); overload;
+
 implementation
 
 uses
+  BaseType,
+  uiwin.color,
   ui.bitmap_pixel,
+  Define_WinColor,
   win_data_move;
   
 procedure Bitmap32HorzLine(ABitmap32: PBitmap32; X1, Y, X2: Integer; Value: TColor32);
@@ -144,6 +155,98 @@ begin
       FillLongword(P[X1], X2 - X1, Value);
     end;
   end;
+end;
+
+procedure Bitmap32ResetAlpha(ABitmap32: PBitmap32; const AlphaValue: Byte); overload;
+var
+  I: Integer;
+  P: PBytes;
+begin
+  {$IFDEF FPC}
+  P := Pointer(Bits);
+  for I := 0 to ABitmap32.Width * ABitmap32.Height - 1 do
+  begin
+    P^[3] := AlphaValue;
+    Inc(P, 4);
+  end
+  {$ELSE}
+  P := Pointer(ABitmap32.Bits);
+  Inc(P, 3); //shift the pointer to 'alpha' component of the first pixel
+
+  I := ABitmap32.Width * ABitmap32.Height;
+
+  if I > 16 then
+  begin
+    I := I * 4 - 64;
+    Inc(P, I);
+
+    //16x enrolled loop
+    I := - I;
+    repeat
+      P^[I] := AlphaValue;
+      P^[I +  4] := AlphaValue;
+      P^[I +  8] := AlphaValue;
+      P^[I + 12] := AlphaValue;
+      P^[I + 16] := AlphaValue;
+      P^[I + 20] := AlphaValue;
+      P^[I + 24] := AlphaValue;
+      P^[I + 28] := AlphaValue;
+      P^[I + 32] := AlphaValue;
+      P^[I + 36] := AlphaValue;
+      P^[I + 40] := AlphaValue;
+      P^[I + 44] := AlphaValue;
+      P^[I + 48] := AlphaValue;
+      P^[I + 52] := AlphaValue;
+      P^[I + 56] := AlphaValue;
+      P^[I + 60] := AlphaValue;
+      Inc(I, 64)
+    until I > 0;
+
+    //eventually remaining bits
+    Dec(I, 64);
+    while I < 0 do
+    begin
+      P^[I + 64] := AlphaValue;
+      Inc(I, 4);
+    end;
+  end else
+  begin
+    Dec(I);
+    I := I * 4;
+    while I >= 0 do
+    begin
+      P^[I] := AlphaValue;
+      Dec(I, 4);
+    end;
+  end;
+  {$ENDIF}
+end;
+
+procedure Bitmap32ResetAlpha(ABitmap32: PBitmap32); overload;
+begin
+  Bitmap32ResetAlpha(ABitmap32, $FF);
+end;
+
+function Bitmap32Empty(ABitmap32: PBitmap32): Boolean;
+begin
+  Result := (0 = ABitmap32.Width) or (0 = ABitmap32.Height);
+end;
+                
+procedure Bitmap32Clear(ABitmap32: PBitmap32);
+begin
+  Bitmap32Clear(ABitmap32, clBlack32);
+end;
+
+procedure Bitmap32Clear(ABitmap32: PBitmap32; AFillColor: TColor32);
+begin
+  if Bitmap32Empty(ABitmap32) then
+    Exit;
+  win_data_move.FillLongword(ABitmap32.Bits[0], ABitmap32.Width * ABitmap32.Height, AFillColor);
+end;
+
+procedure Bitmap32Clear(ABitmap32: PBitmap32; ARect: TUIRect; AFillColor: TColor32);
+begin
+  Bitmap32FillRect(ABitmap32, ARect.Left, ARect.Top, ARect.Right, ARect.Bottom, AFillColor);
 end;
 
 end.
