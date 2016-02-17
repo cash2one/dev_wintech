@@ -3,7 +3,7 @@ unit winole.clientsite;
 interface
 
 uses
-  Windows, ActiveX;
+  Windows, ActiveX, UIBaseWin;
   
 type      
   POleWindow        = ^TOleWindow;
@@ -149,8 +149,7 @@ type
   end;
              
   TOleWindow              = record
-    ThreadID              : DWORD;
-    ThreadHandle          : THandle;
+    BaseWnd               : TUIBaseWnd;
     RefCount              : integer;
     OleObject             : IOleObject;
     PersistStream         : IPersistStreamInit;
@@ -159,8 +158,6 @@ type
     PropBrowsing          : IPerPropertyBrowsing;
     OleInPlaceObject      : IOleInPlaceObject;
     OleInPlaceActiveObject: IOleInPlaceActiveObject;
-    ParentWindow          : HWND;
-    Window                : HWND;
     ClientRect            : TRect;
     OleWinEvent           : TOleWinEvent;
     OleWinSite            : TOleWinSite;
@@ -313,7 +310,7 @@ end;
 {IOleInPlaceSite.IOleWindow}
 function TOleWinSite.GetWindow(out wnd: HWnd): HResult; stdcall;
 begin
-  wnd := FOleWinSiteData.OleWindow.ParentWindow;
+  wnd := FOleWinSiteData.OleWindow.BaseWnd.UIWndParent;
   Result := S_OK;
 end;
 
@@ -357,7 +354,7 @@ begin
   rcClipRect.Bottom := COleWindowRect.Bottom;
 
   frameInfo.fMDIApp := False;
-  frameInfo.hWndFrame := FOleWinSiteData.OleWindow.ParentWindow;
+  frameInfo.hWndFrame := FOleWinSiteData.OleWindow.BaseWnd.UIWndParent;
   frameInfo.hAccel := 0;
   frameInfo.cAccelEntries := 0;
 

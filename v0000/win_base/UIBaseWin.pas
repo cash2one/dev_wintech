@@ -8,6 +8,12 @@ uses
                 
 type
   PUIBaseWnd        = ^TUIBaseWnd;
+  PUIBaseWndThread  = ^TUIBaseWndThread;    
+  TUIBaseWndThread  = record
+    Thread          : TSysWinThread;
+    Wnd             : PUIBaseWnd;
+  end;
+  
   TUIBaseWnd        = packed record
     UIWndHandle     : HWND;
     UIWndParent     : HWND;
@@ -15,7 +21,9 @@ type
     ExStyle         : DWORD;
     WindowRect      : TRect;
     ClientRect      : TRect;
-    WinThread       : PSysWinThread;
+    //**Parent          : PUIBaseWnd;
+    WndThread       : TUIBaseWndThread;
+    //WinThread       : PSysWinThread;
   end;
 
   function CreateUIWndA(AUIWnd: PUIBaseWnd; AWndProc: TFNWndProc): Boolean;
