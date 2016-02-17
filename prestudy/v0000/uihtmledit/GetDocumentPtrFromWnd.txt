@@ -1,0 +1,40 @@
+procedure GetDocumentPtrFromWnd(Wnd: HWND; var pDoc: IHTMLDocument2);
+ type
+ TObjectFromLResult = function(LRESULT: LRESULT; const IID: TGUID; wParam: WPARAM; out PObject): HRESULT; stdcall;
+ var
+ GetDocPtr: TObjectFromLResult;
+ hModule: THandle;
+ Msg: Cardinal;
+ lRes: Cardinal;
+ begin
+ hModule := LoadLibrary('OLEACC.DLL');
+ try
+ if hModule <> 0 then
+ begin
+ GetDocPtr := GetProcAddress(hModule, 'ObjectFromLresult');
+ if @GetDocPtr <> nil then
+ begin
+ Msg := RegisterWindowMessage('WM_HTML_GETOBJECT');
+ SendMessageTimeOut(Wnd, Msg, 0, 0, SMTO_ABORTIFHUNG, 1000, lRes);
+ if GetDocPtr(lRes, IID_IHTMLDocument2, 0, pDoc) <> S_OK then
+ begin
+ pDoc := nil;
+ end;
+ end;
+ end;
+ finally
+ FreeLibrary(hModule);
+ end;
+ end;[/code]
+ 使用方法：
+ 
+var
+ h:hwnd;
+ doc:IHTMLDocument2;
+ begin
+ h:=FindWindow('IEFrame',nil);
+ h:=FindWindowEx(h,0,'Shell DocObject View',nil);
+ h:=FindWindowEx(h,0,'Internet Explorer_Server',nil);
+ GetDocumentPtrFromWnd(h,doc);
+ end;[/code]
+ 得到的doc即是IE的IHTMLDocument2
