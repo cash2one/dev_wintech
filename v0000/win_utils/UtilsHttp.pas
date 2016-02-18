@@ -8,23 +8,26 @@ uses
 type
   PNetClientSession = ^TNetClientSession;
   TNetClientSession = record
-    Connection  : Pointer;
+    Connection      : Pointer; 
+    SendTimeOut     : Cardinal;
+    ConnectTimeOut  : Cardinal;
+    ReceiveTimeOut  : Cardinal;
   end;
 
-  PHttpUrlInfo  = ^THttpUrlInfo;
-  THttpUrlInfo  = record
-    Protocol    : AnsiString;
-    Host        : AnsiString;
-    Port        : AnsiString;
-    PathName    : AnsiString;
-    UserName    : AnsiString;
-    Password    : AnsiString;
+  PHttpUrlInfo      = ^THttpUrlInfo;
+  THttpUrlInfo      = record
+    Protocol        : AnsiString;
+    Host            : AnsiString;
+    Port            : AnsiString;
+    PathName        : AnsiString;
+    UserName        : AnsiString;
+    Password        : AnsiString;
   end;
-          
+
   PHttpHeadParseSession = ^THttpHeadParseSession;
   THttpHeadParseSession = record
-    RetCode: integer;
-    HeadEndPos: integer;
+    RetCode         : integer;
+    HeadEndPos      : integer;
   end;
   
   function CheckOutNetClientSession: PNetClientSession;
@@ -41,6 +44,12 @@ type
 
   procedure HttpBufferHeader_Parser(AHttpBuffer: PIOBuffer; AHttpHeadParseSession: PHttpHeadParseSession);
 
+  {* 将 URL 中的特殊字符转换成 %XX 的形式}
+  function EncodeURL(const AUrl: string): string;
+
+const
+  SAcceptEncoding = 'Accept-Encoding: gzip,deflate';
+  
 implementation
 
 uses
@@ -57,6 +66,24 @@ end;
 procedure CheckInNetClientSession(var ANetClientSession: PNetClientSession);
 begin
 
+end;
+
+function EncodeURL(const AUrl: string): string;
+const
+  UnsafeChars = ['*', '#', '%', '<', '>', '+', ' '];
+var
+  i: Integer;
+  InStr, OutStr: AnsiString;
+begin
+  InStr := AnsiString(AUrl);
+  OutStr := '';
+  for i := 1 to Length(InStr) do begin
+    if (InStr[i] in UnsafeChars) or (InStr[i] >= #$80) or (InStr[i] < #32) then
+      OutStr := OutStr + '%' + AnsiString(IntToHex(Ord(InStr[i]), 2))
+    else
+      OutStr := OutStr + InStr[i];
+  end;
+  Result := string(OutStr);
 end;
 
 function GetDefaultUserAgent: AnsiString;

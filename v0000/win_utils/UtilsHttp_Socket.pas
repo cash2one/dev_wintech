@@ -200,12 +200,10 @@ const
   eof:AnsiString = #13#10#13#10;
 var
   iRet: Integer;
-  Len: Integer;
   tmpReadedBytes: Integer;
   tmpReadBufSize: integer;   
   tmpReadBufPos: integer;
   tmpReadExNode: PIOBufferExNode;
-  P: PAnsiChar;
 begin
   Result := -1;
 
