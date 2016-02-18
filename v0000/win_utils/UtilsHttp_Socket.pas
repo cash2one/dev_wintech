@@ -195,22 +195,6 @@ begin
   end;
 end;
 
-procedure NetClientSetReadTimeOut(ANetClient: PxlTcpClient; const Value: Integer);
-var
-  tmpNetTimeout: Integer;
-begin
-  tmpNetTimeout := Value;
-  if SOCKET_ERROR = WinSock2.Setsockopt(
-               ANetClient.Base.ConnectSocketHandle,
-               SOL_SOCKET,
-               SO_RCVTIMEO,
-               PAnsiChar(@tmpNetTimeout),
-               Sizeof(tmpNetTimeout)) then
-  begin
-      //RaiseWSExcption();
-  end;
-end;
-
 function NetClientRecvBuf(ATcpClient: PxlTcpClient; AHttpBuffer: PIOBuffer; AReadTimeOut:Integer): Integer; //单位 秒
 const
   eof:AnsiString = #13#10#13#10;
@@ -226,9 +210,9 @@ begin
   Result := -1;
 
   if AReadTimeOut > 0 then
-    NetClientSetReadTimeOut(ATcpClient, AReadTimeOut)
+    TcpClientSetReadTimeOut(ATcpClient, AReadTimeOut)
   else
-    NetClientSetReadTimeOut(ATcpClient, ATcpClient.Base.TimeOutRead); //设置读超时
+    TcpClientSetReadTimeOut(ATcpClient, ATcpClient.Base.TimeOutRead); //设置读超时
 
   tmpReadedBytes := 1;
   tmpReadBufSize := AHttpBuffer.BufferHead.Size;

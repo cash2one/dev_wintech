@@ -16,6 +16,7 @@ type
   
   procedure TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress);
   procedure TcpClientDisconnect(ATcpClient: PxlTcpClient);
+  procedure TcpClientSetReadTimeOut(ANetClient: PxlTcpClient; const Value: Integer);
 
 implementation
 
@@ -30,7 +31,12 @@ end;
 
 procedure CheckInTcpClient(var AClient: PxlTcpClient);
 begin
-
+  if nil <> AClient then
+  begin
+    TcpClientDisconnect(AClient);
+    FreeMem(AClient);
+    AClient := nil;
+  end;
 end;
 
 procedure TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress);
@@ -165,6 +171,22 @@ begin
 //  FInputStream.Position := 0;
 //  FInputStream.ReadEndPosition := 0;
 //  Windows.ZeroMemory(FInputStream.Memory,FInputStream.Size);
+end;
+
+procedure TcpClientSetReadTimeOut(ANetClient: PxlTcpClient; const Value: Integer);
+var
+  tmpNetTimeout: Integer;
+begin
+  tmpNetTimeout := Value;
+  if SOCKET_ERROR = WinSock2.Setsockopt(
+               ANetClient.Base.ConnectSocketHandle,
+               SOL_SOCKET,
+               SO_RCVTIMEO,
+               PAnsiChar(@tmpNetTimeout),
+               Sizeof(tmpNetTimeout)) then
+  begin
+      //RaiseWSExcption();
+  end;
 end;
 
 end.
