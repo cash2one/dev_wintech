@@ -96,7 +96,7 @@ type
     constructor Create(rect: TGPRect); reintroduce; overload;
     constructor Create(path: TGPGraphicsPath); reintroduce; overload;
     constructor Create(regionData: PBYTE; size: Integer); reintroduce; overload;
-    constructor Create(hRgn: HRGN); reintroduce; overload;
+    constructor Create(hRgn: HRGN; Dummy1: integer = 0; Dummy2: integer = 0); reintroduce; overload;
     function FromHRGN(hRgn: HRGN): TGPRegion;
     destructor Destroy; override;
     function Clone: TGPRegion;
@@ -145,7 +145,7 @@ type
     function IsVisible(const rect: TGPRect; g: TGPGraphics = nil): BOOL; overload;
     function IsVisible(x, y, width, height: Single; g: TGPGraphics = nil): BOOL; overload;
     function IsVisible(const rect: TGPRectF; g: TGPGraphics = nil): BOOL; overload;
-    function Equals(region: TGPRegion; g: TGPGraphics): BOOL;
+    function IsEqual(region: TGPRegion; g: TGPGraphics): BOOL;
     function GetRegionScansCount(matrix: TGPMatrix): UINT;
     function GetRegionScans(matrix: TGPMatrix ;rects: PGPRectF; out count: Integer): TStatus; overload;
     function GetRegionScans(matrix: TGPMatrix; rects: PGPRect; out count: Integer): TStatus; overload;
@@ -332,7 +332,8 @@ type
 //    constructor Create(surface: IDirectDrawSurface7); reintroduce; overload;
     constructor Create(var gdiBitmapInfo: TBITMAPINFO; gdiBitmapData: Pointer); reintroduce; overload;
     constructor Create(hbm: HBITMAP; hpal: HPALETTE); reintroduce; overload;
-    constructor Create(hicon: HICON); reintroduce; overload;
+    constructor Create(hicon: HICON;
+      Dummy1: integer = 0); reintroduce; overload;
     constructor Create(hInstance: HMODULE; bitmapName: WideString); reintroduce; overload;
 //    function FromDirectDrawSurface7(surface: IDirectDrawSurface7): TGPBitmap;
     function FromBITMAPINFO(var gdiBitmapInfo: TBITMAPINFO; gdiBitmapData: Pointer): TGPBitmap;
@@ -495,7 +496,7 @@ type
 
     function IsInvertible: BOOL;
     function IsIdentity: BOOL;
-    function Equals(matrix: TGPMatrix): BOOL;
+    function IsEqual(matrix: TGPMatrix): BOOL;
     function GetLastStatus: TStatus;
   end;
 
@@ -961,7 +962,7 @@ type
     function FromHDC(hdc: HDC; hdevice: THANDLE): TGPGraphics; overload;
     function FromHWND(hwnd: HWND; icm: BOOL = FALSE): TGPGraphics;
     function FromImage(image: TGPImage): TGPGraphics;
-    constructor Create(hdc: HDC); reintroduce; overload;
+    constructor Create(hdc: HDC; Dummy1: integer = 0; Dummy2: integer = 0); reintroduce; overload;
     constructor Create(hdc: HDC; hdevice: THANDLE); reintroduce; overload;
     constructor Create(hwnd: HWND; icm: BOOL{ = FALSE}); reintroduce; overload;
     constructor Create(image: TGPImage); reintroduce; overload;
@@ -1417,8 +1418,8 @@ var
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure GDIPOBJInitialization;
-procedure GDIPOBJfinalization;
+procedure gdipOBJInitialize;
+procedure GDIPOBJFinalize;
 
 implementation
 
@@ -1812,7 +1813,7 @@ implementation
     SetStatus(GdipIsMatrixIdentity(nativeMatrix, result));
   end;
 
-  function TGPMatrix.Equals(matrix: TGPMatrix): BOOL;
+  function TGPMatrix.IsEqual(matrix: TGPMatrix): BOOL;
   begin
     result := FALSE;
     SetStatus(GdipIsMatrixEqual(nativeMatrix, matrix.nativeMatrix, result));
@@ -2414,7 +2415,7 @@ implementation
     SetNativeRegion(region);
   end;
 
-  constructor TGPRegion.Create(hRgn: HRGN);
+  constructor TGPRegion.Create(hRgn: HRGN; Dummy1: integer = 0; Dummy2: integer = 0);
   var
     region: GpRegion;
   begin
@@ -2753,7 +2754,7 @@ implementation
     result := booln;
   end;
 
-  function TGPRegion.Equals(region: TGPRegion; g: TGPGraphics): BOOL;
+  function TGPRegion.IsEqual(region: TGPRegion; g: TGPGraphics): BOOL;
   var
     booln: BOOL;
   begin
@@ -4319,7 +4320,7 @@ implementation
     SetNativeImage(bitmap);
   end;
 
-  constructor TGPBitmap.Create(hicon: HICON);
+  constructor TGPBitmap.Create(hicon: HICON; Dummy1: integer = 0);
   var bitmap: GpBitmap;
   begin
     bitmap := nil;
@@ -4407,7 +4408,7 @@ implementation
     result := TGPGraphics.Create(image);
   end;
 
-  constructor TGPGraphics.Create(hdc: HDC);
+  constructor TGPGraphics.Create(hdc: HDC; Dummy1: integer = 0; Dummy2: integer = 0);
   var graphics: GpGraphics;
   begin
     graphics:= nil;
@@ -7965,7 +7966,7 @@ implementation
      // écrase la fonction parent
   end;
 
-procedure GDIPOBJInitialization;
+procedure gdipOBJInitialize;
 begin
   // Initialize StartupInput structure
   StartupInput.DebugEventCallback := nil;
@@ -7977,9 +7978,8 @@ begin
 
 end;
 
-procedure GDIPOBJfinalization;
-begin
-
+procedure GDIPOBJFinalize;
+begin             
   if assigned(GenericSansSerifFontFamily) then GenericSansSerifFontFamily.Free;
   if assigned(GenericSerifFontFamily) then GenericSerifFontFamily.Free;
   if assigned(GenericMonospaceFontFamily) then GenericMonospaceFontFamily.Free;
@@ -7990,5 +7990,11 @@ begin
   // Close GDI +
   GdiplusShutdown(gdiplusToken);
 end;
+//
+//initialization
+//  GDIPOBJInitialization;
+//
+//finalization
+//  GDIPOBJfinalization;
 
 end.
