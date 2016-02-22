@@ -6,14 +6,27 @@ uses
   Windows, ActiveX, UrlMon, win.iobuffer;
 
 type
-  PNetClientSession = ^TNetClientSession;
-  TNetClientSession = record
+  PClientConnectSession = ^TClientConnectSession;
+  TClientConnectSession = record
     Connection      : Pointer; 
     SendTimeOut     : Cardinal;
     ConnectTimeOut  : Cardinal;
     ReceiveTimeOut  : Cardinal;
   end;
-
+           
+  PHttpHeadParseSession = ^THttpHeadParseSession;
+  THttpHeadParseSession = record
+    RetCode         : integer;
+    HeadEndPos      : integer;
+  end;
+            
+  PHttpClientSession = ^THttpClientSession;
+  THttpClientSession = record
+    ConnectionSession: TClientConnectSession;  
+    IsKeepAlive     : Boolean;
+    HttpHeadSession : THttpHeadParseSession;
+  end;
+  
   PHttpUrlInfo      = ^THttpUrlInfo;
   THttpUrlInfo      = record
     Protocol        : AnsiString;
@@ -24,20 +37,19 @@ type
     Password        : AnsiString;
   end;
 
-  PHttpHeadParseSession = ^THttpHeadParseSession;
-  THttpHeadParseSession = record
-    RetCode         : integer;
-    HeadEndPos      : integer;
+  PHttpBuffer       = ^THttpBuffer;
+  THttpBuffer       = record
+
   end;
   
-  function CheckOutNetClientSession: PNetClientSession;
-  procedure CheckInNetClientSession(var ANetClientSession: PNetClientSession);
+  function CheckOutHttpClientSession: PHttpClientSession;
+  procedure CheckInHttpClientSession(var ANetClientSession: PHttpClientSession);
 
-  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PNetClientSession): PIOBuffer; overload;      
-  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PIOBuffer; overload;
-  function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PNetClientSession): Boolean; overload;
+  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession): PIOBuffer; overload;      
+  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer; overload;
+  function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PHttpClientSession): Boolean; overload;
 
-  function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PIOBuffer;
+  function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
 
   function GetDefaultUserAgent: AnsiString;    
   function ParseHttpUrlInfo(AUrl: AnsiString; AInfo: PHttpUrlInfo): Boolean;
@@ -57,15 +69,24 @@ uses
   //UtilsHttp_Indy,
   UtilsHttp_Socket;
 
-function CheckOutNetClientSession: PNetClientSession;
+function CheckOutHttpClientSession: PHttpClientSession;
 begin
-  Result := System.New(PNetClientSession);
-  FillChar(Result^, SizeOf(TNetClientSession), 0);
+  Result := System.New(PHttpClientSession);
+  FillChar(Result^, SizeOf(THttpClientSession), 0);
+  Result.IsKeepAlive := True;
 end;
 
-procedure CheckInNetClientSession(var ANetClientSession: PNetClientSession);
+procedure CheckInHttpClientSession(var ANetClientSession: PHttpClientSession);
 begin
-
+  if nil <> ANetClientSession then
+  begin
+    if nil <> ANetClientSession.ConnectionSession.Connection then
+    begin
+      CheckInSocketConnection(ANetClientSession);
+    end;
+    FreeMem(ANetClientSession);
+    ANetClientSession := nil;
+  end;
 end;
 
 function EncodeURL(const AUrl: string): string;
@@ -159,64 +180,51 @@ begin
   end;
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; ANetSession: PNetClientSession): PIOBuffer;
+function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
 var
 //  tmpIConnection: PIndyConnectionSession;
-  tmpConnection: PSocketConnectionSession;
   tmpOwnedConnection: Boolean;
 begin    
-  tmpConnection := nil;
   tmpOwnedConnection := false;
   if nil <> ANetSession then
   begin
-    if nil = ANetSession.Connection then
+    if nil = ANetSession.ConnectionSession.Connection then
     begin
-      //ANetSession.Connection := CheckOutIndyConnection;
-      ANetSession.Connection := CheckOutSocketConnection;
+      CheckOutSocketConnection(ANetSession);
+      if not ANetSession.IsKeepAlive then
+        tmpOwnedConnection := true;
     end;
-    tmpConnection := ANetSession.Connection;
-  end;
-  if nil = tmpConnection then
-  begin
-    tmpConnection := CheckOutSocketConnection;
-    tmpConnection.IsKeepAlive := false;
-    tmpOwnedConnection := true;
   end;
   //Result := Http_WinInet.Http_GetString(AUrl);
   //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
-  Result := UtilsHttp_Socket.Http_GetString(AUrl, tmpConnection);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession);
   if tmpOwnedConnection then
   begin
-    CheckInSocketConnection(tmpConnection);
+    CheckInSocketConnection(ANetSession);
   end;
 end;
 
-function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PNetClientSession): Boolean;
-var
-  //tmpConnection: PIndyConnection;
-  tmpConnection: PSocketConnectionSession;
+function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PHttpClientSession): Boolean;
 begin    
-  tmpConnection := nil;     
   if nil <> ANetSession then
   begin
-    if nil = ANetSession.Connection then
+    if nil = ANetSession.ConnectionSession.Connection then
     begin                
       //ANetSession.Connection := CheckOutIndyConnection;
-      ANetSession.Connection := CheckOutSocketConnection;
+      CheckOutSocketConnection(ANetSession);
     end;  
-    tmpConnection := ANetSession.Connection;
   end;
   //Result := UtilsHttp_Indy.Http_GetFile(AUrl, AOutputFile, tmpConnection);
-  Result := UtilsHttp_Socket.Http_GetFile(AUrl, AOutputFile, tmpConnection);
+  Result := UtilsHttp_Socket.Http_GetFile(AUrl, AOutputFile, ANetSession);
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PIOBuffer;
+function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
 begin          
   Result := nil;
 //  Result := Http_WinInet.Http_GetString(AUrl);
 end;
 
-function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PNetClientSession): PIOBuffer;
+function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
 begin
   Result := nil;
 //  Result := Http_WinInet.Http_GetString(AUrl);

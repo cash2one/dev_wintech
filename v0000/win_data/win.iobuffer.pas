@@ -162,7 +162,7 @@ implementation
 uses
   math,
   Windows;
-  
+
 function CheckOutIOBuffer(ASizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
 //  tmpBuffer256k: PIOBuffer256k;
@@ -186,6 +186,12 @@ begin
     FillChar(Result, SizeOf(TIOBuffer), 0);
   end;
 end;
+       
+procedure CheckInIOBuffer(var AIOBuffer: PIOBuffer);
+begin
+  FreeMem(AIOBuffer);
+  AIOBuffer := nil;
+end;
 
 function GetSizeMode(ASize: Integer): Integer;
 var
@@ -198,10 +204,6 @@ begin
     Result := Result + 1;
     tmpSize := tmpSize + tmpSize;
   end;
-end;
-
-procedure CheckInIOBuffer(var AIOBuffer: PIOBuffer);
-begin
 end;
 
 function RepackIOBuffer(AIOBuffer: PIOBuffer): PIOBuffer;

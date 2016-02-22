@@ -5,41 +5,31 @@ interface
 uses
   UtilsHttp, win.iobuffer;
   
-type
-  PSocketConnectionSession = ^TSocketConnectionSession;
-  TSocketConnectionSession = record
-    IsKeepAlive : Boolean;
-    Connection  : Pointer;
-  end;
-                  
-  function CheckOutSocketConnection: PSocketConnectionSession;    
-  procedure CheckInSocketConnection(var AConnection: PSocketConnectionSession);
-  procedure CloseSocketConnection(AConnection: PSocketConnectionSession);
+  procedure CheckOutSocketConnection(ANetSession: PHttpClientSession);    
+  procedure CheckInSocketConnection(ANetSession: PHttpClientSession);
+  procedure CloseSocketConnection(ANetSession: PHttpClientSession);
                           
-  function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PIOBuffer;
-  function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PSocketConnectionSession): Boolean;
+  function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession): PIOBuffer;
+  function Http_GetFile(AUrl, AOutputFile: AnsiString; AHttpClientSession: PHttpClientSession): Boolean;
 
 implementation
 
 uses
   Classes, Sysutils, Winsock2, Windows, xlClientSocket, xlNetwork, xlTcpClient;
-
-function CheckOutSocketConnection: PSocketConnectionSession;
+                                    
+procedure CheckOutSocketConnection(ANetSession: PHttpClientSession);
 begin
-  Result := System.New(PSocketConnectionSession);
-  FillChar(Result^, SizeOf(TSocketConnectionSession), 0);
-  Result.Connection := CheckOutTcpClient;
-  Result.IsKeepAlive := True;
+  ANetSession.ConnectionSession.Connection := CheckOutTcpClient;
   InitializeNetwork(@Network);
 end;
-
-procedure CheckInSocketConnection(var AConnection: PSocketConnectionSession);
+                                    
+procedure CheckInSocketConnection(ANetSession: PHttpClientSession);
 begin
-  if nil <> AConnection then
+  if nil <> ANetSession then
   begin
-    CloseSocketConnection(AConnection);
-    FreeMem(AConnection);
-    AConnection := nil;
+    CloseSocketConnection(ANetSession);
+    FreeMem(ANetSession.ConnectionSession.Connection);
+    ANetSession.ConnectionSession.Connection := nil;
   end;
 end;
 
@@ -270,13 +260,13 @@ begin
   end;//while end
 end;
 
-procedure CloseSocketConnection(AConnection: PSocketConnectionSession);
+procedure CloseSocketConnection(ANetSession: PHttpClientSession);
 var
   tmpTcpClient: PxlTcpClient;
 begin
-  if nil <> AConnection then
+  if nil <> ANetSession then
   begin
-    tmpTcpClient := AConnection.Connection;
+    tmpTcpClient := ANetSession.ConnectionSession.Connection;
     if nil <> tmpTcpClient then
     begin
       TcpClientDisconnect(tmpTcpClient);
@@ -284,7 +274,7 @@ begin
   end;
 end;
 
-function Http_GetString(AURL: AnsiString; AConnection: PSocketConnectionSession): PIOBuffer;
+function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession): PIOBuffer;
 var
   tmpHttpInfo: THttpUrlInfo;
   tmpTcpClient: PxlTcpClient;
@@ -292,20 +282,26 @@ var
   tmpStr: AnsiString; 
   tmpRet: Integer;        
   tmpBuffer: PIOBuffer;
+  tmpString: AnsiString;
+  tmpStrs: TStringList;
+  i: integer;
+  tmpPos: integer;
 begin
   Result := nil;
   FillChar(tmpHttpInfo, SizeOf(tmpHttpInfo), 0);
+  FillChar(AHttpClientSession.HttpHeadSession, SizeOf(AHttpClientSession.HttpHeadSession), 0);
+
   if ParseHttpUrlInfo(AURL, @tmpHttpInfo) then
   begin
-    tmpTcpClient := AConnection.Connection;   
+    tmpTcpClient := AHttpClientSession.ConnectionSession.Connection;
     tmpTcpClient.Base.TimeOutConnect := 3000;
     tmpTcpClient.Base.TimeOutRead := 100;
     tmpTcpClient.Base.TimeOutSend := 100;
     
-    if AConnection.IsKeepAlive then
+    if AHttpClientSession.IsKeepAlive then
     begin
-      if (0 = tmpTcpClient.Base.ConnectSocketHandle) or
-         (0 > tmpTcpClient.Base.ConnectSocketHandle) then
+      if (Winsock2.INVALID_SOCKET = tmpTcpClient.Base.ConnectSocketHandle) or
+         (0 = tmpTcpClient.Base.ConnectSocketHandle) then
       begin
         tmpAddress.Host := tmpHttpInfo.Host;
         tmpAddress.Port := StrToIntDef(tmpHttpInfo.Port, 80);
@@ -318,7 +314,7 @@ begin
       TcpClientConnect(tmpTcpClient, @tmpAddress);
     end;
 
-    tmpStr := GenHttpHeader(AUrl, tmpHttpInfo, AConnection.IsKeepAlive);
+    tmpStr := GenHttpHeader(AUrl, tmpHttpInfo, AHttpClientSession.IsKeepAlive);
     if not NetClientSendBuf(tmpTcpClient, Pointer(@tmpStr[1]),Length(tmpStr), tmpRet) then
     begin
       TcpClientDisconnect(tmpTcpClient);
@@ -337,11 +333,43 @@ begin
       begin
         Result := tmpBuffer;
       end;
+      if nil <> Result then
+      begin
+        FIllChar(AHttpClientSession.HttpHeadSession, SizeOf(AHttpClientSession.HttpHeadSession), 0);
+        HttpBufferHeader_Parser(Result, @AHttpClientSession.HttpHeadSession);
+        if (0 < AHttpClientSession.HttpHeadSession.HeadEndPos) then
+        begin
+          SetLength(tmpString, AHttpClientSession.HttpHeadSession.HeadEndPos + 1);
+          CopyMemory(@tmpString[1], @Result.Data[0], AHttpClientSession.HttpHeadSession.HeadEndPos - 1);
+          tmpStrs := TStringList.Create;
+          try
+            tmpStrs.Text := tmpString;
+            for i := 0 to tmpStrs.Count - 1 do
+            begin
+              tmpString := tmpStrs[i];
+              tmpPos := Pos('connection:', Lowercase(tmpString));
+              if 0 < tmpPos then
+              begin
+                tmpString := Trim(Copy(tmpString, tmpPos + Length('connection:'), maxint));
+                if SameText('close', tmpString) then
+                begin
+                  TcpClientDisconnect(tmpTcpClient);
+                  exit;
+                end;
+              end;
+            end;
+          finally
+            tmpStrs.Clear;
+            tmpStrs.Free;
+          end;
+          tmpString := '';
+        end;
+      end;
     end;
   end;
 end;
 
-function Http_GetFile(AUrl, AOutputFile: AnsiString; AConnection: PSocketConnectionSession): Boolean;
+function Http_GetFile(AUrl, AOutputFile: AnsiString; AHttpClientSession: PHttpClientSession): Boolean;
 begin
   Result := false;
 end;
