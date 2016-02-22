@@ -9,7 +9,7 @@ unit IMCode;
 
 interface
 
-function MakeSpellCode(stText: string; iMode, iCount: Integer): string;
+  function MakeSpellCode(stText: Ansistring; iMode, iCount: Integer): Ansistring;
 { iMode 二进制功能位说明
   X X X X X X X X X X X X X X X X
                             3 2 1
@@ -26,23 +26,24 @@ function MakeSpellCode(stText: string; iMode, iCount: Integer): string;
 
 }
 
-function GetSpellCode(szText: PChar; iMode, iCount: Integer): PChar; stdcall;
-
 implementation
+//
+//uses
+//  SysUtils;
 
-uses
-  SysUtils;
-
-type
+//type
  { 拼音代码表 }
-  TPYCode = record
-    PYCode: string[6];
-  end;
-  TFPYCodes = array [1..126, 1..191] of TPYCode;
-
+  //TPYCode = record
+  //  PYCode: string[6];
+  //end;
+  //TFPYCodes = array [1..126, 1..191] of TPYCode;
+type
+  TPinYinCode6 = array[0..5] of AnsiChar;      
+  TPinYinCode2 = array[0..1] of AnsiChar;
+  
 const
-  PYMUSICCOUNT = 405;
-  PyMusicCode: array [1..PYMUSICCOUNT] of string[6] = { 汉字基本发音表 } (
+  PYMUSICCOUNT = 405;                                
+  PyMusicCode: array [1..PYMUSICCOUNT] of TPinYinCode6 = { 汉字基本发音表 } (
     'a', 'ai', 'an', 'ang', 'ao', 'ba', 'bai', 'ban', 'bang', 'bao',
     'bei', 'ben', 'beng', 'bi', 'bian', 'biao', 'bie', 'bin', 'bing', 'bo',
     'bu', 'ca', 'cai', 'can', 'cang', 'cao', 'ce', 'ceng', 'cha', 'chai',
@@ -214,8 +215,8 @@ const
     (122,330,345,316,294,332,162,220,329,329,148,335,110,339,327,367,216,202,386,368,92,386,92,92,37,35,35,110,344,349,335,10,363,335,386,37,345,367,311,171,171,40,251,335,349,212,133,220,46,357,354,40,348,208,367,388,250,357,345,354,75,328,348,0,54,388,63,40,130,344,110,349,183,227,328,227,345,183,173,95,143,55,171,55,249,249,17,44,110,136,335,356,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
     (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
   );
-
-  CharIndex: array [1..94] of string[2] = ( { 罗马数字 }
+  
+  CharIndex: array [1..94] of TPinYinCode2 = ( { 罗马数字 }
     '1','2','3','4','5','6','7','8','9','10','','','','','','',
     '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20',
     '1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20',
@@ -224,15 +225,15 @@ const
     '1','2','3','4','5','6','7','8','9','10','11','12','',''
   );
 
-  CharIndex2: array [1..24] of string[2] = ( { 希腊字母 }
-    'a','b','g','d','e','z','e','th','i','k','l','m','n','x','o','p','r',
-    's','t','u','ph','kh','ps','o'
+  CharIndex2: array [1..24] of TPinYinCode2 = ( { 希腊字母 }
+    'A','B','G','D','E','Z','E','TH','I','K','L','M','N','X','O','P','R',
+    'S','T','U','PH','KH','PS','O'
   );
 
-function MakeSpellCode(stText: string; iMode, iCount: Integer): string;
+function MakeSpellCode(stText: AnsiString; iMode, iCount: Integer): Ansistring;
 var
   i, Index: integer;
-  APy: string;
+  APy: Ansistring;
   fFlag1, fFlag2, fFlag3: Boolean;
 begin
   fFlag1 := (iMode and $0001) = 1;
@@ -262,18 +263,26 @@ begin
              if fFlag2 then APy := '?' else APy := '';
         166: // 希腊字母
           if Ord(stText[i + 1]) in [$A1..$B8] then
-            APy := UpperCase(CharIndex2[Ord(stText[i + 1]) - $A0])
+            APy := CharIndex2[Ord(stText[i + 1]) - $A0]
           else if Ord(stText[i + 1]) in [$C1..$D8] then
-            APy := UpperCase(CharIndex2[Ord(stText[i + 1]) - $C0]);
-      else // 一般汉字
-      begin
-        // 获得拼音索引
-        Index := PyCodeIndex[Ord(stText[i]) - 128, Ord(stText[i + 1]) - 63];
-        if Index = 0 then // 无此汉字, 不能翻译的字符, GBK 保留
-          if fFlag2 then APy := '?' else APy := ''
-        else if not fFlag1 then // iFlag1 = False, 是单拼音
-          APy := Copy(Uppercase(PyMusicCode[Index]), 1, 1) else
-          APy := Copy(Uppercase(PyMusicCode[Index]), 1, 6);
+            APy := CharIndex2[Ord(stText[i + 1]) - $C0];
+        else // 一般汉字
+        begin
+          // 获得拼音索引
+          Index := PyCodeIndex[Ord(stText[i]) - 128, Ord(stText[i + 1]) - 63];
+          if Index = 0 then // 无此汉字, 不能翻译的字符, GBK 保留
+          begin
+            if fFlag2 then
+              APy := '?'
+            else
+              APy := ''
+          end else if not fFlag1 then // iFlag1 = False, 是单拼音
+          begin
+            APy := Copy(PyMusicCode[Index], 1, 1)
+          end else
+          begin
+            APy := Copy(PyMusicCode[Index], 1, 6);
+          end;
         end;
       end;
       Result := Result + APy;
@@ -281,26 +290,26 @@ begin
     end else
     begin // 在 GBK 字符集外, 即半角字符
       if fFlag3 or (stText[i] in ['a'..'z', 'A'..'Z', '0'..'9']) then
-        Result := Result + UpperCase(stText[i]);
+        Result := Result + stText[i];
       Inc(i);
     end;
   end;
   Result := Copy(Result, 1, iCount);
 end;
 
-function StrPch(const stPas: string): PChar;
-// Pascal -> PChar
-// 直接使用 PChar 转化有时会转化出错
-begin
-  GetMem(Result, Length(stPas) + 1);
-  StrPCopy(Result, stPas);
-end;
+//function StrPch(const stPas: Ansistring): PChar;
+//// Pascal -> PChar
+//// 直接使用 PChar 转化有时会转化出错
+//begin
+//  GetMem(Result, Length(stPas) + 1);
+//  StrPCopy(Result, stPas);
+//end;
 
-function GetSpellCode(szText: PChar; iMode, iCount: Integer): PChar;
-// Call MakeSpellCode
-begin
-  Result := StrPch(MakeSpellCode(String(szText), iMode, iCount));
-end;
+//function GetSpellCode(szText: PAnsiChar; iMode, iCount: Integer): AnsiString;
+//// Call MakeSpellCode
+//begin
+//  Result := MakeSpellCode(szText, iMode, iCount);
+//end;
 
 
 end.
