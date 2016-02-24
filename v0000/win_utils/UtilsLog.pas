@@ -60,7 +60,7 @@ unit UtilsLog;
 interface
 
 uses
-  Windows, Classes, SysUtils;
+  Windows, SysUtils;
 
 type
   PLogFile        = ^TLogFile;
