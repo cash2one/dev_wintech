@@ -6,7 +6,7 @@ uses
   Windows,
   BaseApp,
   BaseThread,
-  cef_apilib;
+  cef_apiobj;
 
 type
   TCefApp = record

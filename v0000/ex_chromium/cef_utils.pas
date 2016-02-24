@@ -6,7 +6,7 @@ uses
   Windows,
   BaseApp,
   BaseThread,
-  cef_apilib,
+  cef_apiobj,
   cef_api,
   Cef_type;
 
@@ -17,6 +17,9 @@ uses
 
 implementation
 
+uses
+  cef_apilib;
+  
 function CreateBrowserCore(
     ACefClient: PCefClientObject;
     ACefLibrary: PCefLibrary;
