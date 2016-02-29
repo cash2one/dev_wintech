@@ -4,12 +4,15 @@ interface
 
 uses
   sysutils,
-  cef_apilib, cef_api, cef_type;
-  
+  cef_apiobj, cef_api, cef_type;
+
   procedure TestRunScript(AClientObject: PCefClientObject);
 
 implementation
 
+uses
+  cef_apilib;
+  
 procedure TestRunScript(AClientObject: PCefClientObject);
 var
   tmpMainFrame: PCefFrame;

@@ -7,6 +7,8 @@ uses
   cef_type in '..\..\..\v0000\ex_chromium\cef_type.pas',
   cef_app in '..\..\..\v0000\ex_chromium\cef_app.pas',
   cef_utils in '..\..\..\v0000\ex_chromium\cef_utils.pas',
+  cef_apiobj in '..\..\..\v0000\ex_chromium\cef_apiobj.pas',
+  cef_apilib_init in '..\..\..\v0000\ex_chromium\cef_apilib_init.pas',
   BaseApp in '..\..\..\v0000\app_base\BaseApp.pas',
   BasePath in '..\..\..\v0000\app_base\BasePath.pas',
   BaseRun in '..\..\..\v0000\app_base\BaseRun.pas',

@@ -4,7 +4,7 @@ interface
 
 uses
   sysutils,
-  cef_type, cef_api, cef_apilib;
+  cef_type, cef_api, cef_apiobj;
 
 type  
   TCefDomVisitProc = procedure (self: PCefDomVisitor; document: PCefDomDocument); stdcall;
@@ -14,6 +14,9 @@ type
 
 implementation
 
+uses
+  cef_apilib;
+  
 type
   PDomTraverseParam = ^TDomTraverseParam;
   TDomTraverseParam = record
