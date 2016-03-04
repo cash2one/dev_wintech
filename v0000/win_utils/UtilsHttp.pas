@@ -219,15 +219,51 @@ begin
 end;
 
 function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
-begin          
-  Result := nil;
-//  Result := Http_WinInet.Http_GetString(AUrl);
+var
+//  tmpIConnection: PIndyConnectionSession;
+  tmpOwnedConnection: Boolean;
+begin    
+  tmpOwnedConnection := false;
+  if nil <> ANetSession then
+  begin
+    if nil = ANetSession.ConnectionSession.Connection then
+    begin
+      CheckOutSocketConnection(ANetSession);
+      if not ANetSession.IsKeepAlive then
+        tmpOwnedConnection := true;
+    end;
+  end;
+  //Result := Http_WinInet.Http_GetString(AUrl);
+  //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession);
+  if tmpOwnedConnection then
+  begin
+    CheckInSocketConnection(ANetSession);
+  end;
 end;
 
 function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
-begin
-  Result := nil;
-//  Result := Http_WinInet.Http_GetString(AUrl);
+var
+//  tmpIConnection: PIndyConnectionSession;
+  tmpOwnedConnection: Boolean;
+begin    
+  tmpOwnedConnection := false;
+  if nil <> ANetSession then
+  begin
+    if nil = ANetSession.ConnectionSession.Connection then
+    begin
+      CheckOutSocketConnection(ANetSession);
+      if not ANetSession.IsKeepAlive then
+        tmpOwnedConnection := true;
+    end;
+  end;
+  //Result := Http_WinInet.Http_GetString(AUrl);
+  //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession);
+  if tmpOwnedConnection then
+  begin
+    CheckInSocketConnection(ANetSession);
+  end;
 end;
 
 procedure HttpBufferHeader_Parser(AHttpBuffer: PIOBuffer; AHttpHeadParseSession: PHttpHeadParseSession);
