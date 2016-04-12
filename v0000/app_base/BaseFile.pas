@@ -2,16 +2,19 @@ unit BaseFile;
 
 interface
 
+uses
+  Types;
+  
 type
   TBaseFile = class
   protected
-    function GetFileSize: integer; virtual;
-    procedure SetFileSize(const Value: integer); virtual;
+    function GetFileSize: Types.DWORD; virtual;
+    procedure SetFileSize(const Value: Types.DWORD); virtual;
   public
     destructor Destroy; override;
     function OpenFile(AFileUrl: string; AForceOpen: Boolean): Boolean; virtual;
     procedure CloseFile; virtual;
-    property FileSize: integer read GetFileSize write SetFileSize;
+    property FileSize: Types.DWORD read GetFileSize write SetFileSize;
   end;
 
 implementation
@@ -24,7 +27,7 @@ begin
   inherited;
 end;
 
-function TBaseFile.GetFileSize: integer;
+function TBaseFile.GetFileSize: Types.DWORD;
 begin
   Result := 0;
 end;
@@ -34,7 +37,7 @@ begin
   Result := false;
 end;
 
-procedure TBaseFile.SetFileSize(const Value: integer);
+procedure TBaseFile.SetFileSize(const Value: Types.DWORD);
 begin
 end;
 

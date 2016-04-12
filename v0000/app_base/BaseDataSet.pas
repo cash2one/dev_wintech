@@ -11,7 +11,8 @@ type
     function FindRecordByKey(AKey: Integer): Pointer; virtual;
     function CheckOutKeyRecord(AKey: Integer): Pointer; virtual;
 
-    procedure Sort; virtual;
+    procedure Sort; virtual;  
+    procedure Clear; virtual;
     property RecordCount: Integer read GetRecordCount;
     property RecordItem[AIndex: integer]: Pointer read GetRecordItem;
   end;
@@ -41,6 +42,10 @@ begin
 end;
 
 procedure TBaseDataSetAccess.Sort;
+begin
+end;
+
+procedure TBaseDataSetAccess.Clear;
 begin
 end;
 

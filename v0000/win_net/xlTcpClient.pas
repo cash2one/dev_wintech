@@ -78,9 +78,12 @@ begin
     //设置非阻塞方式连接
     tmpUlong := 1;
     tmpRet := ioctlsocket(ATcpClient.Base.ConnectSocketHandle, FIONBIO, tmpUlong);
-    if(tmpRet = SOCKET_ERROR) then
+    if(DWORD(SOCKET_ERROR) = tmpRet) then
     begin
       tmpRet := Winsock2.WSAGetLastError();
+      if 0 <> tmpRet then
+      begin
+      end;
       //strErr := GetLastErrorErrorMessage(iRet);
 //      raise
 //        exception.CreateFmt('Connect [1] socket error %d  %s',[iRet,strErr]);
@@ -122,7 +125,7 @@ begin
       Inc(tmpFDSet.fd_count);
     end;
     // ---------------------------------
-    tmpRet := WinSock2.select(0, 0, @tmpFDSet, 0, @tmpTimeOut);
+    tmpRet := WinSock2.select(0, nil{0}, @tmpFDSet, nil{0}, @tmpTimeOut);
     if tmpRet = 0 then //超时
     begin
       WinSock2.CloseSocket(ATcpClient.Base.ConnectSocketHandle);
@@ -132,7 +135,7 @@ begin
     //一般非锁定模式套接比较难控制，可以根据实际情况考虑 再设回阻塞模式
     tmpUlong := 0;
     tmpRet := ioctlsocket(ATcpClient.Base.ConnectSocketHandle, FIONBIO, tmpUlong);
-    if(SOCKET_ERROR = tmpRet) then
+    if(DWORD(SOCKET_ERROR) = tmpRet) then
     begin
       //FErrorCode := Winsock2.WSAGetLastError();
       //strErr := GetLastErrorErrorMessage(iRet);
@@ -146,7 +149,6 @@ end;
 
 procedure TcpClientDisconnect(ATcpClient: PxlTcpClient);
 var
-  ErrCode:Integer;
   tmpLinger: TLinger;
 begin
   if Winsock2.INVALID_SOCKET = ATcpClient.Base.ConnectSocketHandle then

@@ -4,6 +4,7 @@ interface
 
 uses
   Windows,
+  Types,
   Sysutils,
   BaseFile;
 
@@ -18,8 +19,8 @@ type
   TWinFile = class(TBaseFile)
   protected
     fWinFileData: TWinFileData;
-    function GetFileSize: integer; override;
-    procedure SetFileSize(const Value: integer); override;
+    function GetFileSize: DWORD; override;
+    procedure SetFileSize(const Value: DWORD); override;
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -122,7 +123,7 @@ begin
   end;
 end;
 
-procedure TWinFile.SetFileSize(const Value: integer);
+procedure TWinFile.SetFileSize(const Value: DWORD);
 begin
   if fWinFileData.FileSizeLow <> Value then
   begin
@@ -136,7 +137,7 @@ begin
   end;
 end;
 
-function TWinFile.GetFileSize: integer;
+function TWinFile.GetFileSize: DWORD;
 begin
   Result := fWinFileData.FileSizeLow;
 end;
@@ -196,13 +197,12 @@ var
   tmpOverlap: TOverlapped;
   tmpWriteBuffer: array[0..4 * 1024 - 1] of AnsiChar;
 begin
+  tmpBytesWrite := 0;
   if Windows.WriteFile(fWinFileData.FileHandle, tmpWriteBuffer, tmpBytesWrite, tmpBytesWritten, @tmpOverlap) then
-  begin
-
+  begin              
   end;
   if Windows.WriteFileEx(fWinFileData.FileHandle, @tmpWriteBuffer, tmpBytesWrite, tmpOverlap, @Proc_WriteCompletion) then
-  begin
-
+  begin              
   end;  
 end;
 
