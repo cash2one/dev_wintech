@@ -20,7 +20,6 @@ uses
 procedure CheckOutSocketConnection(ANetSession: PHttpClientSession);
 begin
   ANetSession.ConnectionSession.Connection := CheckOutTcpClient;
-  InitializeNetwork(@Network);
 end;
                                     
 procedure CheckInSocketConnection(ANetSession: PHttpClientSession);

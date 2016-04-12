@@ -26,7 +26,8 @@ uses
 function CheckOutTcpClient: PxlTcpClient;
 begin
   Result := System.New(PxlTcpClient);
-  FillChar(Result^, SizeOf(TxlTcpClient), 0);
+  FillChar(Result^, SizeOf(TxlTcpClient), 0);  
+  InitializeNetwork(@Network);
 end;
 
 procedure CheckInTcpClient(var AClient: PxlTcpClient);
@@ -105,10 +106,10 @@ begin
   tmpRet := Winsock2.connect(ATcpClient.Base.ConnectSocketHandle, PSockAddr(@tmpSockAddr), SizeOf(tmpSockAddr));
   if DWORD(SOCKET_ERROR) = tmpRet then
   begin
-    Result := false;
     tmpRet := Winsock2.WSAGetLastError();
     if tmpRet <> WSAEWOULDBLOCK then
-    begin
+    begin         
+      Result := false;
       //strErr := GetLastErrorErrorMessage(iRet);
       //raise exception.CreateFmt('Connect socket [2] error %d  %s',[iRet,strErr]);
     end;
