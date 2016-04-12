@@ -14,7 +14,7 @@ type
   function CheckOutTcpClient: PxlTcpClient;
   procedure CheckInTcpClient(var AClient: PxlTcpClient);
   
-  procedure TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress);
+  function TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress): Boolean;
   procedure TcpClientDisconnect(ATcpClient: PxlTcpClient);
   procedure TcpClientSetReadTimeOut(ANetClient: PxlTcpClient; const Value: Integer);
 
@@ -39,7 +39,7 @@ begin
   end;
 end;
 
-procedure TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress);
+function TcpClientConnect(ATcpClient: PxlTcpClient; AConnectAddress: PxlNetServerAddress): Boolean;
 var
   tmpRet: DWORD;
   tmpUlong: u_long;
@@ -48,14 +48,16 @@ var
   tmpTimeOut: TTimeVal;
   tmpFDSet: TFDSet;
 begin
+  Result := false;
   //FUserCancelld := FALSE;
   if (Winsock2.INVALID_SOCKET = ATcpClient.Base.ConnectSocketHandle) or
      (0 = ATcpClient.Base.ConnectSocketHandle) then
   begin
     ATcpClient.Base.ConnectSocketHandle := Winsock2.Socket(AF_INET,SOCK_STREAM,0);
-    if ATcpClient.Base.ConnectSocketHandle = INVALID_SOCKET  then
+    if INVALID_SOCKET = ATcpClient.Base.ConnectSocketHandle then
     begin
       //RaiseWSExcption();
+      exit;
     end;
   end;
   if nil <> AConnectAddress then
@@ -99,9 +101,11 @@ begin
   
   tmpSockAddr.sin_port        := Winsock2.htons(ATcpClient.Base.ConnectAddress.Port);
     // function connect(s: TSocket; name: PSockAddr; namelen: Integer): Integer; stdcall;
+  Result := true;
   tmpRet := Winsock2.connect(ATcpClient.Base.ConnectSocketHandle, PSockAddr(@tmpSockAddr), SizeOf(tmpSockAddr));
   if DWORD(SOCKET_ERROR) = tmpRet then
   begin
+    Result := false;
     tmpRet := Winsock2.WSAGetLastError();
     if tmpRet <> WSAEWOULDBLOCK then
     begin
@@ -129,6 +133,7 @@ begin
     if tmpRet = 0 then //超时
     begin
       WinSock2.CloseSocket(ATcpClient.Base.ConnectSocketHandle);
+      Result := false;
       //FErrorCode := WSAETIMEDOUT;//10060 连接超时
       //raise exception.CreateFmt('TsfSocket.Connect failure TimeOut %d ms',[ATcpClient.TimeOutConnect]);
     end;
@@ -140,8 +145,9 @@ begin
       //FErrorCode := Winsock2.WSAGetLastError();
       //strErr := GetLastErrorErrorMessage(iRet);
       //raise exception.CreateFmt('Connect socket [3] error %d  %s',[FErrorCode,strErr]);
+      Result := false;
     end;
-  end;
+  end;     
   //FConnected := TRUE;
   //ATcpClient.RecvCount := 0;
   //ATcpClient.SendCount := 0;
