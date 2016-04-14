@@ -25,11 +25,6 @@ begin
 end;
 
 procedure CefLoadLib(ACefLibrary: PCefLibrary; ACefLibraryFileName: string);
-var
-  i: Integer;
-  //**paths: TStringList;
-  p: TCefString;
-  s: ustring;
 begin
   if ACefLibrary.LibHandle = 0 then
   begin

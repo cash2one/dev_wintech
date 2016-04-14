@@ -1,4 +1,4 @@
-unit UtilsWindows;
+unit UtilsWindows_Application;
 
 interface
 
@@ -10,24 +10,13 @@ uses
   procedure ForceBringFrontWindow(AWnd: HWND);       
   procedure SimulateKeyPress(AKeyCode: Byte; ASleep: Integer); 
   function ClickButtonWnd(AWnd: HWND): Boolean;
-  function InputEditWnd(AWnd: HWND; AValue: AnsiString): Boolean; 
-  procedure SleepWait(ASleep: integer; ASleepGap: integer = 10);
+  function InputEditWnd(AWnd: HWND; AValue: AnsiString): Boolean;
 
 implementation
-                    
-procedure SleepWait(ASleep: integer; ASleepGap: integer = 10);
-var
-  tmpSleep: integer;
-begin
-  tmpSleep := ASleep;
-  while 0 < tmpSleep do
-  begin
-    Sleep(ASleepGap);
-    tmpSleep := tmpSleep - ASleepGap;
-  end;         
-  Sleep(ASleepGap);
-end;
 
+uses
+  UtilsApplication;
+                                     
 function InputEditWnd(AWnd: HWND; AValue: AnsiString): Boolean;
 var
   i: integer;
@@ -107,7 +96,7 @@ begin
   tmpSleep := ASleep;
   while 0 < tmpSleep do
   begin
-    SleepWait(10);
+    UtilsApplication.SleepWait(10);
     //Application.ProcessMessages;
     tmpSleep := tmpSleep - 10;
   end;

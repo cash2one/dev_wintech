@@ -105,8 +105,6 @@ end;
 
 procedure cef_proxy_handler_get_proxy_for_url(self: PCefProxyHandler;
   const url: PCefString; proxy_info: PCefProxyInfo); stdcall;
-var
-  proxyList: ustring;
 begin
   //**log('cef_apilib.pas', 'cef_proxy_handler_get_proxy_for_url:' + CefString(url));
   if url <> nil then
@@ -325,11 +323,6 @@ function cef_request_handler_on_before_browse(self: PCefRequestHandler;
   navType: TCefHandlerNavtype; isRedirect: Integer): Integer; stdcall;
 var
   tmpurl: string;
-  tmpStorePath: TCefString;
-  tmpCookieMgr: PCefCookieManager;
-  tmpCookie1: TCefCookie;
-  tmpCookie2: TCefCookie;
-  tmpCookie3: TCefCookie;
   tmpMainFrame: PCefFrame;
 begin
   Result := 0;
@@ -1194,11 +1187,6 @@ procedure cef_render_handler_on_paint(self: PCefRenderHandler;
   var
     tmpview_width: integer;
     tmpview_height: integer;
-    i, j: integer;
-    tmpwidth: Integer;
-    tmpoffset: Integer;
-    tmpsrc: PByte;
-    tmpdst: PByte;
     //tmpMemDC_View: PMemDC;
   begin
     browser.get_size(browser, PET_VIEW, @tmpview_width, @tmpview_height);

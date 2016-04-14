@@ -37,6 +37,7 @@ var
   tmpIsRegistered: Boolean;
   tmpRegAtom: ATOM;
 begin
+  Result := false;
   FillChar(tmpRegWndClass, SizeOf(tmpRegWndClass), 0);
   
   tmpRegWndClass.lpszClassName := 'testwnd';
