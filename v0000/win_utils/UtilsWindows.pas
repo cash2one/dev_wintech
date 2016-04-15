@@ -12,9 +12,33 @@ uses
   function ClickButtonWnd(AWnd: HWND): Boolean;
   function InputEditWnd(AWnd: HWND; AValue: AnsiString): Boolean; 
   procedure SleepWait(ASleep: integer; ASleepGap: integer = 10);
-
+                          
+  function ChangeWindowMessageFilter(Message: UINT; dwFlag: DWORD): BOOL; stdcall;
+  
+const
+  MSGFLT_ADD = 1;
+  
 implementation
-                    
+
+type
+  TFNChangeWindowMessageFilter = function(Message: UINT; dwFlag: DWORD)
+    : BOOL; stdcall;
+
+var
+  _ChangeWindowMessageFilter: TFNChangeWindowMessageFilter;
+
+function ChangeWindowMessageFilter(Message: UINT; dwFlag: DWORD): BOOL; stdcall;
+begin
+  Result := false;
+  if not Assigned(_ChangeWindowMessageFilter) then
+  begin
+    _ChangeWindowMessageFilter := TFNChangeWindowMessageFilter
+      (GetProcAddress(LoadLibrary('user32.dll'), 'ChangeWindowMessageFilter'));
+  end;
+  if Assigned(_ChangeWindowMessageFilter) then
+    Result := _ChangeWindowMessageFilter(Message, dwFlag);
+end;
+                      
 procedure SleepWait(ASleep: integer; ASleepGap: integer = 10);
 var
   tmpSleep: integer;
