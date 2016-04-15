@@ -30,7 +30,10 @@ type
     property BaseWinAppData: PBaseWinAppData read GetBaseWinAppData;
     property AppWindow: HWND read fBaseWinAppData.AppCmdWnd;
   end;
-  
+           
+var
+  GlobalBaseWinApp: TBaseWinApp = nil;
+    
 implementation
 
 uses
@@ -42,6 +45,7 @@ constructor TBaseWinApp.Create(AppClassId: AnsiString);
 begin
   inherited;
   FillChar(fBaseWinAppData, SizeOf(fBaseWinAppData), 0);
+  GlobalBaseWinApp := Self;
 end;
 
 function TBaseWinApp.GetBaseWinAppData: PBaseWinAppData;
