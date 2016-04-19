@@ -36,7 +36,10 @@ type
   end;
 
 implementation
-
+//
+//uses
+//  UtilsLog;
+  
 { TWinFile }
 constructor TWinFile.Create;
 begin
@@ -70,11 +73,21 @@ begin
           Windows.FILE_SHARE_DELETE,
         nil,
         tmpCreation,
-        tmpFlags, 0);
+        tmpFlags, 0);  
+  //Log('BaseWinFile.pas', 'TWinFile.OpenFile Handle:' + IntToStr(fWinFileData.FileHandle));
+  
   Result := (fWinFileData.FileHandle <> 0) and (fWinFileData.FileHandle <> Windows.INVALID_HANDLE_VALUE);
   if Result then
   begin
     fWinFileData.FileSizeLow := Windows.GetFileSize(fWinFileData.FileHandle, nil);
+  end else
+  begin
+    // 5
+    if ERROR_ACCESS_DENIED = Windows.GetLastError then
+    begin
+      // NTFS 的文件访问权限问题
+    end;
+    //Log('BaseWinFile.pas', 'TWinFile.OpenFile Fail:' + IntToStr(Windows.GetLastError));
   end;
 end;
 
