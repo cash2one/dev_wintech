@@ -45,6 +45,7 @@ end;
 
 destructor TWinFile.Destroy;
 begin
+  CloseFile;
   inherited;
 end;
 
