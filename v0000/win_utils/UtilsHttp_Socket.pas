@@ -293,9 +293,17 @@ begin
   if ParseHttpUrlInfo(AURL, @tmpHttpInfo) then
   begin
     tmpTcpClient := AHttpClientSession.ConnectionSession.Connection;
-    tmpTcpClient.Base.TimeOutConnect := 3000;
-    tmpTcpClient.Base.TimeOutRead := 100;
-    tmpTcpClient.Base.TimeOutSend := 100;
+    
+    tmpTcpClient.Base.TimeOutConnect := AHttpClientSession.ConnectionSession.ConnectTimeOut;
+    tmpTcpClient.Base.TimeOutRead := AHttpClientSession.ConnectionSession.ReceiveTimeOut;        
+    tmpTcpClient.Base.TimeOutSend := AHttpClientSession.ConnectionSession.SendTimeOut;
+
+    if 0 = tmpTcpClient.Base.TimeOutConnect then
+      tmpTcpClient.Base.TimeOutConnect := 3000;
+    if 0 = tmpTcpClient.Base.TimeOutRead then
+      tmpTcpClient.Base.TimeOutRead := 500;
+    if 0 = tmpTcpClient.Base.TimeOutSend then
+      tmpTcpClient.Base.TimeOutSend := 500;
     
     if AHttpClientSession.IsKeepAlive then
     begin
