@@ -9,7 +9,7 @@ uses
   procedure CheckInSocketConnection(ANetSession: PHttpClientSession);
   procedure CloseSocketConnection(ANetSession: PHttpClientSession);
                           
-  function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession): PIOBuffer;
+  function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
   function Http_GetFile(AUrl, AOutputFile: AnsiString; AHttpClientSession: PHttpClientSession): Boolean;
 
 implementation
@@ -273,7 +273,7 @@ begin
   end;
 end;
 
-function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession): PIOBuffer;
+function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
   tmpHttpInfo: THttpUrlInfo;
   tmpTcpClient: PxlTcpClient;
@@ -320,7 +320,7 @@ begin
       exit;
     end;
     tmpRet := 0;
-    tmpBuffer := CheckOutIOBuffer;
+    tmpBuffer := CheckOutIOBuffer(ABufferSizeMode);
     if nil <> tmpBuffer then
     begin
       NetClientRecvBuf(tmpTcpClient, tmpBuffer, tmpRet);

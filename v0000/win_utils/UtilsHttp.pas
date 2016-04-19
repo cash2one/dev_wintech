@@ -45,8 +45,9 @@ type
   function CheckOutHttpClientSession: PHttpClientSession;
   procedure CheckInHttpClientSession(var ANetClientSession: PHttpClientSession);
 
-  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession): PIOBuffer; overload;      
-  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer; overload;
+  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer; overload;      
+  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer; overload;
+  
   function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PHttpClientSession): Boolean; overload;
 
   function PostHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
@@ -180,7 +181,7 @@ begin
   end;
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
+function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
 //  tmpIConnection: PIndyConnectionSession;
   tmpOwnedConnection: Boolean;
@@ -197,7 +198,7 @@ begin
   end;
   //Result := Http_WinInet.Http_GetString(AUrl);
   //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
-  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession, ABufferSizeMode);
   if tmpOwnedConnection then
   begin
     CheckInSocketConnection(ANetSession);
@@ -218,7 +219,7 @@ begin
   Result := UtilsHttp_Socket.Http_GetFile(AUrl, AOutputFile, ANetSession);
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession): PIOBuffer;
+function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
 //  tmpIConnection: PIndyConnectionSession;
   tmpOwnedConnection: Boolean;
@@ -235,7 +236,7 @@ begin
   end;
   //Result := Http_WinInet.Http_GetString(AUrl);
   //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
-  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession, ABufferSizeMode);
   if tmpOwnedConnection then
   begin
     CheckInSocketConnection(ANetSession);
