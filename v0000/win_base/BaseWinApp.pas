@@ -10,7 +10,7 @@ type
   TBaseWinAppPath = class(TBaseAppPath)
   protected
   public
-    function IsFileExists(AFileUrl: string): Boolean; override;
+    function IsFileExists(AFileUrl: WideString): Boolean; override;
   end;
   
   PBaseWinAppData = ^TBaseWinAppData;
@@ -62,7 +62,7 @@ begin
   end;
 end;
 
-function TBaseWinAppPath.IsFileExists(AFileUrl: string): Boolean;
+function TBaseWinAppPath.IsFileExists(AFileUrl: WideString): Boolean;
 begin
   Result := SysUtils.FileExists(AFileUrl);
 end;

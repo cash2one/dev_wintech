@@ -12,7 +12,7 @@ type
     procedure SetFileSize(const Value: Types.DWORD); virtual;
   public
     destructor Destroy; override;
-    function OpenFile(AFileUrl: string; AForceOpen: Boolean): Boolean; virtual;
+    function OpenFile(AFileUrl: WideString; AForceOpen: Boolean): Boolean; virtual;
     procedure CloseFile; virtual;
     property FileSize: Types.DWORD read GetFileSize write SetFileSize;
   end;
@@ -32,7 +32,7 @@ begin
   Result := 0;
 end;
 
-function TBaseFile.OpenFile(AFileUrl: string; AForceOpen: Boolean): Boolean;
+function TBaseFile.OpenFile(AFileUrl: WideString; AForceOpen: Boolean): Boolean;
 begin
   Result := false;
 end;

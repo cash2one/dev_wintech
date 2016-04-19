@@ -24,7 +24,7 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
-    function OpenFile(AFileUrl: string; AForceOpen: Boolean): Boolean; override;
+    function OpenFile(AFileUrl: WideString; AForceOpen: Boolean): Boolean; override;
     procedure CloseFile; override;
     function OpenFileMap: Pointer;
     procedure CloseFileMap;
@@ -49,7 +49,7 @@ begin
   inherited;
 end;
 
-function TWinFile.OpenFile(AFileUrl: string; AForceOpen: Boolean): Boolean;
+function TWinFile.OpenFile(AFileUrl: WideString; AForceOpen: Boolean): Boolean;
 var
   tmpFlags: DWORD;
   tmpCreation: DWORD;
@@ -63,7 +63,7 @@ begin
       tmpCreation := Windows.CREATE_NEW;
     end;
   end;
-  fWinFileData.FileHandle := Windows.CreateFile(PChar(AFileUrl),
+  fWinFileData.FileHandle := Windows.CreateFileW(PWideChar(AFileUrl),
           Windows.GENERIC_ALL,
           Windows.FILE_SHARE_READ or
           Windows.FILE_SHARE_WRITE or
