@@ -3,7 +3,7 @@ unit BaseWinProcess;
 interface
        
 uses
-  Windows, Sysutils, BaseMemory;
+  Windows, Sysutils;
   
 type
   POwnProcess     = ^TOwnProcess;
@@ -33,7 +33,9 @@ type
     StartInfoW    : TStartupInfoW;
   end;
 
-  procedure RunProcessA(AProcess: POwnProcess; ARunProcess: PRunProcess = nil);
+
+  procedure RunProcessA(AProcess: POwnProcess; AExeFileUrl: AnsiString; ARunProcess: PRunProcess = nil); overload;
+  //procedure RunProcessA(AProcess: POwnProcess; ARunProcess: PRunProcess = nil); overload;
 
   function CheckOutOwnProcess: POwnProcess;
   procedure CheckInOwnProcess(var AProcess: POwnProcess);
@@ -47,6 +49,9 @@ type
 
 implementation
 
+uses
+  BaseMemory;
+  
 function CheckOutOwnProcess: POwnProcess;
 begin
   Result := GetMemory(nil, SizeOf(TOwnProcess));
@@ -83,10 +88,26 @@ procedure CheckInRunProcess(var ARunProcess: PRunProcess);
 begin
 end;
 
-procedure RunProcessA(AProcess: POwnProcess; ARunProcess: PRunProcess = nil);
+procedure RunProcessA(AProcess: POwnProcess; AExeFileUrl: AnsiString; ARunProcess: PRunProcess = nil);
 begin
-  if Windows.CreateProcessA(nil, nil, nil, nil, false, CREATE_NEW, nil, nil,
-      AProcess.Run.StartInfoA, AProcess.Run.ProcessInfo) then
+  AProcess.Run := ARunProcess;
+  if nil = AProcess.Run then
+  begin
+    AProcess.Run := System.New(PRunProcess);
+    FillChar(AProcess.Run^, SizeOf(TRunProcess), 0);
+  end;
+  if Windows.CreateProcessA(
+      PAnsiChar(AExeFileUrl), //lpApplicationName: PAnsiChar;
+      nil, //lpCommandLine: PAnsiChar;
+      nil, //lpProcessAttributes,
+      nil, //lpThreadAttributes: PSecurityAttributes;
+      false, //bInheritHandles: BOOL;
+      CREATE_NEW, //dwCreationFlags: DWORD;
+      nil, //lpEnvironment: Pointer;
+      nil, //lpCurrentDirectory: PAnsiChar;
+      AProcess.Run.StartInfoA, //const lpStartupInfo: TStartupInfoA;
+      AProcess.Run.ProcessInfo) //var lpProcessInformation: TProcessInformation
+      then
   begin
     AProcess.Core.ProcessHandle := AProcess.Run.ProcessInfo.hProcess;
     AProcess.Core.ProcessId := AProcess.Run.ProcessInfo.dwProcessId;

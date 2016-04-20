@@ -32,7 +32,7 @@ type
     function CheckSingleInstance(AppMutexName: AnsiString): Boolean;
 
     property BaseWinAppData: PBaseWinAppData read GetBaseWinAppData;
-    property AppWindow: HWND read fBaseWinAppData.AppCmdWnd;
+    property AppWindow: HWND read fBaseWinAppData.AppCmdWnd write fBaseWinAppData.AppCmdWnd;
   end;
            
 var
