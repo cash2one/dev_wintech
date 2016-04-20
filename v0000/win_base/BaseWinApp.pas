@@ -18,6 +18,7 @@ type
     AppCmdWnd     : Windows.HWND;
     AppMsg        : Windows.TMsg;
     AppPath       : TBaseWinAppPath;
+    AppMutexHandle: THandle;
   end;
 
   TBaseWinApp = class(TBaseApp)
@@ -27,6 +28,9 @@ type
   public
     constructor Create(AppClassId: AnsiString); override;
     procedure RunAppMsgLoop;
+    
+    function CheckSingleInstance(AppMutexName: AnsiString): Boolean;
+
     property BaseWinAppData: PBaseWinAppData read GetBaseWinAppData;
     property AppWindow: HWND read fBaseWinAppData.AppCmdWnd;
   end;
@@ -62,10 +66,17 @@ begin
   end;
 end;
 
+function TBaseWinApp.CheckSingleInstance(AppMutexName: AnsiString): Boolean;
+begin                                           
+  if AppMutexName = '' then
+    AppMutexName := ExtractFileName(ParamStr(0));
+  fBaseWinAppData.AppMutexHandle := CreateMutexA(nil, False, PAnsiChar(AppMutexName));
+  Result := GetLastError <> ERROR_ALREADY_EXISTS;
+end;
+
 function TBaseWinAppPath.IsFileExists(AFileUrl: WideString): Boolean;
 begin
   Result := SysUtils.FileExists(AFileUrl);
 end;
-
 
 end.
