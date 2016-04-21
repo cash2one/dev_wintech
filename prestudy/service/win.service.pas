@@ -32,16 +32,19 @@ type
     StatusHandle    : THandle;
     ThreadHandle    : THandle;   
     ServiceHandle   : THandle;
-    ThreadId        : DWord;     
-        
-    ServiceType     : TServiceType;  
+    ThreadId        : DWord;    
+    TagID           : DWORD;
+    LastError       : DWORD;     
+
+    ServiceType     : TServiceType;
     Status          : TCurrentStatus;
     StartType       : TStartType;
-    ErrorSeverity   : TErrorSeverity;  
-    Interactive     : Boolean;    
-    TagID           : DWORD;  
-    LastError       : DWORD;
-    
+    ErrorSeverity   : TErrorSeverity;
+                                 
+    IsAllowStop     : Boolean;
+    IsAllowPause    : Boolean;
+    IsInteractive   : Boolean;
+
     Controller      : TServiceController;
     Name            : WideString;
     DisplayName     : WideString;
@@ -80,7 +83,7 @@ const
     SERVICE_KERNEL_DRIVER, SERVICE_FILE_SYSTEM_DRIVER);
 begin
   Result := NTServiceType[AServiceProc.ServiceType];
-  if (AServiceProc.ServiceType = stWin32) and AServiceProc.Interactive then
+  if (AServiceProc.ServiceType = stWin32) and AServiceProc.IsInteractive then
     Result := Result or SERVICE_INTERACTIVE_PROCESS;
   if (AServiceProc.ServiceType = stWin32) {and (Application.ServiceCount > 1)} then
     Result := (Result xor SERVICE_WIN32_OWN_PROCESS) or SERVICE_WIN32_SHARE_PROCESS;
@@ -168,7 +171,8 @@ begin
           tmpPTag,
           nil, //PWideChar(GetNTDependenciesW(AWinService)),
           tmpPSSN,
-          PWideChar(AServiceProc.Password));
+          nil //PWideChar(AServiceProc.Password)
+          );
     if 0 = AServiceProc.ServiceHandle then
     begin
       AServiceProc.LastError := Windows.GetLastError;

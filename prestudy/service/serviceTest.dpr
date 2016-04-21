@@ -6,7 +6,8 @@ uses
   SysUtils,
   win.service in 'win.service.pas',
   win.app in 'win.app.pas',
-  service.test in 'service.test.pas';
+  service.test in 'service.test.pas',
+  win.app_exit in 'win.app_exit.pas';
 
 {$R *.res}
 
@@ -27,6 +28,9 @@ begin
   GlobalService.ServiceType     := stWin32;
   GlobalService.StartType       := stAuto;
   GlobalService.ErrorSeverity   := esIgnore;
+  GlobalService.ErrorSeverity   := esNormal;
+  GlobalService.IsAllowPause := True;
+  GlobalService.IsAllowStop := True;
 
   //if FindCmdLineSwitch('INSTALL', ['-', '/'], True) then
   begin
