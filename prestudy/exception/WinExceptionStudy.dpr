@@ -1,9 +1,15 @@
 program WinExceptionStudy;
 
+{$APPTYPE CONSOLE}
+
 uses
-  Windows;
+  Windows,
+  ExceptionHandle in 'ExceptionHandle.pas';
 
 {$R *.res}
 
 begin
+  DoTest;
+  Readln;
 end.
+
