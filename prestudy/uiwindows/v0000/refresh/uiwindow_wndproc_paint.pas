@@ -13,12 +13,14 @@ implementation
 
 var
   tmpBrush: HBRUSH = 0;
+  tmpRectBrush: HBRUSH = 0;
                     
 function WndProcA_WMPaint(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 var
   tmpPS: TPaintStruct;
   tmpDC: HDC;
   tmpLogBrush: TLogBrush;
+  tmpRect: TRect;
 begin
   Result := 0;
   tmpDC := Windows.BeginPaint(AUIWindow.BaseWnd.UIWndHandle, tmpPS);
@@ -29,8 +31,23 @@ begin
     tmpLogBrush.lbColor := $EFEFEF;
     tmpLogBrush.lbHatch := 0;
     tmpBrush := CreateBrushIndirect(tmpLogBrush);
+  end;            
+  if 0 = tmpRectBrush then
+  begin
+    tmpLogBrush.lbStyle := BS_SOLID;
+    tmpLogBrush.lbColor := $0F0F0F;
+    tmpLogBrush.lbHatch := 0;
+    tmpRectBrush := CreateBrushIndirect(tmpLogBrush);
   end;
+
   FillRect(tmpDC, AUIWindow.BaseWnd.ClientRect, tmpBrush);
+
+  tmpRect.Left := 10;
+  tmpRect.Top := 10;
+  tmpRect.Right := tmpRect.Left + 100;
+  tmpRect.Bottom := tmpRect.Top + 50;
+
+  FrameRect(tmpDC, tmpRect, tmpRectBrush);
 
   EndPaint(AUIWindow.BaseWnd.UIWndHandle, tmpPS);
 //  Result := DefWindowProcA(AUIWindow.BaseWnd.UIWndHandle, WM_Paint, wParam, lParam);
