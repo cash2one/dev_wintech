@@ -17,6 +17,7 @@ type
   TUIBaseWnd        = packed record
     UIWndHandle     : HWND;
     UIWndParent     : HWND;
+    WndMsg          : Windows.TMsg;
     Style           : DWORD;
     ExStyle         : DWORD;
     WindowRect      : TRect;

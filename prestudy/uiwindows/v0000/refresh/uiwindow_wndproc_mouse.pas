@@ -6,24 +6,44 @@ uses
   Windows,
   Messages,
   uiwindow_refresh;
-                      
+
+var                            
+  IsDragStarting: Boolean = False;
+  DragStartPoint: TSmallPoint;
+  WMMouseMove_CursorPoint: TSmallPoint;
+
   function UIWndProcA_Mouse(AUIWindow: PUIWindow; AMsg: UINT; wParam: WPARAM; lParam: LPARAM; var AWndProcResult: LRESULT): Boolean;
 
 implementation
 
+uses
+  uiwindow_wndproc_paint;
+  
 function WndProcA_WMLButtonUp(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
+  IsDragStarting := false;    
+  UIWindowPaint(AUIWindow);
   Result := DefWindowProcA(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONUP, wParam, lParam);
 end;
 
 function WndProcA_WMLButtonDown(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
-  SendMessage(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
+  if 20 > TSmallPoint(lParam).y then
+  begin
+    SendMessage(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
+    IsDragStarting := False;
+  end else
+  begin
+    DragStartPoint := TSmallPoint(lParam);
+    IsDragStarting := True;
+  end;
   Result := DefWindowProcA(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONDOWN, wParam, lParam);
 end;
 
 function WndProcA_WMMouseMove(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
+  WMMouseMove_CursorPoint := TSmallPoint(lParam);
+  UIWindowPaint(AUIWindow);
   Result := DefWindowProcA(AUIWindow.BaseWnd.UIWndHandle, WM_MOUSEMOVE, wParam, lParam);
 end;
 
@@ -40,7 +60,6 @@ end;
 function WndProcA_WMNCHitTest(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
   Result := HTCLIENT;
-  //Result := DefWindowProcA(AUIWindow.BaseWnd.UIWndHandle, WM_NCHITTEST, wParam, lParam);
 end;
 
 function WndProcA_WMMouseHover(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
