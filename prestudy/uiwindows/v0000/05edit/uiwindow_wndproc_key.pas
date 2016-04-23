@@ -78,6 +78,8 @@ begin
 
     WM_IME_SETCONTEXT: WndProcW_WMImeSetContext(AUIWindow, wParam, lParam);
     WM_IME_NOTIFY: WndProcW_WMImeNotify(AUIWindow, wParam, lParam);
+    else
+      Result := false;
   end;
 end;
   

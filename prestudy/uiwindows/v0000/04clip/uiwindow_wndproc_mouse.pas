@@ -27,10 +27,11 @@ begin
 end;
 
 function WndProcA_WMLButtonDown(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
-begin
+begin            
   if 20 > TSmallPoint(lParam).y then
   begin
-    SendMessage(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
+    SendMessage(AUIWindow.BaseWnd.UIWndHandle, WM_SYSCOMMAND, HTCaption or SC_MOVE, 0);
+//    SendMessage(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
     IsDragStarting := False;
   end else
   begin
