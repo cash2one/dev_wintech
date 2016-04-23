@@ -15,7 +15,8 @@ uses
   uiwindow_wndproc_paint in 'uiwindow_wndproc_paint.pas',
   uiwindow_wndproc_mouse in 'uiwindow_wndproc_mouse.pas',
   uiwindow_wndproc in 'uiwindow_wndproc.pas',
-  uiwindow_wndproc_startend in 'uiwindow_wndproc_startend.pas';
+  uiwindow_wndproc_startend in 'uiwindow_wndproc_startend.pas',
+  uiwindow_wndproc_uispace in 'uiwindow_wndproc_uispace.pas';
 
 {$R *.res}
 

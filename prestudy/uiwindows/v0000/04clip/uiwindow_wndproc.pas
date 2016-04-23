@@ -15,6 +15,7 @@ uses
   UtilsLog,
   Sysutils,
   uiwindow_wndproc_startend,
+  uiwindow_wndproc_uispace,
   uiwindow_wndproc_paint,
   uiwindow_wndproc_mouse,
   uiwindow_wndproc_key;
@@ -25,10 +26,13 @@ begin
   if UIWndProcA_Paint(AWindow, AMsg, wParam, lParam, Result) then
     exit;
   if UIWndProcA_Mouse(AWindow, AMsg, wParam, lParam, Result) then
+    exit;    
+  if UIWndProcA_UISpace(AWindow, AMsg, wParam, lParam, Result) then
+  begin
     exit;
+  end;
   if UIWndProcA_Key(AWindow, AMsg, wParam, lParam, Result) then
     exit;
-
   // start end 放最后处理
   if 0 = AWindow.BaseWnd.UIWndHandle then
     AWindow.BaseWnd.UIWndHandle := AWnd; 
