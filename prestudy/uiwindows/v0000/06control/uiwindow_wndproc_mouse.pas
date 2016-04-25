@@ -21,23 +21,23 @@ uses
   
 function WndProcW_WMLButtonUp(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
-//  IsDragStarting := false;
-//  UIWindowPaint(AUIWindow);
+  IsDragStarting := false;
+  UIWindowPaint(AUIWindow);
   Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONUP, wParam, lParam);
 end;
 
 function WndProcW_WMLButtonDown(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
-//  if 20 > TSmallPoint(lParam).y then
-//  begin
-//    SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_SYSCOMMAND, SC_MOVE or HTCaption, 0);   
-//    //SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
-//    IsDragStarting := False;
-//  end else
-//  begin
-//    DragStartPoint := TSmallPoint(lParam);
-//    IsDragStarting := True;
-//  end;
+  if 20 > TSmallPoint(lParam).y then
+  begin
+    SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_SYSCOMMAND, SC_MOVE or HTCaption, 0);
+    //SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
+    IsDragStarting := False;
+  end else
+  begin
+    DragStartPoint := TSmallPoint(lParam);
+    IsDragStarting := True;
+  end;
   Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONDOWN, wParam, lParam);
 end;
 
@@ -78,8 +78,8 @@ end;
 
 function WndProcW_WMMouseMove(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
-//  WMMouseMove_CursorPoint := TSmallPoint(lParam);
-//  UIWindowPaint(AUIWindow);
+  WMMouseMove_CursorPoint := TSmallPoint(lParam);
+  UIWindowPaint(AUIWindow);
   Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_MOUSEMOVE, wParam, lParam);
 end;
 
