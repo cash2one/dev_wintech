@@ -51,7 +51,15 @@ begin
   UpdateMemDC(@AUIWindow.MemDC,
       AUIWindow.BaseWnd.ClientRect.Right,
       AUIWindow.BaseWnd.ClientRect.Bottom);
+                                   
+  AUIWindow.TestUIView.Space.Layout.Left := 50;
+  AUIWindow.TestUIView.Space.Layout.Top := 50;
+  AUIWindow.TestUIView.Space.Shape.Width := 100;
+  AUIWindow.TestUIView.Space.Shape.Height := 20;  
+  AUIWindow.TestUIView.Space.Layout.Right := AUIWindow.TestUIView.Space.Layout.Left + AUIWindow.TestUIView.Space.Shape.Width;
+  AUIWindow.TestUIView.Space.Layout.Bottom := AUIWindow.TestUIView.Space.Layout.Top + AUIWindow.TestUIView.Space.Shape.Height;
 
+  
   AUIWindow.BaseWnd.UIWndHandle := CreateWindowExW(
     //WS_EX_TOOLWINDOW
       //or WS_EX_TOPMOST

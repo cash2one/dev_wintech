@@ -115,10 +115,10 @@ begin
 
   FillRect(AMemDC.DCHandle, AUIWindow.BaseWnd.ClientRect, tmpBrush);
 
-  tmpRect.Left := 10;
-  tmpRect.Top := 10;
-  tmpRect.Right := tmpRect.Left + 100;
-  tmpRect.Bottom := tmpRect.Top + 50;
+  tmpRect.Left := AUIWindow.TestUIView.Space.Layout.Left;
+  tmpRect.Top := AUIWindow.TestUIView.Space.Layout.Top;
+  tmpRect.Right := AUIWindow.TestUIView.Space.Layout.Right;
+  tmpRect.Bottom := AUIWindow.TestUIView.Space.Layout.Bottom;
 
   FrameRect(AMemDC.DCHandle, tmpRect, tmpRectBrush);
 

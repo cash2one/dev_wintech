@@ -6,7 +6,8 @@ uses
   Windows,
   Messages,
   uiwin.memdc,
-  win.wnd_ui;
+  win.wnd_ui,
+  UIView;
 
 type
   PUIWindow         = ^TUIWindow;
@@ -14,6 +15,7 @@ type
     BaseWnd         : TUIBaseWnd;
     WndClientRect   : TRect;
     MemDC           : TWinMemDC;
+    TestUIView      : TUIView;
   end;
   
 implementation
