@@ -27,7 +27,11 @@ type
   
   function SQL3DbCheck(ADataBase: PSQL3Db; const AErrCode: Integer; ACheckCode: Integer = SQLITE_OK): Boolean;
 
-  function SQL3DbOpen(ADataBase: PSQL3Db; AFileName: WideString; AOpenFlag: integer;
+  function CheckOutSQL3Db: PSQL3Db;
+  procedure CheckInSQL3Db(var ASQL3Db: PSQL3Db);
+  
+  function SQL3DbOpen(ADataBase: PSQL3Db; AFileName: WideString;
+      AOpenFlag: integer;  //SQLITE_OPEN_CREATE or SQLITE_OPEN_READWRITE or SQLITE_OPEN_NOMUTEX;
       Key: Pointer = nil; KeyLen: Integer = 0): Boolean;  
   procedure SQL3DbClose(ADataBase: PSQL3Db);
 
@@ -37,9 +41,31 @@ type
   procedure SQL3DbCommit(ADataBase: PSQL3Db);
   procedure SQL3DbRollback(ADataBase: PSQL3Db);      
            
-  function CheckOutSql3Statement(ADataBase: PSQL3Db): PSQL3Statement;          
+  function CheckOutSql3Statement(ADataBase: PSQL3Db; ASQL: string): PSQL3Statement;
+  procedure CheckInSql3Statement(var AStatement: PSQL3Statement);
+
   function SQL3StatementStep(AStatement: PSQL3Statement): Integer;
   procedure SQL3StatementReset(AStatement: PSQL3Statement);
+                                                            
+  function SQL3Statement_ColumnCount(AStatement: PSQL3Statement): Integer;
+  function SQL3Statement_ColumnName(AStatement: PSQL3Statement; AColumnIndex: Integer): WideString;
+  function SQL3Statement_ColumnType(AStatement: PSQL3Statement; AColumnIndex: Integer): Integer;
+
+  function SQL3Statement_AsInt(AStatement: PSQL3Statement; AColumnIndex: Integer): Integer;
+  function SQL3Statement_AsInt64(AStatement: PSQL3Statement; AColumnIndex: Integer): Int64;
+  function SQL3Statement_AsDouble(AStatement: PSQL3Statement; AColumnIndex: Integer): Double;
+           
+  function SQL3Statement_AsAnsi(AStatement: PSQL3Statement; AColumnIndex: Integer): AnsiString;
+  function SQL3Statement_AsWide(AStatement: PSQL3Statement; AColumnIndex: Integer): WideString;
+  function SQL3Statement_AsBlob(AStatement: PSQL3Statement; AColumnIndex: Integer): Pointer;
+           
+  procedure SQL3Statement_BindInt(AStatement: PSQL3Statement; const AParamIndex, Value: Integer);
+  procedure SQL3Statement_BindInt64(AStatement: PSQL3Statement; const AParamIndex: Integer; const Value: Int64);
+  procedure SQL3Statement_BindNull(AStatement: PSQL3Statement; const AParamIndex: Integer);
+  procedure SQL3Statement_BindAnsi(AStatement: PSQL3Statement; const AParamIndex: Integer; const Value: AnsiString);
+  procedure SQL3Statement_BindZeroBlob(AStatement: PSQL3Statement; const AParamIndex, ASize: Integer);
+  procedure SQL3Statement_ClearBindings(AStatement: PSQL3Statement);
+
 
 implementation
 
@@ -62,7 +88,23 @@ begin
     //end;
   end;
 end;
-                  
+
+function CheckOutSQL3Db: PSQL3Db;
+begin
+  Result := System.New(PSQL3Db);
+  FillChar(Result^, SizeOf(TSQL3Db), 0);
+end;
+
+procedure CheckInSQL3Db(var ASQL3Db: PSQL3Db);
+begin
+  if nil <> ASQL3Db then
+  begin
+    SQL3DbClose(ASQL3Db);
+    FreeMem(ASQL3Db);
+    ASQL3Db := nil;
+  end;
+end;
+
 function DoSQLite3BusyCallback(ptr: Pointer; count: Integer): Integer; cdecl;
 begin        
   Result := 0;
@@ -176,13 +218,13 @@ begin
   end;
 end;
 
-function CheckOutSql3Statement(ADataBase: PSQL3Db): PSQL3Statement;
+function CheckOutSql3Statement(ADataBase: PSQL3Db; ASQL: string): PSQL3Statement;
 begin
   Result := System.New(PSQL3Statement);
   FillChar(Result^, SizeOf(TSQL3Statement), 0);
 
   Result.Db := ADataBase;
-  Result.Sql := '';//SQL;
+  Result.Sql := ASQL;
   //FOwnerDatabase.CheckHandle;
   SQL3DBCheck(
     ADataBase,
@@ -192,6 +234,20 @@ begin
   //FStrList := TList.Create;
 end;
 
+procedure CheckInSql3Statement(var AStatement: PSQL3Statement);
+begin
+  if nil <> AStatement then
+  begin
+    if nil <> AStatement.Handle then
+    begin
+      _sqlite3_finalize(AStatement.Handle);
+      AStatement.Handle := 0;
+    end;
+    FreeMem(AStatement);
+    AStatement := nil;
+  end;
+end;
+    
 function SQL3StatementStep(AStatement: PSQL3Statement): Integer;
 //var
 //  errnum: Integer;
@@ -206,6 +262,109 @@ procedure SQL3StatementReset(AStatement: PSQL3Statement);
 begin
   _sqlite3_reset(AStatement.Handle);
   //ClearStrList;
+end;
+                              
+function SQL3Statement_ColumnCount(AStatement: PSQL3Statement): Integer;
+begin
+  Result := _sqlite3_column_count(AStatement.Handle);
+end;
+
+function SQL3Statement_ColumnName(AStatement: PSQL3Statement; AColumnIndex: Integer): WideString;
+begin
+  Result := UTF8ToStr(_sqlite3_column_name(AStatement.Handle, AColumnIndex));
+end;
+
+function SQL3Statement_ColumnType(AStatement: PSQL3Statement; AColumnIndex: Integer): Integer;
+begin
+  Result := _sqlite3_column_type(AStatement.Handle, AColumnIndex);
+end;
+                          
+function SQL3Statement_ColumnBytes(AStatement: PSQL3Statement; AColumnIndex: Integer): Integer;
+begin
+  Result := _sqlite3_column_bytes(AStatement.Handle, AColumnIndex);
+end;
+
+function SQL3Statement_AsInt(AStatement: PSQL3Statement; AColumnIndex: Integer): Integer;
+begin
+  Result := _sqlite3_column_int(AStatement.Handle, AColumnIndex);
+end;
+
+function SQL3Statement_AsInt64(AStatement: PSQL3Statement; AColumnIndex: Integer): Int64;
+begin
+  Result := _sqlite3_column_int64(AStatement.Handle, AColumnIndex);
+end;
+
+function SQL3Statement_AsDouble(AStatement: PSQL3Statement; AColumnIndex: Integer): Double;
+begin
+  Result := _sqlite3_column_double(AStatement.Handle, AColumnIndex);
+end;
+                         
+function SQL3Statement_AsAnsi(AStatement: PSQL3Statement; AColumnIndex: Integer): AnsiString;
+var
+  tmpLen: Integer;
+  P: PAnsiChar;
+begin
+  tmpLen := SQL3Statement_ColumnBytes(AStatement, AColumnIndex);
+  SetLength(Result, tmpLen);
+  if tmpLen > 0 then
+  begin
+    P := _sqlite3_column_text(AStatement.Handle, AColumnIndex);
+    Move(P^, PAnsiChar(Result)^, tmpLen);
+  end;
+end;
+
+function SQL3Statement_AsWide(AStatement: PSQL3Statement; AColumnIndex: Integer): WideString;
+var
+  tmpLen: Integer;
+begin
+  tmpLen := SQL3Statement_ColumnBytes(AStatement, AColumnIndex);
+  Result := UTF8ToStr(_sqlite3_column_text(AStatement.Handle, AColumnIndex), tmpLen);
+end;
+      
+function SQL3Statement_AsBlob(AStatement: PSQL3Statement; AColumnIndex: Integer): Pointer;
+begin
+  Result := _sqlite3_column_blob(AStatement.Handle, AColumnIndex);
+end;
+
+procedure SQL3Statement_BindInt(AStatement: PSQL3Statement; const AParamIndex, Value: Integer);
+begin
+  //FOwnerDatabase.Check(
+  _sqlite3_bind_int(AStatement.Handle, AParamIndex, Value);
+end;
+
+procedure SQL3Statement_BindInt64(AStatement: PSQL3Statement; const AParamIndex: Integer; const Value: Int64);
+begin
+  //FOwnerDatabase.Check(
+  _sqlite3_bind_int64(AStatement.Handle, AParamIndex, Value);
+end;
+
+procedure SQL3Statement_BindNull(AStatement: PSQL3Statement; const AParamIndex: Integer);
+begin
+  //FOwnerDatabase.Check(
+  _sqlite3_bind_null(AStatement.Handle, AParamIndex);
+end;
+
+procedure SQL3Statement_BindAnsi(AStatement: PSQL3Statement; const AParamIndex: Integer; const Value: AnsiString);
+var
+  P: PAnsiString;
+begin
+  New(P);
+//  FStrList.Add(P);
+  P^ := Value;
+  //FOwnerDatabase.Check(
+  _sqlite3_bind_text(AStatement.Handle, AParamIndex, PAnsiChar(P^), Length(P^), SQLITE_STATIC);
+end;
+
+procedure SQL3Statement_BindZeroBlob(AStatement: PSQL3Statement; const AParamIndex, ASize: Integer);
+begin
+  //FOwnerDatabase.Check(
+  _sqlite3_bind_zeroblob(AStatement.Handle, AParamIndex, ASize);
+end;
+
+procedure SQL3Statement_ClearBindings(AStatement: PSQL3Statement);
+begin
+  //FOwnerDatabase.Check(
+  _sqlite3_clear_bindings(AStatement.Handle);
 end;
 
 end.
