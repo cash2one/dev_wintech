@@ -53,14 +53,14 @@ begin
       AUIWindow.BaseWnd.ClientRect.Bottom);
 
   AUIWindow.BaseWnd.UIWndHandle := CreateWindowExW(
-    WS_EX_TOOLWINDOW
-      or WS_EX_TOPMOST
-      or WS_EX_OVERLAPPEDWINDOW
+    //WS_EX_TOOLWINDOW
+      //or WS_EX_TOPMOST
+    WS_EX_OVERLAPPEDWINDOW
     ,
     tmpRegWndClass.lpszClassName,
     '',
-    WS_POPUP {+ 0}
-      or WS_OVERLAPPEDWINDOW
+    //WS_POPUP {+ 0}
+    WS_OVERLAPPEDWINDOW
     ,
     AUIWindow.BaseWnd.WindowRect.Left,
     AUIWindow.BaseWnd.WindowRect.Top,

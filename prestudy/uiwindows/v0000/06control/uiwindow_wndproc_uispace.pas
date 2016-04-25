@@ -40,8 +40,22 @@ function UIWndProcW_UISpace(AUIWindow: PUIWindow; AMsg: UINT; wParam: WPARAM; lP
 begin
   Result := true;
   case AMsg of
-    WM_NCCALCSIZE: AWndProcResult := WndProcW_WMNCCALCSIZE(AUIWindow, wParam, lParam);   
-    WM_SIZE: AWndProcResult := WndProcW_WMSIZE(AUIWindow, wParam, lParam);             
+    WM_NCCALCSIZE: begin
+      AWndProcResult := WndProcW_WMNCCALCSIZE(AUIWindow, wParam, lParam);
+      //CalcValidRects: BOOL;
+      //CalcSize_Params: PNCCalcSizeParams;
+      if nil <> PNCCalcSizeParams(lParam) then
+      begin
+        // 
+        if 0 = PNCCalcSizeParams(lParam).rgrc[0].Left then
+        begin        
+        end;
+      end;
+    end;
+    WM_SIZE: begin
+      AWndProcResult := WndProcW_WMSIZE(AUIWindow, wParam, lParam);
+      Windows.GetClientRect(AUIWindow.BaseWnd.UIWndHandle, AUIWindow.WndClientRect);
+    end;
     WM_MOVE: AWndProcResult := WndProcW_WMMOVE(AUIWindow, wParam, lParam);
     WM_WINDOWPOSCHANGING: AWndProcResult := WndProcW_WMWINDOWPOSCHANGING(AUIWindow, wParam, lParam);
     WM_WINDOWPOSCHANGED: AWndProcResult := WndProcW_WMWINDOWPOSCHANGED(AUIWindow, wParam, lParam);

@@ -9,10 +9,11 @@ uses
   win.wnd_ui;
 
 type
-  PUIWindow     = ^TUIWindow;    
-  TUIWindow     = record
-    BaseWnd     : TUIBaseWnd;
-    MemDC       : TWinMemDC;
+  PUIWindow         = ^TUIWindow;
+  TUIWindow         = record
+    BaseWnd         : TUIBaseWnd;
+    WndClientRect   : TRect;
+    MemDC           : TWinMemDC;
   end;
   
 implementation
