@@ -79,12 +79,15 @@ const
   HTCLOSE = 20;
   HTHELP = 21;
                    
-  function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TSmallPoint; ABorder: Integer = 2): Integer; overload;
-  function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TPoint; ABorder: Integer = 2): Integer; overload;
+  function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TSmallPoint; ABorder: Integer = 3): Integer; overload;
+  function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TPoint; ABorder: Integer = 3): Integer; overload;
 
+  procedure UpdateUISpaceWidth(AUISpace: PUIViewSpace; AWidth: integer);
+  procedure UpdateUISpaceHeight(AUISpace: PUIViewSpace; AHeight: integer);
+  
 implementation
 
-function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TSmallPoint; ABorder: Integer = 2): Integer;
+function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TSmallPoint; ABorder: Integer = 3): Integer;
 begin
   Result := HTNOWHERE;  
   if APoint.x < (AUILayout.Left - ABorder) then
@@ -132,7 +135,7 @@ begin
   end;
 end;
 
-function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TPoint; ABorder: Integer = 2): Integer;
+function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TPoint; ABorder: Integer = 3): Integer;
 begin
   Result := HTNOWHERE;  
   if APoint.x < (AUILayout.Left - ABorder) then
@@ -178,6 +181,18 @@ begin
     Result := HTBOTTOM;
     exit;
   end;
+end;
+
+procedure UpdateUISpaceWidth(AUISpace: PUIViewSpace; AWidth: integer);
+begin
+  AUISpace.Shape.Width := AWidth;
+  AUISpace.Layout.Right := AUISpace.Layout.Left + AWidth;
+end;
+
+procedure UpdateUISpaceHeight(AUISpace: PUIViewSpace; AHeight: integer);
+begin
+  AUISpace.Shape.Height := AHeight;
+  AUISpace.Layout.Bottom := AUISpace.Layout.Top + AHeight;
 end;
 
 end.

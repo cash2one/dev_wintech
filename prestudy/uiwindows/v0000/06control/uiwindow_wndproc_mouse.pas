@@ -15,14 +15,65 @@ uses
   uiview,
   uiview_space,
   uiwindow_wndproc_paint;
-  
+                        
+var
+  Cursor_SizeNS: HCURSOR = 0;
+  Cursor_SizeWE: HCURSOR = 0;
+  Cursor_SizeNWSE: HCURSOR = 0;
+  Cursor_SizeNESW: HCURSOR = 0;
+  Cursor_SizeAll: HCURSOR = 0;
+
+procedure UpdateHitTestCursor(AHitTest: integer);
+begin
+  if (HTBOTTOM = AHitTest) or
+     (HTTOP = AHitTest) then
+  begin
+    if 0 = Cursor_SizeNS then
+      Cursor_SizeNS := LoadCursor(0, IDC_SIZENS);   
+    if 0 <> Cursor_SizeNS then
+      Windows.SetCursor(Cursor_SizeNS);
+  end;
+  if (HTLEFT = AHitTest) or
+     (HTRIGHT = AHitTest) then
+  begin
+    if 0 = Cursor_SizeWE then
+      Cursor_SizeWE := LoadCursor(0, IDC_SIZEWE);
+    if 0 <> Cursor_SizeWE then
+      Windows.SetCursor(Cursor_SizeWE);
+  end;               
+  if (HTTOPLEFT = AHitTest) or
+     (HTBOTTOMRIGHT = AHitTest) then
+  begin
+    if 0 = Cursor_SizeNWSE then
+      Cursor_SizeNWSE := LoadCursor(0, IDC_SIZENWSE);
+    if 0 <> Cursor_SizeNWSE then
+      Windows.SetCursor(Cursor_SizeNWSE);
+  end;           
+  if (HTTOPRIGHT = AHitTest) or
+     (HTBOTTOMLEFT = AHitTest) then
+  begin
+    if 0 = Cursor_SizeNESW then
+      Cursor_SizeNESW := LoadCursor(0, IDC_SIZENESW);
+    if 0 <> Cursor_SizeNESW then
+      Windows.SetCursor(Cursor_SizeNESW);
+  end;
+  if HTCLIENT = AHitTest then
+  begin
+    if 0 = Cursor_SizeAll then
+      Cursor_SizeAll := LoadCursor(0, IDC_SIZEALL);
+    if 0 <> Cursor_SizeAll then
+      Windows.SetCursor(Cursor_SizeAll);
+  end;
+end;
+
 function WndProcW_WMLButtonDown(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin 
   AUIWindow.WMLButtonDown_CursorPoint := TSmallPoint(lParam);
   AUIWindow.TestFocusUIView := nil;      
   AUIWindow.FocusMode := POINT_HITTEST(@AUIWindow.TestUIView.Space.Layout, AUIWindow.WMLButtonDown_CursorPoint);
   if HTNOWHERE <> AUIWindow.FocusMode then
-  begin   
+  begin
+    UpdateHitTestCursor(AUIWindow.FocusMode);
     AUIWindow.TestFocusUIView := @AUIWindow.TestUIView;   
     AUIWindow.DragStartRect.Left := AUIWindow.TestUIView.Space.Layout.Left;
     AUIWindow.DragStartRect.Top := AUIWindow.TestUIView.Space.Layout.Top;
@@ -100,6 +151,8 @@ begin
 end;
 
 function WndProcW_WMMouseMove(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
+var
+  tmpHitTest: integer;
 begin
   AUIWindow.WMMouseMove_CursorPoint := TSmallPoint(lParam);
   if nil <> AUIWindow.TestFocusUIView then
@@ -112,38 +165,43 @@ begin
       AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
     end;
     if HTRIGHT = AUIWindow.FocusMode then
-    begin          
-      AUIWindow.TestFocusUIView.Space.Shape.Width :=
-          AUIWindow.DragStartRect.Right - AUIWindow.DragStartRect.Left +
-          AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;
-      AUIWindow.TestFocusUIView.Space.Layout.Right := AUIWindow.TestFocusUIView.Space.Layout.Left + AUIWindow.TestFocusUIView.Space.Shape.Width;
-
-      //AUIWindow.TestFocusUIView.Space.Shape.Height := AUIWindow.DragStartRect.Top + AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
-      //AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
-    end;          
+    begin
+      UpdateUISpaceWidth(@AUIWindow.TestFocusUIView.Space, AUIWindow.DragStartRect.Right - AUIWindow.DragStartRect.Left +
+          AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x);
+    end;  
+    if HTLEFT = AUIWindow.FocusMode then
+    begin       
+      AUIWindow.TestFocusUIView.Space.Layout.LEFT := AUIWindow.DragStartRect.LEFT +
+        AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;
+      UpdateUISpaceWidth(@AUIWindow.TestFocusUIView.Space, AUIWindow.DragStartRect.Right -
+        AUIWindow.TestFocusUIView.Space.Layout.Left);
+    end;   
     if HTBOTTOM = AUIWindow.FocusMode then
-    begin          
-      AUIWindow.TestFocusUIView.Space.Shape.Height :=
-          AUIWindow.DragStartRect.Bottom - AUIWindow.DragStartRect.Top +
-          AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
-      AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
-
-      //AUIWindow.TestFocusUIView.Space.Shape.Height := AUIWindow.DragStartRect.Top + AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
-      //AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
-    end;
+    begin
+      UpdateUISpaceHeight(@AUIWindow.TestFocusUIView.Space, AUIWindow.DragStartRect.Bottom - AUIWindow.DragStartRect.Top +
+          AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y);
+    end;    
     if HTBOTTOMRIGHT = AUIWindow.FocusMode then
     begin                                    
-      AUIWindow.TestFocusUIView.Space.Shape.Width :=
-          AUIWindow.DragStartRect.Right - AUIWindow.DragStartRect.Left +
-          AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;     
-      AUIWindow.TestFocusUIView.Space.Layout.Right := AUIWindow.TestFocusUIView.Space.Layout.Left + AUIWindow.TestFocusUIView.Space.Shape.Width;
+      UpdateUISpaceWidth(@AUIWindow.TestFocusUIView.Space, AUIWindow.DragStartRect.Right - AUIWindow.DragStartRect.Left +
+          AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x);     
       
-      AUIWindow.TestFocusUIView.Space.Shape.Height :=
-          AUIWindow.DragStartRect.Bottom - AUIWindow.DragStartRect.Top +
-          AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
-      AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
+      UpdateUISpaceHeight(@AUIWindow.TestFocusUIView.Space, AUIWindow.DragStartRect.Bottom - AUIWindow.DragStartRect.Top +
+          AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y);
+    end;   
+    if HTTOP = AUIWindow.FocusMode then
+    begin
+      AUIWindow.TestFocusUIView.Space.Layout.Top := AUIWindow.DragStartRect.Top +
+        AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
 
-    end;
+      UpdateUISpaceHeight(@AUIWindow.TestFocusUIView.Space, AUIWindow.DragStartRect.Bottom - 
+        AUIWindow.TestFocusUIView.Space.Layout.Top);
+    end;    
+    UpdateHitTestCursor(AUIWindow.FocusMode);
+  end else
+  begin
+    tmpHitTest := POINT_HITTEST(@AUIWindow.TestUIView.Space.Layout, AUIWindow.WMMouseMove_CursorPoint);
+    UpdateHitTestCursor(tmpHitTest);
   end;
   UIWindowPaint(AUIWindow);
   Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_MOUSEMOVE, wParam, lParam);
