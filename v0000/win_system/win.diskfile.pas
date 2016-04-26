@@ -18,7 +18,10 @@ type
     FilePosition    : DWORD;
     FileSizeLow     : DWORD;
   end;
-                  
+                               
+  function CheckOutWinFile: PWinFile;    
+  procedure CheckInWinFile(var AWinFile: PWinFile);
+
   function WinFileOpen(AWinFile: PWinFile; AFileUrl: AnsiString; AForceOpen: Boolean): Boolean;  
   procedure WinFileClose(AWinFile: PWinFile);      
   procedure UpdateWinFileSize(AWinFile: PWinFile; const Value: integer);
@@ -32,6 +35,21 @@ implementation
 
 uses
   Windows;
+               
+function CheckOutWinFile: PWinFile;                            
+begin
+  Result := System.New(PWinFile);
+  FillChar(Result^, SizeOf(TWinFile), 0);
+end;
+
+procedure CheckInWinFile(var AWinFile: PWinFile);
+begin
+  if nil = AWinFile then
+    exit;
+  WinFileClose(AWinFile);
+  FreeMem(AWinFile);
+  AWinFile := nil;
+end;
 
 function WinFileOpen(AWinFile: PWinFile; AFileUrl: AnsiString; AForceOpen: Boolean): Boolean;
 var

@@ -2,6 +2,9 @@ unit BaseRun;
 
 interface
 
+uses
+  Types;
+  
 type        
   // LogicSessionStep
   PProcStep           = ^TProcStep;
@@ -14,10 +17,19 @@ type
 
   // application has many sessions at same time
   PLogicSession       = ^TLogicSession;
-  TLogicSession       = record
+  TLogicSession       = record     
+    IsValid           : Byte;
+    IsCancel          : Byte;
+    StartTick         : DWORD;
+    LogicType         : Integer;   
+    Step              : Integer;
+    StepStatus        : Integer;
+    StepResult        : Integer;
+    InputParam        : Pointer;
+    OutputParam       : Pointer;
     CurrentStep       : PProcStep;
   end;
-
+                
   PLogicBaseStep      = ^TLogicBaseStep;
   TLogicBaseStep      = record
     StepType          : Integer;
