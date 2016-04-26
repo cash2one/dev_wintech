@@ -18,11 +18,11 @@ uses
   uiwindow_wndproc_startend in 'uiwindow_wndproc_startend.pas',
   uiwindow_wndproc_uispace in 'uiwindow_wndproc_uispace.pas',
   uiwindow in 'uiwindow.pas',
-  uiview_texture in 'uiview_texture.pas',
   uicontrol in 'uicontrol.pas',
   uictrl_feature_select in 'uictrl_feature_select.pas',
+  uiview in 'uiview.pas',            
   uiview_space in 'uiview_space.pas',
-  uiview in 'uiview.pas';
+  uiview_texture in 'uiview_texture.pas';
 
 {$R *.res}
 

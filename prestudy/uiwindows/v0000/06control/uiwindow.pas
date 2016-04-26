@@ -16,6 +16,11 @@ type
     WndClientRect   : TRect;
     MemDC           : TWinMemDC;
     TestUIView      : TUIView;
+    WMLButtonDown_CursorPoint: TSmallPoint;
+    WMMouseMove_CursorPoint: TSmallPoint;
+    TestFocusUIView : PUIView;    
+    IsDragStarting  : Boolean;
+    DragStartPoint  : TSmallPoint;       
   end;
   
 implementation

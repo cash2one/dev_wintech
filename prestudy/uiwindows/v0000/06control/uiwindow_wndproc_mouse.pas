@@ -7,11 +7,6 @@ uses
   Messages,
   uiwindow;
 
-var                            
-  IsDragStarting: Boolean = False;
-  DragStartPoint: TSmallPoint;
-  WMMouseMove_CursorPoint: TSmallPoint;
-
   function UIWndProcW_Mouse(AUIWindow: PUIWindow; AMsg: UINT; wParam: WPARAM; lParam: LPARAM; var AWndProcResult: LRESULT): Boolean;
 
 implementation
@@ -19,26 +14,53 @@ implementation
 uses
   uiwindow_wndproc_paint;
   
-function WndProcW_WMLButtonUp(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
-begin
-  IsDragStarting := false;
-  UIWindowPaint(AUIWindow);
-  Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONUP, wParam, lParam);
-end;
-
 function WndProcW_WMLButtonDown(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
-begin
-  if 20 > TSmallPoint(lParam).y then
+begin 
+  AUIWindow.WMLButtonDown_CursorPoint := TSmallPoint(lParam);
+  AUIWindow.TestFocusUIView := nil;
+  if (AUIWindow.TestUIView.Space.Layout.Left < AUIWindow.WMLButtonDown_CursorPoint.x) and
+     (AUIWindow.TestUIView.Space.Layout.Right > AUIWindow.WMLButtonDown_CursorPoint.x) then
   begin
-    SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_SYSCOMMAND, SC_MOVE or HTCaption, 0);
-    //SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
-    IsDragStarting := False;
+    if (AUIWindow.TestUIView.Space.Layout.Top < AUIWindow.WMLButtonDown_CursorPoint.y) and
+       (AUIWindow.TestUIView.Space.Layout.Bottom > AUIWindow.WMLButtonDown_CursorPoint.y) then
+    begin
+      AUIWindow.TestFocusUIView := @AUIWindow.TestUIView; 
+      AUIWindow.DragStartPoint.x := AUIWindow.TestUIView.Space.Layout.Left;
+      AUIWindow.DragStartPoint.y := AUIWindow.TestUIView.Space.Layout.Top;
+    end;
+  end;
+  if nil = AUIWindow.TestFocusUIView then
+  begin
+    if 20 > TSmallPoint(lParam).y then
+    begin
+      SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_SYSCOMMAND, SC_MOVE or HTCaption, 0);
+      //SendMessageW(AUIWindow.BaseWnd.UIWndHandle, WM_NCLButtonDown, HTCaption, GetMessagePos);
+      AUIWindow.IsDragStarting := False;
+    end else
+    begin
+      AUIWindow.DragStartPoint := TSmallPoint(lParam);
+      AUIWindow.IsDragStarting := True;
+    end;
+  end;  
+
+  Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONDOWN, wParam, lParam);
+end;
+          
+function WndProcW_WMLButtonUp(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
+begin                       
+  if nil = AUIWindow.TestFocusUIView then
+  begin
+    if AUIWindow.IsDragStarting then
+    begin
+      AUIWindow.IsDragStarting := false;
+      UIWindowPaint(AUIWindow);
+    end;
   end else
   begin
-    DragStartPoint := TSmallPoint(lParam);
-    IsDragStarting := True;
+    AUIWindow.TestFocusUIView := nil; 
+    UIWindowPaint(AUIWindow);
   end;
-  Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONDOWN, wParam, lParam);
+  Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_LBUTTONUP, wParam, lParam);
 end;
 
 function WndProcW_WMLButtonDblClk(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
@@ -78,7 +100,14 @@ end;
 
 function WndProcW_WMMouseMove(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
-  WMMouseMove_CursorPoint := TSmallPoint(lParam);
+  AUIWindow.WMMouseMove_CursorPoint := TSmallPoint(lParam);
+  if nil <> AUIWindow.TestFocusUIView then
+  begin
+    AUIWindow.TestFocusUIView.Space.Layout.Left := AUIWindow.DragStartPoint.x + AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;
+    AUIWindow.TestFocusUIView.Space.Layout.Right := AUIWindow.TestFocusUIView.Space.Layout.Left + AUIWindow.TestFocusUIView.Space.Shape.Width;
+    AUIWindow.TestFocusUIView.Space.Layout.Top := AUIWindow.DragStartPoint.y + AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
+    AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;    
+  end;
   UIWindowPaint(AUIWindow);
   Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_MOUSEMOVE, wParam, lParam);
 end;

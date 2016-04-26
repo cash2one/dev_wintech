@@ -13,6 +13,8 @@ type
   PUIViewTexture  = ^TUIViewTexture;
   TUIViewTexture  = record
     TextureType   : TUIViewTextureType;
+    IsVisible     : Boolean;
+    AlphaValue    : Byte;           
   end;
   
 implementation
