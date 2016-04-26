@@ -9,11 +9,12 @@ type
   TUIViewShapeType = (
     shapeUnknown,
     shapePoint,
-    shapeLine, // 直线
-    shapeCurve, // 曲线
+    shapeLine,     // 直线
+    shapeCurve,    // 曲线
     shapeTriangle, // 三角形
     shapeRect,     // 封闭区域 -- 方形
-    shapePolygon   // 封闭区域 -- 多边形
+    shapePolygon,  // 封闭区域 -- 多边形
+    shapeText      // Text 和 Font 相关
   );
   
   PUIViewShape  = ^TUIViewShape; 
