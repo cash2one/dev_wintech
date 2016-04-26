@@ -18,9 +18,11 @@ type
     TestUIView      : TUIView;
     WMLButtonDown_CursorPoint: TSmallPoint;
     WMMouseMove_CursorPoint: TSmallPoint;
-    TestFocusUIView : PUIView;    
+
+    TestFocusUIView : PUIView;
+    FocusMode: integer;  
     IsDragStarting  : Boolean;
-    DragStartPoint  : TSmallPoint;       
+    DragStartRect   : TRect;       
   end;
   
 implementation

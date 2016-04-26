@@ -124,8 +124,8 @@ begin
 
   if AUIWindow.IsDragStarting then
   begin
-    tmpRect.Left := AUIWindow.DragStartPoint.x;
-    tmpRect.Top := AUIWindow.DragStartPoint.y;
+    tmpRect.Left := AUIWindow.DragStartRect.Left;
+    tmpRect.Top := AUIWindow.DragStartRect.Top;
     tmpRect.Right := AUIWindow.WMMouseMove_CursorPoint.x;
     tmpRect.Bottom := AUIWindow.WMMouseMove_CursorPoint.y;
     DrawFocusRect(AMemDC, tmpRect);

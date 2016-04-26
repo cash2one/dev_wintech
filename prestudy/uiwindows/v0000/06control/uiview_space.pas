@@ -2,6 +2,9 @@ unit uiview_space;
 
 interface
 
+uses
+  Types;
+  
 type
   TUIViewShapeType = (
     shapeUnknown,
@@ -42,7 +45,138 @@ type
     Layout      : TUIViewLayout;
     Shape       : TUIViewShape;
   end;
-  
+
+const
+  { WM_NCHITTEST and MOUSEHOOKSTRUCT Mouse Position Codes }
+  HTERROR = -2;
+  HTTRANSPARENT = -1;
+  HTNOWHERE = 0;
+  HTCLIENT = 1;
+  HTCAPTION = 2;
+  HTSYSMENU = 3;
+  HTGROWBOX = 4;
+  HTSIZE = HTGROWBOX;
+  HTMENU = 5;
+  HTHSCROLL = 6;
+  HTVSCROLL = 7;
+  HTMINBUTTON = 8;
+  HTMAXBUTTON = 9;
+  HTLEFT = 10;
+  HTRIGHT = 11;
+  HTTOP = 12;
+  HTTOPLEFT = 13;
+  HTTOPRIGHT = 14;
+  HTBOTTOM = 15;
+  HTBOTTOMLEFT = $10;
+  HTBOTTOMRIGHT = 17;
+  HTBORDER = 18;
+  HTREDUCE = HTMINBUTTON;
+  HTZOOM = HTMAXBUTTON;
+  HTSIZEFIRST = HTLEFT;
+  HTSIZELAST = HTBOTTOMRIGHT;
+  HTOBJECT = 19;
+  HTCLOSE = 20;
+  HTHELP = 21;
+                   
+  function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TSmallPoint; ABorder: Integer = 2): Integer; overload;
+  function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TPoint; ABorder: Integer = 2): Integer; overload;
+
 implementation
+
+function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TSmallPoint; ABorder: Integer = 2): Integer;
+begin
+  Result := HTNOWHERE;  
+  if APoint.x < (AUILayout.Left - ABorder) then
+    exit;
+  if APoint.x > (AUILayout.Right + ABorder) then
+    exit;
+  if APoint.y < (AUILayout.Top - ABorder) then
+    exit;
+  if (APoint.y > AUILayout.Bottom + ABorder) then
+    exit;
+  Result := HTCLIENT;    
+  if APoint.x < (AUILayout.Left + ABorder) then
+  begin                    
+    Result := HTLEFT;   
+    if APoint.y < (AUILayout.Top + ABorder) then
+    begin
+      Result := HTTOPLEFT; 
+      exit;
+    end;          
+    if APoint.y > (AUILayout.Bottom - ABorder) then
+      Result := HTBOTTOMLEFT;
+    exit;
+  end;            
+  if APoint.x > (AUILayout.Right - ABorder) then
+  begin                    
+    Result := HTRIGHT;   
+    if APoint.y < (AUILayout.Top + ABorder) then
+    begin
+      Result := HTTOPRIGHT; 
+      exit;
+    end;          
+    if APoint.y > (AUILayout.Bottom - ABorder) then
+      Result := HTBOTTOMRIGHT;
+    exit;
+  end;            
+  if APoint.y < (AUILayout.Top + ABorder) then
+  begin                    
+    Result := HTTOP;    
+    exit;
+  end;
+  if APoint.y > (AUILayout.Bottom - ABorder) then
+  begin
+    Result := HTBOTTOM;
+    exit;
+  end;
+end;
+
+function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TPoint; ABorder: Integer = 2): Integer;
+begin
+  Result := HTNOWHERE;  
+  if APoint.x < (AUILayout.Left - ABorder) then
+    exit;
+  if APoint.x > (AUILayout.Right + ABorder) then
+    exit;
+  if APoint.y < (AUILayout.Top - ABorder) then
+    exit;
+  if (APoint.y > AUILayout.Bottom + ABorder) then
+    exit;
+  Result := HTCLIENT;    
+  if APoint.x < (AUILayout.Left + ABorder) then
+  begin                    
+    Result := HTLEFT;   
+    if APoint.y < (AUILayout.Top + ABorder) then
+    begin
+      Result := HTTOPLEFT; 
+      exit;
+    end;          
+    if APoint.y > (AUILayout.Bottom - ABorder) then
+      Result := HTBOTTOMLEFT;
+    exit;
+  end;            
+  if APoint.x > (AUILayout.Right - ABorder) then
+  begin                    
+    Result := HTRIGHT;   
+    if APoint.y < (AUILayout.Top + ABorder) then
+    begin
+      Result := HTTOPRIGHT; 
+      exit;
+    end;          
+    if APoint.y > (AUILayout.Bottom - ABorder) then
+      Result := HTBOTTOMRIGHT;
+    exit;
+  end;            
+  if APoint.y < (AUILayout.Top + ABorder) then
+  begin                    
+    Result := HTTOP;    
+    exit;
+  end;
+  if APoint.y > (AUILayout.Bottom - ABorder) then
+  begin
+    Result := HTBOTTOM;
+    exit;
+  end;
+end;
 
 end.

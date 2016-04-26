@@ -12,22 +12,22 @@ uses
 implementation
 
 uses
+  uiview,
+  uiview_space,
   uiwindow_wndproc_paint;
   
 function WndProcW_WMLButtonDown(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin 
   AUIWindow.WMLButtonDown_CursorPoint := TSmallPoint(lParam);
-  AUIWindow.TestFocusUIView := nil;
-  if (AUIWindow.TestUIView.Space.Layout.Left < AUIWindow.WMLButtonDown_CursorPoint.x) and
-     (AUIWindow.TestUIView.Space.Layout.Right > AUIWindow.WMLButtonDown_CursorPoint.x) then
-  begin
-    if (AUIWindow.TestUIView.Space.Layout.Top < AUIWindow.WMLButtonDown_CursorPoint.y) and
-       (AUIWindow.TestUIView.Space.Layout.Bottom > AUIWindow.WMLButtonDown_CursorPoint.y) then
-    begin
-      AUIWindow.TestFocusUIView := @AUIWindow.TestUIView; 
-      AUIWindow.DragStartPoint.x := AUIWindow.TestUIView.Space.Layout.Left;
-      AUIWindow.DragStartPoint.y := AUIWindow.TestUIView.Space.Layout.Top;
-    end;
+  AUIWindow.TestFocusUIView := nil;      
+  AUIWindow.FocusMode := POINT_HITTEST(@AUIWindow.TestUIView.Space.Layout, AUIWindow.WMLButtonDown_CursorPoint);
+  if HTNOWHERE <> AUIWindow.FocusMode then
+  begin   
+    AUIWindow.TestFocusUIView := @AUIWindow.TestUIView;   
+    AUIWindow.DragStartRect.Left := AUIWindow.TestUIView.Space.Layout.Left;
+    AUIWindow.DragStartRect.Top := AUIWindow.TestUIView.Space.Layout.Top;
+    AUIWindow.DragStartRect.Right := AUIWindow.TestUIView.Space.Layout.Right;
+    AUIWindow.DragStartRect.Bottom := AUIWindow.TestUIView.Space.Layout.Bottom;
   end;
   if nil = AUIWindow.TestFocusUIView then
   begin
@@ -38,7 +38,8 @@ begin
       AUIWindow.IsDragStarting := False;
     end else
     begin
-      AUIWindow.DragStartPoint := TSmallPoint(lParam);
+      AUIWindow.DragStartRect.Left := TSmallPoint(lParam).x;
+      AUIWindow.DragStartRect.Top := TSmallPoint(lParam).y;      
       AUIWindow.IsDragStarting := True;
     end;
   end;  
@@ -102,11 +103,47 @@ function WndProcW_WMMouseMove(AUIWindow: PUIWindow; wParam: WPARAM; lParam: LPAR
 begin
   AUIWindow.WMMouseMove_CursorPoint := TSmallPoint(lParam);
   if nil <> AUIWindow.TestFocusUIView then
-  begin
-    AUIWindow.TestFocusUIView.Space.Layout.Left := AUIWindow.DragStartPoint.x + AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;
-    AUIWindow.TestFocusUIView.Space.Layout.Right := AUIWindow.TestFocusUIView.Space.Layout.Left + AUIWindow.TestFocusUIView.Space.Shape.Width;
-    AUIWindow.TestFocusUIView.Space.Layout.Top := AUIWindow.DragStartPoint.y + AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
-    AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;    
+  begin                                 
+    if HTCLIENT = AUIWindow.FocusMode then
+    begin
+      AUIWindow.TestFocusUIView.Space.Layout.Left := AUIWindow.DragStartRect.Left + AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;
+      AUIWindow.TestFocusUIView.Space.Layout.Right := AUIWindow.TestFocusUIView.Space.Layout.Left + AUIWindow.TestFocusUIView.Space.Shape.Width;
+      AUIWindow.TestFocusUIView.Space.Layout.Top := AUIWindow.DragStartRect.Top + AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
+      AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
+    end;
+    if HTRIGHT = AUIWindow.FocusMode then
+    begin          
+      AUIWindow.TestFocusUIView.Space.Shape.Width :=
+          AUIWindow.DragStartRect.Right - AUIWindow.DragStartRect.Left +
+          AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;
+      AUIWindow.TestFocusUIView.Space.Layout.Right := AUIWindow.TestFocusUIView.Space.Layout.Left + AUIWindow.TestFocusUIView.Space.Shape.Width;
+
+      //AUIWindow.TestFocusUIView.Space.Shape.Height := AUIWindow.DragStartRect.Top + AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
+      //AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
+    end;          
+    if HTBOTTOM = AUIWindow.FocusMode then
+    begin          
+      AUIWindow.TestFocusUIView.Space.Shape.Height :=
+          AUIWindow.DragStartRect.Bottom - AUIWindow.DragStartRect.Top +
+          AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
+      AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
+
+      //AUIWindow.TestFocusUIView.Space.Shape.Height := AUIWindow.DragStartRect.Top + AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
+      //AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
+    end;
+    if HTBOTTOMRIGHT = AUIWindow.FocusMode then
+    begin                                    
+      AUIWindow.TestFocusUIView.Space.Shape.Width :=
+          AUIWindow.DragStartRect.Right - AUIWindow.DragStartRect.Left +
+          AUIWindow.WMMouseMove_CursorPoint.x - AUIWindow.WMLButtonDown_CursorPoint.x;     
+      AUIWindow.TestFocusUIView.Space.Layout.Right := AUIWindow.TestFocusUIView.Space.Layout.Left + AUIWindow.TestFocusUIView.Space.Shape.Width;
+      
+      AUIWindow.TestFocusUIView.Space.Shape.Height :=
+          AUIWindow.DragStartRect.Bottom - AUIWindow.DragStartRect.Top +
+          AUIWindow.WMMouseMove_CursorPoint.y - AUIWindow.WMLButtonDown_CursorPoint.y;
+      AUIWindow.TestFocusUIView.Space.Layout.Bottom := AUIWindow.TestFocusUIView.Space.Layout.Top + AUIWindow.TestFocusUIView.Space.Shape.Height;
+
+    end;
   end;
   UIWindowPaint(AUIWindow);
   Result := DefWindowProcW(AUIWindow.BaseWnd.UIWndHandle, WM_MOUSEMOVE, wParam, lParam);
