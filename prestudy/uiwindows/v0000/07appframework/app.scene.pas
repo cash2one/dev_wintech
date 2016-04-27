@@ -3,15 +3,28 @@ unit app.scene;
 interface
 
 type
+  PModelData      = ^TModelData;      
+  TModelData      = record
+    ID            : integer;
+  end;
+                
+  PModelData_DataBase = ^TModelData_DataBase;      
+  TModelData_DataBase = record
+  end;
+  
+  PModelData_AppScene = ^TModelData_AppScene;      
+  TModelData_AppScene = record
+  end;
+  
+  PModelData_UIScene  = ^TModelData_UIScene;      
+  TModelData_UIScene  = record
+  end;
+          
   PModelLogic     = ^TModelLogic;     
   TModelLogic     = record
   end;
 
-  PModelData      = ^TModelData;      
-  TModelData      = record
-  end;
-  
-  TDataModelInstance  = record    
+  TInstanceModelData  = record
     DataModel         : PModelData;
     DataModelID       : integer;
   end;
@@ -41,7 +54,7 @@ implementation
 
   ModelData                  UIScene
   $Login_UserAccount --      User Account Input
-  $Login_Password    --      Password Input
+  $Login_Password    --      Password Input -- on focus --> UIEdit Focus Scene
   $VerifyCode        --      Verify Code Input
                              LoginButton
 
