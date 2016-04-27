@@ -10,6 +10,7 @@ uses
   Define_Message in '..\..\..\..\v0000\win_basedefine\Define_Message.pas',
   win.diskfile in '..\..\..\..\v0000\win_system\win.diskfile.pas',
   win.cpu in '..\..\..\..\v0000\win_system\win.cpu.pas',
+  win.iocp in '..\..\..\..\v0000\win_system\win.iocp.pas',
   win.thread in '..\..\..\..\v0000\win_system\win.thread.pas',
   AppWindow in 'common\AppWindow.pas',
   CmdWindow in 'common\CmdWindow.pas',

@@ -3,7 +3,7 @@ unit NetServerIocp;
 interface
 
 uses
-  Windows, WinSock2,
+  Windows, WinSock2, win.iocp,
   Win.Thread, DataChain, NetSrvClientIocp,
   NetBaseObj;
 
@@ -23,7 +23,7 @@ type
                        
   TNetServerIocp    = packed record
     BaseServer      : TNetServer;    
-    IocpHandle      : THandle;
+    Iocp            : TWinIocp;
     AcceptThread    : TNetIOCPServerAcceptThread;
     IocpWorkThread  : array[0..255] of TNetIOCPServerWorkThread;
   end;
@@ -115,7 +115,7 @@ begin
         Sleep(1);
         tmpIocpBuffer := nil; 
         //此处有可能多个线程处理同一个SocketHandle对象，因此需要加锁
-        if not GetQueuedCompletionStatus(tmpServer.IocpHandle, tmpBytes, tmpCompleteKey, POverlapped(tmpIocpBuffer), INFINITE) then
+        if not GetQueuedCompletionStatus(tmpServer.Iocp.Handle, tmpBytes, tmpCompleteKey, POverlapped(tmpIocpBuffer), INFINITE) then
         begin  //客户端异常断开
           if nil <> tmpIocpBuffer then
           begin
@@ -139,7 +139,7 @@ begin
                 // 处理进来的数据
                 tmpIocpBuffer.IocpOperate := ioHandle;
                 tmpIocpBuffer.DataBuffer.BufferHead.DataLength := tmpBytes;
-                Windows.PostQueuedCompletionStatus(tmpServer.IocpHandle, 0, 0, @tmpIocpBuffer.Overlapped);
+                Windows.PostQueuedCompletionStatus(tmpServer.Iocp.Handle, 0, 0, @tmpIocpBuffer.Overlapped);
                 ReadIocpDataIn(tmpConnect, CheckOutIocpBuffer);
               end else
               begin
@@ -190,7 +190,7 @@ begin
         Exit;
       end;
       if 0 = Windows.CreateIoCompletionPort(tmpClientConnectionSocket,
-          AParam.Server.IocpHandle,
+          AParam.Server.Iocp.Handle,
           1, 0) then
       begin
         // error
@@ -214,12 +214,9 @@ var
   tmpWorkThreadCount: integer;
   i: integer;
 begin
-  if 0 = AServer.IocpHandle then
-  begin
-    AServer.IocpHandle := CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
-  end;
-  if (0 = AServer.IocpHandle) or
-     (INVALID_HANDLE_VALUE = AServer.IocpHandle) then
+  InitWinIocp(@AServer.Iocp);
+  if (0 = AServer.Iocp.Handle) or
+     (INVALID_HANDLE_VALUE = AServer.Iocp.Handle) then
   begin
     exit;
   end;
@@ -300,13 +297,13 @@ begin
     WinSock2.CloseSocket(AServer.BaseServer.ListenSocketHandle);
     AServer.BaseServer.ListenSocketHandle := 0;
   end;
-  if (0 <> AServer.IocpHandle) and
-     (INVALID_HANDLE_VALUE <> AServer.IocpHandle) then
+  if (0 <> AServer.Iocp.Handle) and
+     (INVALID_HANDLE_VALUE <> AServer.Iocp.Handle) then
   begin
-    PostQueuedCompletionStatus(AServer.IocpHandle, tmpBytes, CompleteKey_CloseIocp, nil);
+    PostQueuedCompletionStatus(AServer.Iocp.Handle, tmpBytes, CompleteKey_CloseIocp, nil);
 
-    Windows.CloseHandle(AServer.IocpHandle);
-    AServer.IocpHandle := 0;
+    Windows.CloseHandle(AServer.Iocp.Handle);
+    AServer.Iocp.Handle := 0;
   end;
 end;
 
