@@ -3,9 +3,16 @@ program AllUnits;
 uses
   Windows,
   WinSock2 in '..\..\common\WinSock2.pas',
+  sys.datatype in '..\sys.datatype.pas',
   base.run in '..\rec\app_base\base.run.pas',
   base.thread in '..\rec\app_base\base.thread.pas',
   base.netclient in '..\rec\base_net\base.netclient.pas',
+  ui.space in '..\rec\ui_base\ui.space.pas',
+  ui.texbitmap in '..\rec\ui_base\ui.texbitmap.pas',
+  ui.texcolor in '..\rec\ui_base\ui.texcolor.pas',
+  ui.texcolorblend in '..\rec\ui_base\ui.texcolorblend.pas',
+  ui.texcolorpalette in '..\rec\ui_base\ui.texcolorpalette.pas',
+  ui.texgamma in '..\rec\ui_base\ui.texgamma.pas',
   win.net in '..\rec\win_net\win.net.pas',
   win.clientsockettcp in '..\rec\win_netclient\win.clientsockettcp.pas',
   win.clientsocket in '..\rec\win_netclient\win.clientsocket.pas',
@@ -18,7 +25,8 @@ uses
   BaseThread in '..\obj\app_base\BaseThread.pas',
   BaseWnd in '..\obj\win_sys\BaseWnd.pas',
   BaseWinThread in '..\obj\win_sys\BaseWinThread.pas',
-  WinIocp in '..\obj\win_sys\WinIocp.pas';
+  WinIocp in '..\obj\win_sys\WinIocp.pas',
+  win.datamove in '..\winproc\win.datamove.pas';
 
 {$R *.res}
 
