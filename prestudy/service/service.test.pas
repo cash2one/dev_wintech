@@ -11,9 +11,7 @@ uses
 
 var
   GlobalApp: TWinApp;
-  GlobalServiceApp: TWinServiceAppW;   
-  GlobalService: TWinServiceProcW;
-
+  
   procedure ServiceHandler_TestProc(CtrlCode: DWORD); stdcall;
   
 implementation

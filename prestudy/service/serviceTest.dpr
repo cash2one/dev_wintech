@@ -12,10 +12,19 @@ uses
 
 {$R *.res}
 
+//  SvcMgr,
+
 procedure CreateService();
 begin
 end;
+               
+const
+  C_ServiceName = 'testsrv';
+  C_ServiceDisplayName = 'testsrv_display';
+  C_ServiceStartName = 'testsrv_start';
 
+var
+  tmpWS: WideString;               
 begin   
   FillChar(GlobalApp, SizeOf(GlobalApp), 0);
   FillChar(GlobalServiceApp, SizeOf(GlobalServiceApp), 0);
@@ -24,15 +33,21 @@ begin
   GlobalServiceApp.App := @GlobalApp;
 
   GlobalService.ServiceStartName := C_ServiceStartName;
-  GlobalService.Name             := C_ServiceName;
-  GlobalService.DisplayName      := C_ServiceDisplayName;
+  tmpWS := C_ServiceName;
+  CopyMemory(@GlobalService.Name[0], @tmpWS[1], Length(tmpWS) * SizeOf(WideChar));
+  
+  //GlobalService.Name             := C_ServiceName;  
+  tmpWS := C_ServiceDisplayName;
+  CopyMemory(@GlobalService.DisplayName[0], @tmpWS[1], Length(tmpWS) * SizeOf(WideChar));
+  
   GlobalService.ServiceType     := stWin32;
   GlobalService.StartType       := stAuto;
   GlobalService.ErrorSeverity   := esIgnore;
   GlobalService.ErrorSeverity   := esNormal;
   GlobalService.IsAllowPause := True;
   GlobalService.IsAllowStop := True;
-  GlobalService.Controller := ServiceHandler_TestProc; 
+  GlobalService.Controller := ServiceHandler_TestProc;
+  GlobalService.ServiceApp := @GlobalServiceApp; 
 
   if FindCmdLineSwitch('INSTALL', ['-', '/'], True) then
   begin
