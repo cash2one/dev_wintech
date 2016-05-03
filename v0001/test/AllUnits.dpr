@@ -26,6 +26,11 @@ uses
   BaseWnd in '..\obj\win_sys\BaseWnd.pas',
   BaseWinThread in '..\obj\win_sys\BaseWinThread.pas',
   WinIocp in '..\obj\win_sys\WinIocp.pas',
+  sysdef_appcmd in '..\sysdef\sysdef_appcmd.pas',
+  sysdef_string in '..\sysdef\sysdef_string.pas',
+  sysdef_char in '..\sysdef\sysdef_char.pas',
+  windef_msg in '..\windef\windef_msg.pas',
+  windef_color in '..\windef\windef_color.pas',
   win.datamove in '..\winproc\win.datamove.pas';
 
 {$R *.res}
