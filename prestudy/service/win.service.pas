@@ -5,7 +5,8 @@ interface
 uses
   Types,
   Windows,
-  WinSvc,
+  WinSvc,  
+  Messages,
   win.app;
   
 type            
@@ -25,6 +26,7 @@ type
     ThreadId        : DWord;
     ServiceStartTableLen: integer;
     ServiceStartTable: TServiceTableEntryArray;
+    ServiceStartErrorCode: integer;    
   end;
 
   PWinServiceProcW  = ^TWinServiceProcW;
@@ -64,7 +66,8 @@ type
   function GetNTServiceType(AServiceProc: PWinServiceProcW): Integer;
   function GetNTStartType(AServiceProc: PWinServiceProcW): Integer;   
   function GetNTErrorSeverity(AServiceProc: PWinServiceProcW): Integer;  
-  function GetNTDependenciesW(AServiceProc: PWinServiceProcW): WideString;
+  function GetNTDependenciesW(AServiceProc: PWinServiceProcW): WideString;  
+  function GetNTControlsAccepted: Integer;
                                       
   procedure InstallWinService(AServiceApp: PWinServiceAppW; AServiceProc: PWinServiceProcW); overload;
   procedure InstallWinService(AServiceProc: PWinServiceProcW; ASvcMgr: Integer); overload;
@@ -75,12 +78,21 @@ type
   procedure RunWinService(AServiceApp: PWinServiceAppW);
   procedure ReportServiceStatus(AServiceProc: PWinServiceProcW);  
 
+const
+  C_ServiceName = 'testsrv';
+  C_ServiceDisplayName = 'testsrv_display';
+  C_ServiceStartName = 'testsrv_start';
+               
+const
+  CM_SERVICE_CONTROL_CODE = WM_USER + 1;
+
 implementation
 
 uses
   SysUtils,
+  service.test,
   UtilsLog;
-        
+ 
 function GetNTServiceType(AServiceProc: PWinServiceProcW): Integer;
 const
   NTServiceType: array[TServiceType] of Integer = (
@@ -277,23 +289,141 @@ begin
   end;
   Log('', 'UninstallWinService end');  
 end;                                                 
-                     
-procedure StartServiceProc(AServiceProc: PWinServiceProcW);
-begin                           
-  Log('win.service.pas', 'StartServiceProc:');
-  if nil <> @AServiceProc.Controller then
+
+function ServiceThreadProc(AServiceProc: PWinServiceProcW): HRESULT; stdcall; 
+var
+  tmpMsg: TMsg;
+  tmpIsRet: Boolean;
+begin
+  Result := 0;    
+  Log('', 'ServiceThreadProc begin');
+  Windows.PeekMessage(tmpMsg, 0, WM_USER, WM_USER, PM_NOREMOVE); { Create message queue }
+
+  
+  AServiceProc.Status := csStartPending;
+  ReportServiceStatus(AServiceProc);
+                                
+  AServiceProc.Status := csRunning;  
+  ReportServiceStatus(AServiceProc);
+//  if Assigned(FService.OnExecute) then
+//    FService.OnExecute(FService)
+//  else
+//    ProcessRequests(True);
+  while True do
   begin
+    tmpIsRet := GetMessage(tmpMsg, 0, 0, 0);
+    if not tmpIsRet then
+      Break;
+    if tmpMsg.hwnd = 0 then { Thread message }
+    begin
+      if tmpMsg.message = CM_SERVICE_CONTROL_CODE then
+      begin      
+        Log('', 'ServiceThreadProc control code1:' + IntToStr(tmpMsg.wParam));
+        case tmpMsg.wParam of
+          SERVICE_CONTROL_STOP: begin
+            //ActionOK := FService.DoStop;
+            AServiceProc.Status := csStopPending; 
+            ReportServiceStatus(AServiceProc);
+            Break;
+          end;
+          SERVICE_CONTROL_PAUSE: begin
+            //ActionOK := FService.DoPause;   
+            AServiceProc.Status := csPaused;
+          end;
+          SERVICE_CONTROL_CONTINUE: begin
+            //ActionOK := FService.DoContinue;  
+            AServiceProc.Status := csRunning;
+          end;
+          SERVICE_CONTROL_SHUTDOWN: begin
+            //FService.DoShutDown;        
+            AServiceProc.Status := csStopped;
+          end;
+          SERVICE_CONTROL_INTERROGATE: begin
+            //FService.DoInterrogate;       
+          end;
+        end;
+        ReportServiceStatus(AServiceProc);
+      end else
+        DispatchMessage(tmpMsg);
+    end else
+      DispatchMessage(tmpMsg);
+  end;
+//    ProcessRequests(False);  
+  if (csStopped <> AServiceProc.Status) and
+     (csStopPending <> AServiceProc.Status)then
+  begin
+    while True do
+    begin
+      tmpIsRet := PeekMessage(tmpMsg, 0, 0, 0, PM_REMOVE);
+      if not tmpIsRet then
+        Break;
+      if tmpMsg.hwnd = 0 then { Thread message }
+      begin                
+        if tmpMsg.message = CM_SERVICE_CONTROL_CODE then
+        begin                   
+          Log('', 'ServiceThreadProc control code2:' + IntToStr(tmpMsg.wParam));   
+          case tmpMsg.wParam of
+            SERVICE_CONTROL_STOP: begin
+              //ActionOK := FService.DoStop;
+              AServiceProc.Status := csStopped;
+            end;
+            SERVICE_CONTROL_PAUSE: begin
+              //ActionOK := FService.DoPause;   
+              AServiceProc.Status := csPaused;
+            end;
+            SERVICE_CONTROL_CONTINUE: begin
+              //ActionOK := FService.DoContinue;  
+              AServiceProc.Status := csRunning;
+            end;
+            SERVICE_CONTROL_SHUTDOWN: begin
+              //FService.DoShutDown;        
+              AServiceProc.Status := csStopped;
+            end;
+            SERVICE_CONTROL_INTERROGATE: begin
+              //FService.DoInterrogate;       
+            end;
+          end;
+          ReportServiceStatus(AServiceProc);
+        end else
+          DispatchMessage(tmpMsg);
+      end else
+        DispatchMessage(tmpMsg);
+    end;
+  end;
+  ExitThread(Result);
+  Log('', 'ServiceThreadProc end');    
+end;
+
+procedure StartServiceProc(AServiceProc: PWinServiceProcW);
+var
+  WaitThread: array[0..1] of THandle;
+begin                           
+  Log('win.service.pas', 'StartServiceProc begin');
+  if nil <> @AServiceProc.Controller then
+  begin                                       
+    Log('win.service.pas', 'StartServiceProc run');
     AServiceProc.StatusHandle := WinSvc.RegisterServiceCtrlHandlerW(PWideChar(AServiceProc.Name), @AServiceProc.Controller);
     // DoStart
     AServiceProc.ThreadHandle := Windows.CreateThread(
       nil, //lpThreadAttributes: Pointer;
       0, //dwStackSize: DWORD;
-      nil, //lpStartAddress: TFNThreadStartRoutine;
+      @ServiceThreadProc, //lpStartAddress: TFNThreadStartRoutine;
       AServiceProc, //lpParameter: Pointer;
       Create_Suspended, // dwCreationFlags: DWORD;
       AServiceProc.ThreadId); // var lpThreadId: DWORD);
     ResumeThread(AServiceProc.ThreadHandle);
+
+    WaitThread[0] := AServiceProc.ThreadHandle;
+    WaitThread[1] := 0;
+    Windows.WaitForSingleObject(WaitThread[0], INFINITE);  
+
+    AServiceProc.Status := csStopped;
+    ReportServiceStatus(AServiceProc);    
   end;
+  // exit application
+  //PostQuitMessage(0);
+  Windows.TerminateProcess(GetCurrentProcess, 0);
+  Log('win.service.pas', 'StartServiceProc end');  
 end;
 
 procedure ServiceMain(Argc: DWord; Argv: PLPSTR); stdcall;
@@ -302,27 +432,38 @@ var
   tmpServiceProcIndex: integer;
   tmpServiceProcCount: integer;
 begin                   
-  Log('win.service.pas', 'ServiceMain:');
+  Log('win.service.pas', 'ServiceMain begin');
   //Application.DispatchServiceMain(Argc, Argv);
-  tmpServiceProc := nil;  
-  tmpServiceProcCount := 0;
+  tmpServiceProc := @GlobalService;  
+  tmpServiceProcCount := 1;
   for tmpServiceProcIndex := 0 to tmpServiceProcCount - 1 do
   begin
     StartServiceProc(tmpServiceProc);
   end;
+  Log('win.service.pas', 'ServiceMain end');  
 end;
 
 function ServiceStartThreadProc(AServiceApp: PWinServiceAppW): HResult; stdcall;
 begin
   Result := 0;       
-  Log('win.service.pas', 'ServiceStartThreadProc:');
-  WinSvc.StartServiceCtrlDispatcherW(AServiceApp.ServiceStart.ServiceStartTable[0]);
-  ExitThread(Result);
+  Log('win.service.pas', 'ServiceStartThreadProc begin');
+  if WinSvc.StartServiceCtrlDispatcherW(AServiceApp.ServiceStart.ServiceStartTable[0]) then
+  begin
+    AServiceApp.ServiceStart.ServiceStartErrorCode := 0;
+  end else
+  begin
+    AServiceApp.ServiceStart.ServiceStartErrorCode := GetLastError;     
+    Log('win.service.pas', 'ServiceStartThreadProc last error:' + IntToStr(AServiceApp.ServiceStart.ServiceStartErrorCode));
+  end;
+  ExitThread(Result);                
+  Log('win.service.pas', 'ServiceStartThreadProc end');
 end;
 
 procedure RunWinService(AServiceApp: PWinServiceAppW);
-//var
+var
 //  i: integer;
+  tmpIsUnicode: Boolean;
+  tmpIsMsgExists: Boolean;
 begin
   //AWinService.
   Log('win.service.pas', 'RunWinService:');
@@ -333,7 +474,8 @@ begin
 //    AWinServiceApp.ServiceStart.ServiceStartTable[i].lpServiceName := 'testsrv' + IntToStr();
 //    AWinServiceApp.ServiceStart.ServiceStartTable[i].lpServiceProc := @ServiceMain;
 //  end;
-  AServiceApp.ServiceStart.ServiceStartTable[0].lpServiceName := 'testsrv_start0';
+  //AServiceApp.ServiceStart.ServiceStartTable[0].lpServiceName := 'testsrv_start0';
+  AServiceApp.ServiceStart.ServiceStartTable[0].lpServiceName := C_ServiceName;  
   AServiceApp.ServiceStart.ServiceStartTable[0].lpServiceProc := @ServiceMain;
 
   AServiceApp.ServiceStart.ThreadHandle := Windows.CreateThread(
@@ -344,16 +486,46 @@ begin
     CREATE_SUSPENDED, //dwCreationFlags: DWORD;
     AServiceApp.ServiceStart.ThreadId); //var lpThreadId: DWORD);
   Windows.ResumeThread(AServiceApp.ServiceStart.ThreadHandle);
+  
+  // App Run
+  AServiceApp.App.IsTerminated := false;
+  while not AServiceApp.App.IsTerminated do
   begin
+    // ProcessMessage
     if Windows.PeekMessage(AServiceApp.App.AppMsg, 0, 0, 0, PM_NOREMOVE) then
+    begin                 
+      tmpIsUnicode := (AServiceApp.App.AppMsg.hwnd <> 0) and IsWindowUnicode(AServiceApp.App.AppMsg.hwnd);
+      if tmpIsUnicode then
+        tmpIsMsgExists := PeekMessageW(AServiceApp.App.AppMsg, 0, 0, 0, PM_REMOVE)
+      else
+        tmpIsMsgExists := PeekMessage(AServiceApp.App.AppMsg, 0, 0, 0, PM_REMOVE);
+      if tmpIsMsgExists then
+      begin
+        if AServiceApp.App.AppMsg.Message <> Messages.WM_QUIT then
+        begin
+          TranslateMessage(AServiceApp.App.AppMsg);
+          if tmpIsUnicode then
+            DispatchMessageW(AServiceApp.App.AppMsg)
+          else
+            DispatchMessageA(AServiceApp.App.AppMsg);
+        end else
+        begin
+          AServiceApp.App.IsTerminated := True;
+        end;
+      end else
+      begin
+        Windows.WaitMessage;
+      end;
+    end else
     begin
+      Windows.WaitMessage;
     end;
   end;
 end;
                  
 function GetNTControlsAccepted: Integer;
 begin
-  Result := SERVICE_ACCEPT_SHUTDOWN;
+  Result := SERVICE_ACCEPT_SHUTDOWN or SERVICE_ACCEPT_STOP or SERVICE_ACCEPT_PAUSE_CONTINUE;
 //  if AllowStop then Result := Result or SERVICE_ACCEPT_STOP;
 //  if AllowPause then Result := Result or SERVICE_ACCEPT_PAUSE_CONTINUE;
 end;
@@ -370,6 +542,7 @@ var
 begin          
   Log('win.service.pas', 'ReportServiceStatus:');
   //tmpServiceStatus.dwWaitHint := FWaitHint;
+  FillChar(tmpServiceStatus, SizeOf(tmpServiceStatus), 0);
   tmpServiceStatus.dwServiceType := GetNTServiceType(AServiceProc);
   if csStartPending = AServiceProc.Status then
     tmpServiceStatus.dwControlsAccepted := 0

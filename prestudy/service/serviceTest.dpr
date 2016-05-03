@@ -23,15 +23,16 @@ begin
   
   GlobalServiceApp.App := @GlobalApp;
 
-  GlobalService.ServiceStartName := 'testsrv_start';
-  GlobalService.Name             := 'testsrv_name';
-  GlobalService.DisplayName      := 'testsrv_display';
+  GlobalService.ServiceStartName := C_ServiceStartName;
+  GlobalService.Name             := C_ServiceName;
+  GlobalService.DisplayName      := C_ServiceDisplayName;
   GlobalService.ServiceType     := stWin32;
   GlobalService.StartType       := stAuto;
   GlobalService.ErrorSeverity   := esIgnore;
   GlobalService.ErrorSeverity   := esNormal;
   GlobalService.IsAllowPause := True;
   GlobalService.IsAllowStop := True;
+  GlobalService.Controller := ServiceHandler_TestProc; 
 
   if FindCmdLineSwitch('INSTALL', ['-', '/'], True) then
   begin
