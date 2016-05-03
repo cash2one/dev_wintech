@@ -6,22 +6,22 @@ uses
   Windows, Winsock2;
             
 type
-  PNetwork  = ^TNetwork;
-  TNetwork  = record
-    Status  : Integer;
-    WSA     : TWSAData;
+  PWinNetwork   = ^TWinNetwork;
+  TWinNetwork   = record
+    Status      : Integer;
+    WSA         : TWSAData;
   end;
   
   function Host2Ip(const AHostName: AnsiString): AnsiString;  
-  procedure InitializeNetwork(ANet: PNetwork);     
-  procedure FinalizeNetwork(ANet: PNetwork);
+  procedure InitializeNetwork(ANet: PWinNetwork);
+  procedure FinalizeNetwork(ANet: PWinNetwork);
 
 var
-  Network: TNetwork;
+  Network: TWinNetwork;
     
 implementation
 
-procedure InitializeNetwork(ANet: PNetwork);
+procedure InitializeNetwork(ANet: PWinNetwork);
 begin
   if 0 = ANet.Status then
   begin
@@ -33,7 +33,7 @@ begin
   //WinSock2.WSAStartup($0202, ANet.WSA);
 end;
 
-procedure FinalizeNetwork(ANet: PNetwork);
+procedure FinalizeNetwork(ANet: PWinNetwork);
 begin
   if 1 = ANet.Status then
   begin
