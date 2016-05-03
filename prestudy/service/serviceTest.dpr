@@ -8,7 +8,8 @@ uses
   win.service in 'win.service.pas',
   win.app in 'win.app.pas',
   service.test in 'service.test.pas',
-  win.app_exit in 'win.app_exit.pas';
+  win.app_exit in 'win.app_exit.pas',
+  win.service_install in 'win.service_install.pas';
 
 {$R *.res}
 
