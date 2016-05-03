@@ -76,23 +76,32 @@ type
   procedure ReportServiceStatus(AServiceProc: PWinServiceProcW);  
 
 implementation
-      
+
+uses
+  SysUtils,
+  UtilsLog;
+        
 function GetNTServiceType(AServiceProc: PWinServiceProcW): Integer;
 const
-  NTServiceType: array[TServiceType] of Integer = ( SERVICE_WIN32_OWN_PROCESS,
-    SERVICE_KERNEL_DRIVER, SERVICE_FILE_SYSTEM_DRIVER);
+  NTServiceType: array[TServiceType] of Integer = (
+    SERVICE_WIN32_OWN_PROCESS,
+    SERVICE_KERNEL_DRIVER,
+    SERVICE_FILE_SYSTEM_DRIVER);
 begin
   Result := NTServiceType[AServiceProc.ServiceType];
   if (AServiceProc.ServiceType = stWin32) and AServiceProc.IsInteractive then
     Result := Result or SERVICE_INTERACTIVE_PROCESS;
-  if (AServiceProc.ServiceType = stWin32) {and (Application.ServiceCount > 1)} then
-    Result := (Result xor SERVICE_WIN32_OWN_PROCESS) or SERVICE_WIN32_SHARE_PROCESS;
+//  if (AServiceProc.ServiceType = stWin32) {and (Application.ServiceCount > 1)} then
+//    Result := (Result xor SERVICE_WIN32_OWN_PROCESS) or SERVICE_WIN32_SHARE_PROCESS;
 end;
                   
 function GetNTStartType(AServiceProc: PWinServiceProcW): Integer;
 const
-  NTStartType: array[TStartType] of Integer = (SERVICE_BOOT_START,
-    SERVICE_SYSTEM_START, SERVICE_AUTO_START, SERVICE_DEMAND_START,
+  NTStartType: array[TStartType] of Integer = (
+    SERVICE_BOOT_START,
+    SERVICE_SYSTEM_START,
+    SERVICE_AUTO_START,
+    SERVICE_DEMAND_START,
     SERVICE_DISABLED);
 begin
   Result := NTStartType[AServiceProc.StartType];
@@ -146,62 +155,100 @@ var
   tmpPSSN: PWideChar;  
   tmpTagID: Integer;
   tmpPTag: Pointer;
-begin              
+  tmpStartType: integer;
+  tmpServiceType: integer;
+  tmpErrorSeverity: integer;
+begin                 
+  Log('win.service.pas', 'InstallWinService begin:');
   tmpPath := ParamStr(0);
-    if AServiceProc.ServiceStartName = '' then
-      tmpPSSN := nil
-    else
-      tmpPSSN := PWideChar(AServiceProc.ServiceStartName);
+  if AServiceProc.ServiceStartName = '' then
+    tmpPSSN := nil
+  else
+    tmpPSSN := PWideChar(AServiceProc.ServiceStartName);
                   
-    tmpTagID := AServiceProc.TagID;
-    if tmpTagID > 0 then
-      tmpPTag := @tmpTagID
-    else
-      tmpPTag := nil;
+  tmpTagID := AServiceProc.TagID;
+  if tmpTagID > 0 then
+    tmpPTag := @tmpTagID
+  else
+    tmpPTag := nil;
 
-    AServiceProc.ServiceHandle := WinSvc.CreateServiceW(ASvcMgr,
-          PWideChar(AServiceProc.Name),
-          PWideChar(AServiceProc.DisplayName),
-          SERVICE_ALL_ACCESS,
-          GetNTServiceType(AServiceProc),
-          GetNTStartType(AServiceProc),
-          GetNTErrorSeverity(AServiceProc),
-          PWideChar(tmpPath),
-          PWideChar(AServiceProc.LoadGroup),
-          tmpPTag,
-          nil, //PWideChar(GetNTDependenciesW(AWinService)),
-          tmpPSSN,
-          nil //PWideChar(AServiceProc.Password)
-          );
-    if 0 = AServiceProc.ServiceHandle then
-    begin
-      AServiceProc.LastError := Windows.GetLastError;
-      if 0 <> AServiceProc.LastError then
+  tmpServiceType := GetNTServiceType(AServiceProc);
+  tmpStartType:= GetNTStartType(AServiceProc);
+  tmpErrorSeverity := GetNTErrorSeverity(AServiceProc);
+
+  AServiceProc.ServiceHandle := WinSvc.CreateServiceW(ASvcMgr,
+        PWideChar(AServiceProc.Name),
+        PWideChar(AServiceProc.DisplayName),
+        SERVICE_ALL_ACCESS,
+        tmpServiceType,
+        tmpStartType,
+        tmpErrorSeverity,
+        PWideChar(tmpPath),
+        nil,//PWideChar(AServiceProc.LoadGroup),
+        tmpPTag,
+        nil, //PWideChar(GetNTDependenciesW(AWinService)),
+        tmpPSSN,
+        nil //PWideChar(AServiceProc.Password)
+        );
+  if 0 = AServiceProc.ServiceHandle then
+  begin
+    Log('', 'CreateServiceW Error');
+    AServiceProc.LastError := Windows.GetLastError;
+    if 0 <> AServiceProc.LastError then
+    begin                   
+      Log('', 'CreateServiceW Error Code:' + IntToStr(AServiceProc.LastError));
+      if ERROR_ALREADY_EXISTS = AServiceProc.LastError  then // 183
       begin
-        if ERROR_INVALID_SERVICE_ACCOUNT = AServiceProc.LastError then// 1057
-        begin
-        end;
+      end;
+      if ERROR_INVALID_SERVICE_ACCOUNT = AServiceProc.LastError then// 1057
+      begin
       end;
     end else
     begin
-      WinSvc.CloseServiceHandle(AServiceProc.ServiceHandle);
+      Log('', 'CreateServiceW Error Code 0');
     end;
+  end else
+  begin       
+    Log('', 'CreateServiceW Succ');
+    WinSvc.CloseServiceHandle(AServiceProc.ServiceHandle);
+  end;
+  Log('win.service.pas', 'InstallWinService end');    
+end;
+
+procedure InstallWinService_Reg(AServiceApp: PWinServiceAppW; AServiceProc: PWinServiceProcW);
+begin
+  // HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services
+  //   DisplayName -- String
+  // Description字符串值，对应服务描述
+  // ImagePath 字符串值，对应该服务程序所在的路径
+  // ObjectName 字符串值，值为"LocalSystem"，表示本地登录
+  // ErrorControl Dword值，值为"1"
+  // Start Dword值，值为2表示自动运行，值为3表示手动运行，值为4表示禁止
+  // Type Dword值，应用程序对应10，其它对应20
 end;
 
 procedure InstallWinService(AServiceApp: PWinServiceAppW; AServiceProc: PWinServiceProcW);
 var
   tmpSvcMgr: integer;
-begin
+begin                  
+  Log('', 'InstallWinService begin');
+  //windows 手动添加服务
+  //方法一：修改注册表
   tmpSvcMgr := OpenSCManager(nil, nil, SC_MANAGER_ALL_ACCESS);
-  try
-    InstallWinService(AServiceProc, tmpSvcMgr);
-  finally
-    CloseServiceHandle(tmpSvcMgr);
-  end;   
+  if 0 <> tmpSvcMgr then
+  begin
+    try
+      InstallWinService(AServiceProc, tmpSvcMgr);
+    finally
+      CloseServiceHandle(tmpSvcMgr);
+    end;
+  end;
+  Log('', 'InstallWinService end');  
 end;
 
 procedure UninstallWinService(AServiceProc: PWinServiceProcW; ASvcMgr: Integer);
 begin
+  Log('', 'UninstallWinService begin');
   AServiceProc.ServiceHandle := OpenServiceW(ASvcMgr, PWideChar(AServiceProc.Name), SERVICE_ALL_ACCESS);
   if 0 = AServiceProc.ServiceHandle then
   begin
@@ -213,23 +260,27 @@ begin
       //RaiseLastOSError;
     end;
   finally
-  end;
+  end;    
+  Log('', 'UninstallWinService end');
 end;
 
 procedure UninstallWinService(AServiceApp: PWinServiceAppW);
 var
   tmpSvcMgr: Integer;
-begin          
+begin
+  Log('', 'UninstallWinService begin');        
   tmpSvcMgr := OpenSCManager(nil, nil, SC_MANAGER_ALL_ACCESS);
   try
     UninstallWinService(nil, tmpSvcMgr);
   finally
     WinSvc.CloseServiceHandle(tmpSvcMgr);
   end;
+  Log('', 'UninstallWinService end');  
 end;                                                 
                      
 procedure StartServiceProc(AServiceProc: PWinServiceProcW);
-begin
+begin                           
+  Log('win.service.pas', 'StartServiceProc:');
   if nil <> @AServiceProc.Controller then
   begin
     AServiceProc.StatusHandle := WinSvc.RegisterServiceCtrlHandlerW(PWideChar(AServiceProc.Name), @AServiceProc.Controller);
@@ -250,7 +301,8 @@ var
   tmpServiceProc: PWinServiceProcW;  
   tmpServiceProcIndex: integer;
   tmpServiceProcCount: integer;
-begin
+begin                   
+  Log('win.service.pas', 'ServiceMain:');
   //Application.DispatchServiceMain(Argc, Argv);
   tmpServiceProc := nil;  
   tmpServiceProcCount := 0;
@@ -262,16 +314,18 @@ end;
 
 function ServiceStartThreadProc(AServiceApp: PWinServiceAppW): HResult; stdcall;
 begin
-  Result := 0;
+  Result := 0;       
+  Log('win.service.pas', 'ServiceStartThreadProc:');
   WinSvc.StartServiceCtrlDispatcherW(AServiceApp.ServiceStart.ServiceStartTable[0]);
   ExitThread(Result);
 end;
 
 procedure RunWinService(AServiceApp: PWinServiceAppW);
-var
-  i: integer;
+//var
+//  i: integer;
 begin
   //AWinService.
+  Log('win.service.pas', 'RunWinService:');
   //while not AWinService.IsTerminated do
   //StartThread: TServiceStartThread;
 //  for i := Low(AWinServiceApp.ServiceStart.ServiceStartTable) to High(AWinServiceApp.ServiceStart.ServiceStartTable) do
@@ -313,7 +367,8 @@ const
     csContinuePending, csPausePending];  
 var
   tmpServiceStatus: TServiceStatus;
-begin         
+begin          
+  Log('win.service.pas', 'ReportServiceStatus:');
   //tmpServiceStatus.dwWaitHint := FWaitHint;
   tmpServiceStatus.dwServiceType := GetNTServiceType(AServiceProc);
   if csStartPending = AServiceProc.Status then

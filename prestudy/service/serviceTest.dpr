@@ -4,6 +4,7 @@ uses
   WinSvc,
   Windows,
   SysUtils,
+  UtilsLog in '..\..\v0000\win_utils\UtilsLog.pas',
   win.service in 'win.service.pas',
   win.app in 'win.app.pas',
   service.test in 'service.test.pas',
@@ -32,7 +33,7 @@ begin
   GlobalService.IsAllowPause := True;
   GlobalService.IsAllowStop := True;
 
-  //if FindCmdLineSwitch('INSTALL', ['-', '/'], True) then
+  if FindCmdLineSwitch('INSTALL', ['-', '/'], True) then
   begin
     InstallWinService(@GlobalServiceApp, @GlobalService);
     exit;
