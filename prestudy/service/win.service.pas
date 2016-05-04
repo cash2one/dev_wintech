@@ -32,8 +32,7 @@ type
   PWinServiceW  = ^TWinServiceW;
   TWinServiceW  = record
     StatusHandle    : THandle;
-    ThreadHandle    : THandle;   
-    ServiceHandle   : THandle;
+    ThreadHandle    : THandle;  
     ThreadId        : DWord;    
     TagID           : DWORD;
     LastError       : DWORD;     
@@ -50,11 +49,6 @@ type
     App             : PWinApp;
     ServiceStart    : TWinServiceStart;
     Name            : array[0..32 - 1] of WideChar;
-    DisplayName     : array[0..64 - 1] of WideChar;  
-    Description     : array[0..256 - 1] of WideChar;
-    Password        : WideString;
-    LoadGroup       : WideString;
-    ServiceStartName: WideString;
   end;
 
   function GetNTServiceType(AWinService: PWinServiceW): Integer;

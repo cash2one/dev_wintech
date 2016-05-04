@@ -20,19 +20,17 @@ const
 var
   tmpWS: WideString;
   GlobalApp: TWinApp;
+  tmpServiceInstall: TWinServiceInstallW;
 begin
   FillChar(GlobalApp, SizeOf(GlobalApp), 0);
   FillChar(GlobalService, SizeOf(GlobalService), 0);
   
   GlobalService.App := @GlobalApp;
 
-  GlobalService.ServiceStartName := C_ServiceStartName;
   tmpWS := C_ServiceName;
   CopyMemory(@GlobalService.Name[0], @tmpWS[1], Length(tmpWS) * SizeOf(WideChar));
   
   //GlobalService.Name             := C_ServiceName;  
-  tmpWS := C_ServiceDisplayName;
-  CopyMemory(@GlobalService.DisplayName[0], @tmpWS[1], Length(tmpWS) * SizeOf(WideChar));
   
   GlobalService.ServiceType     := stWin32;
   GlobalService.StartType       := stAuto;
@@ -43,12 +41,23 @@ begin
 
   if FindCmdLineSwitch('INSTALL', ['-', '/'], True) then
   begin
-    InstallWinService(@GlobalService);
+    FillChar(tmpServiceInstall, SizeOf(tmpServiceInstall), 0);
+                     
+    tmpWS := C_ServiceStartName;
+    CopyMemory(@tmpServiceInstall.ServiceStartName[0], @tmpWS[1], Length(tmpWS) * SizeOf(WideChar));
+
+    tmpWS := C_ServiceDisplayName;
+    CopyMemory(@tmpServiceInstall.DisplayName[0], @tmpWS[1], Length(tmpWS) * SizeOf(WideChar));
+      
+    tmpServiceInstall.Service := @GlobalService;
+    InstallWinService(@tmpServiceInstall);
     exit;
   end;
   if FindCmdLineSwitch('UNINSTALL', ['-', '/'], True) then
   begin
-    UninstallWinService(@GlobalService);
+    FillChar(tmpServiceInstall, SizeOf(tmpServiceInstall), 0);                               
+    tmpServiceInstall.Service := @GlobalService;
+    UninstallWinService(@tmpServiceInstall);
     exit;
   end;
   RunWinService(@GlobalService);

@@ -4,12 +4,24 @@ interface
 
 uses
   win.service;
-                    
-  procedure InstallWinService(AWinService: PWinServiceW); overload;
-  procedure InstallWinService(AWinService: PWinServiceW; ASvcMgr: Integer); overload;
 
-  procedure UninstallWinService(AWinService: PWinServiceW); overload;
-  procedure UninstallWinService(AWinService: PWinServiceW; ASvcMgr: Integer); overload;
+type
+  PWinServiceInstallW  = ^TWinServiceInstallW;
+  TWinServiceInstallW  = record
+    Service         : PWinServiceW;
+    ServiceHandle   : THandle; 
+    DisplayName     : array[0..64 - 1] of WideChar; 
+    ServiceStartName: array[0..64 - 1] of WideChar; 
+    Description     : array[0..256 - 1] of WideChar;   
+    Password        : WideString;
+    LoadGroup       : WideString;
+  end;
+  
+  procedure InstallWinService(AWinServiceInstall: PWinServiceInstallW); overload;
+  procedure InstallWinService(AWinServiceInstall: PWinServiceInstallW; ASvcMgr: Integer); overload;
+
+  procedure UninstallWinService(AWinServiceInstall: PWinServiceInstallW); overload;
+  procedure UninstallWinService(AWinServiceInstall: PWinServiceInstallW; ASvcMgr: Integer); overload;
    
 implementation
             
@@ -19,7 +31,7 @@ uses
   SysUtils,
   UtilsLog;
                      
-procedure InstallWinService(AWinService: PWinServiceW; ASvcMgr: Integer);
+procedure InstallWinService(AWinServiceInstall: PWinServiceInstallW; ASvcMgr: Integer);
 var
   tmpPath: WideString;
   tmpPSSN: PWideChar;  
@@ -31,24 +43,24 @@ var
 begin                 
   Log('win.service.pas', 'InstallWinService begin:');
   tmpPath := ParamStr(0);
-  if AWinService.ServiceStartName = '' then
+  if AWinServiceInstall.ServiceStartName = '' then
     tmpPSSN := nil
   else
-    tmpPSSN := PWideChar(AWinService.ServiceStartName);
+    tmpPSSN := PWideChar(@AWinServiceInstall.ServiceStartName[0]);
                   
-  tmpTagID := AWinService.TagID;
+  tmpTagID := AWinServiceInstall.Service.TagID;
   if tmpTagID > 0 then
     tmpPTag := @tmpTagID
   else
     tmpPTag := nil;
 
-  tmpServiceType := GetNTServiceType(AWinService);
-  tmpStartType:= GetNTStartType(AWinService);
-  tmpErrorSeverity := GetNTErrorSeverity(AWinService);
+  tmpServiceType := GetNTServiceType(AWinServiceInstall.Service);
+  tmpStartType:= GetNTStartType(AWinServiceInstall.Service);
+  tmpErrorSeverity := GetNTErrorSeverity(AWinServiceInstall.Service);
 
-  AWinService.ServiceHandle := WinSvc.CreateServiceW(ASvcMgr,
-        PWideChar(@AWinService.Name[0]),
-        PWideChar(@AWinService.DisplayName[0]),
+  AWinServiceInstall.ServiceHandle := WinSvc.CreateServiceW(ASvcMgr,
+        PWideChar(@AWinServiceInstall.Service.Name[0]),
+        PWideChar(@AWinServiceInstall.DisplayName[0]),
         SERVICE_ALL_ACCESS,
         tmpServiceType,
         tmpStartType,
@@ -60,17 +72,17 @@ begin
         tmpPSSN,
         nil //PWideChar(AServiceProc.Password)
         );
-  if 0 = AWinService.ServiceHandle then
+  if 0 = AWinServiceInstall.ServiceHandle then
   begin
     Log('', 'CreateServiceW Error');
-    AWinService.LastError := Windows.GetLastError;
-    if 0 <> AWinService.LastError then
+    AWinServiceInstall.Service.LastError := Windows.GetLastError;
+    if 0 <> AWinServiceInstall.Service.LastError then
     begin                   
-      Log('', 'CreateServiceW Error Code:' + IntToStr(AWinService.LastError));
-      if ERROR_ALREADY_EXISTS = AWinService.LastError  then // 183
+      Log('', 'CreateServiceW Error Code:' + IntToStr(AWinServiceInstall.Service.LastError));
+      if ERROR_ALREADY_EXISTS = AWinServiceInstall.Service.LastError  then // 183
       begin
       end;
-      if ERROR_INVALID_SERVICE_ACCOUNT = AWinService.LastError then// 1057
+      if ERROR_INVALID_SERVICE_ACCOUNT = AWinServiceInstall.Service.LastError then// 1057
       begin
       end;
     end else
@@ -80,12 +92,12 @@ begin
   end else
   begin       
     Log('', 'CreateServiceW Succ');
-    WinSvc.CloseServiceHandle(AWinService.ServiceHandle);
+    WinSvc.CloseServiceHandle(AWinServiceInstall.ServiceHandle);
   end;
   Log('win.service.pas', 'InstallWinService end');    
 end;
 
-procedure InstallWinService_Reg(AWinService: PWinServiceW);
+procedure InstallWinService_Reg(AWinServiceInstall: PWinServiceInstallW);
 begin
   // HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services
   //   DisplayName -- String
@@ -97,7 +109,7 @@ begin
   // Type Dword值，应用程序对应10，其它对应20
 end;
 
-procedure InstallWinService(AWinService: PWinServiceW);
+procedure InstallWinService(AWinServiceInstall: PWinServiceInstallW);
 var
   tmpSvcMgr: integer;
 begin                  
@@ -108,7 +120,7 @@ begin
   if 0 <> tmpSvcMgr then
   begin
     try
-      InstallWinService(AWinService, tmpSvcMgr);
+      InstallWinService(AWinServiceInstall, tmpSvcMgr);
     finally
       CloseServiceHandle(tmpSvcMgr);
     end;
@@ -116,16 +128,16 @@ begin
   Log('', 'InstallWinService end');  
 end;
 
-procedure UninstallWinService(AWinService: PWinServiceW; ASvcMgr: Integer);
+procedure UninstallWinService(AWinServiceInstall: PWinServiceInstallW; ASvcMgr: Integer);
 begin
   Log('', 'UninstallWinService begin');
-  AWinService.ServiceHandle := OpenServiceW(ASvcMgr, PWideChar(@AWinService.Name[0]), SERVICE_ALL_ACCESS);
-  if 0 = AWinService.ServiceHandle then
+  AWinServiceInstall.ServiceHandle := OpenServiceW(ASvcMgr, PWideChar(@AWinServiceInstall.Service.Name[0]), SERVICE_ALL_ACCESS);
+  if 0 = AWinServiceInstall.ServiceHandle then
   begin
     //RaiseLastOSError;
   end;
   try
-    if not WinSvc.DeleteService(AWinService.ServiceHandle) then
+    if not WinSvc.DeleteService(AWinServiceInstall.ServiceHandle) then
     begin
       //RaiseLastOSError;
     end;
@@ -134,7 +146,7 @@ begin
   Log('', 'UninstallWinService end');
 end;
 
-procedure UninstallWinService(AWinService: PWinServiceW);
+procedure UninstallWinService(AWinServiceInstall: PWinServiceInstallW);
 var
   tmpSvcMgr: Integer;
 begin
