@@ -7,31 +7,24 @@ uses
   UtilsLog in '..\..\v0000\win_utils\UtilsLog.pas',
   win.service in 'win.service.pas',
   win.app in 'win.app.pas',
-  service.test in 'service.test.pas',
   win.app_exit in 'win.app_exit.pas',
   win.service_install in 'win.service_install.pas';
 
 {$R *.res}
-
-//  SvcMgr,
-
-procedure CreateService();
-begin
-end;
-               
+ 
 const
   C_ServiceName = 'testsrv';
   C_ServiceDisplayName = 'testsrv_display';
   C_ServiceStartName = 'testsrv_start';
 
 var
-  tmpWS: WideString;               
-begin   
+  tmpWS: WideString;
+  GlobalApp: TWinApp;
+begin
   FillChar(GlobalApp, SizeOf(GlobalApp), 0);
-  FillChar(GlobalServiceApp, SizeOf(GlobalServiceApp), 0);
   FillChar(GlobalService, SizeOf(GlobalService), 0);
   
-  GlobalServiceApp.App := @GlobalApp;
+  GlobalService.App := @GlobalApp;
 
   GlobalService.ServiceStartName := C_ServiceStartName;
   tmpWS := C_ServiceName;
@@ -47,18 +40,16 @@ begin
   GlobalService.ErrorSeverity   := esNormal;
   GlobalService.IsAllowPause := True;
   GlobalService.IsAllowStop := True;
-  GlobalService.Controller := ServiceHandler_TestProc;
-  GlobalService.ServiceApp := @GlobalServiceApp; 
 
   if FindCmdLineSwitch('INSTALL', ['-', '/'], True) then
   begin
-    InstallWinService(@GlobalServiceApp, @GlobalService);
+    InstallWinService(@GlobalService);
     exit;
   end;
   if FindCmdLineSwitch('UNINSTALL', ['-', '/'], True) then
   begin
-    UninstallWinService(@GlobalServiceApp);
+    UninstallWinService(@GlobalService);
     exit;
   end;
-  RunWinService(@GlobalServiceApp);
+  RunWinService(@GlobalService);
 end.
