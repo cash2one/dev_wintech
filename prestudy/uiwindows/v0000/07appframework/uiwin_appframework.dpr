@@ -2,10 +2,12 @@ program uiwin_appframework;
 
 uses
   Windows,
-  BaseThread in '..\..\..\..\v0000\app_base\BaseThread.pas',
-  BaseRun in '..\..\..\..\v0000\app_base\BaseRun.pas',
+  Controls,
+  Base.Run in '..\..\..\..\v0001\rec\app_base\Base.Run.pas',
+  base.thread in '..\..\..\..\v0001\rec\app_base\base.thread.pas',
+  win.thread in '..\..\..\..\v0001\rec\win_sys\win.thread.pas',
+  BaseThread in '..\..\..\..\v0001\obj\app_base\BaseThread.pas',
   ui.color in '..\..\..\..\v0000\uibase\ui.color.pas',
-  win.thread in '..\..\..\..\v0000\win_system\win.thread.pas',
   win.wnd_ui in '..\..\..\..\v0000\win_ui\win.wnd_ui.pas',
   uiwin.memdc in '..\..\..\..\v0000\win_ui\uiwin.memdc.pas',
   uiwin.gdi in '..\..\..\..\v0000\win_ui\uiwin.gdi.pas',
