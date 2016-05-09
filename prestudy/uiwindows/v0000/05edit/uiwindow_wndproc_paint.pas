@@ -15,36 +15,13 @@ uses
 implementation
 
 uses
+  uicontrol_edit_paint,
   uiwindow_wndproc_mouse;
   
 var
   tmpBrush: HBRUSH = 0;
   tmpClearBrush: HBRUSH = 0;
-  tmpRectBrush: HBRUSH = 0;
   tmpPen: HPEN = 0;
-
-(*//                                   
-procedure _DrawFocusRect(Canvas: TCanvas; ARect: TRect);
-var
-  AOldBrush: TBrush;
-  AOldPen: TPen;
-begin
-  AOldBrush := TBrush.Create;
-  AOldPen := TPen.Create;
-  try
-    AOldBrush.Assign(Canvas.Brush);
-    AOldPen.Assign(Canvas.Pen);
-    Canvas.Brush.Style := bsClear;
-    Canvas.Rectangle(ARect);
-  finally
-    Canvas.Pen.Assign(AOldPen);
-    Canvas.Brush.Assign(AOldBrush);
-    AOldBrush.Free;
-    AOldPen.Free;
-  end;
-end;
-//*)
-
 
 //  TPenStyle = (psSolid, psDash, psDot, psDashDot, psDashDotDot, psClear,
 //    psInsideFrame, psUserStyle, psAlternate);
@@ -62,41 +39,9 @@ end;
 //     R2_MASKPENNOT, R2_MERGENOTPEN, R2_MASKNOTPEN, R2_MERGEPEN, R2_NOTMERGEPEN,
 //     R2_MASKPEN, R2_NOTMASKPEN, R2_XORPEN, R2_NOTXORPEN);
 
-procedure DrawFocusRect(AMemDC: PWinMemDC; ARect: TRect);
-var
-  tmpOldPen: HPEN;     
-  tmpOldBrush: HBRUSH;
-  tmpLogPen: TLogPen;
-  tmpLogBrush: TLogBrush;
-begin
-  FrameRect(AMemDC.DCHandle, ARect, tmpRectBrush); 
-  //RequiredState([csHandleValid, csBrushValid, csPenValid]);
-  if 0 = tmpPen then
-  begin
-    tmpLogPen.lopnStyle := PS_DOT;
-    tmpLogPen.lopnWidth.X := 1;
-    tmpLogPen.lopnColor := 0;
-    tmpPen := CreatePenIndirect(tmpLogPen);
-    Windows.SetROP2(tmpPen, R2_NOT);
-  end;
-  if 0 = tmpClearBrush then
-  begin
-    tmpLogBrush.lbStyle := BS_HOLLOW;
-    tmpLogBrush.lbColor := 0;
-    tmpLogBrush.lbHatch := 0;
-    tmpClearBrush := CreateBrushIndirect(tmpLogBrush);
-  end;
-  tmpOldPen := SelectObject(AMemDC.DCHandle, tmpPen);
-  tmpOldBrush := SelectObject(AMemDC.DCHandle, tmpClearBrush);
-  Windows.Rectangle(AMemDC.DCHandle, ARect.Left, ARect.Top, ARect.Right, ARect.Bottom);                                   
-  SelectObject(AMemDC.DCHandle, tmpOldPen);
-  SelectObject(AMemDC.DCHandle, tmpOldBrush);
-end;
-
 procedure UIWindowPaint(AUIWindow: PUIWindow; AMemDC: PWinMemDC);
 var   
   tmpLogBrush: TLogBrush;
-  tmpRect: TRect;
 begin          
   if 0 = tmpBrush then
   begin
@@ -104,23 +49,10 @@ begin
     tmpLogBrush.lbColor := $EFEFEF;
     tmpLogBrush.lbHatch := 0;
     tmpBrush := CreateBrushIndirect(tmpLogBrush);
-  end;            
-  if 0 = tmpRectBrush then
-  begin
-    tmpLogBrush.lbStyle := BS_SOLID;
-    tmpLogBrush.lbColor := $0F0F0F;
-    tmpLogBrush.lbHatch := 0;
-    tmpRectBrush := CreateBrushIndirect(tmpLogBrush);
   end;
-
   FillRect(AMemDC.DCHandle, AUIWindow.BaseWnd.ClientRect, tmpBrush);
 
-  tmpRect.Left := AUIWindow.TestUIEdit.Base.View.Space.Layout.Left;
-  tmpRect.Top := AUIWindow.TestUIEdit.Base.View.Space.Layout.Top;
-  tmpRect.Right := AUIWindow.TestUIEdit.Base.View.Space.Layout.Right;
-  tmpRect.Bottom := AUIWindow.TestUIEdit.Base.View.Space.Layout.Bottom;
-
-  FrameRect(AMemDC.DCHandle, tmpRect, tmpRectBrush);
+  PaintView_UIEdit(@AUIWindow.TestUIEdit, AMemDC);
 end;
 
 procedure UIWindowPaint(AUIWindow: PUIWindow);

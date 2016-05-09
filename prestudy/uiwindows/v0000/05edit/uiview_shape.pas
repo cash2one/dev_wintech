@@ -14,6 +14,7 @@ type
   PUIViewShape_Text = ^TUIViewShape_Text;
   TUIViewShape_Text = record
     BaseShape       : TUIViewShape;
+    UITextData      : WideString;            
   end;
 
   function CheckOutShapeRect: PUIViewShape_Rect;   

@@ -22,7 +22,8 @@ uses
   uiview_texture in 'uiview_texture.pas',
   uiview_space in 'uiview_space.pas',
   uicontrol_edit in 'uicontrol_edit.pas',
-  uiview_shape in 'uiview_shape.pas';
+  uiview_shape in 'uiview_shape.pas',
+  uicontrol_edit_paint in 'uicontrol_edit_paint.pas';
 
 {$R *.res}
 

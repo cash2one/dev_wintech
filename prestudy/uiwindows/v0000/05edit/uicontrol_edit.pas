@@ -16,7 +16,7 @@ type
   end;
 
   procedure InitUIEdit(AEdit: PUIEdit);
-
+  
 implementation
 
 uses
@@ -33,6 +33,11 @@ begin
     AEdit.MainView.Space.BaseShape.Width := 100;
     AEdit.MainView.Space.BaseShape.Height := 20;
   end;
+
+  AEdit.TextView := CheckOutUIView;
+  AEdit.TextView.Space.BaseShape := @CheckOutShapeText.BaseShape;
+
+  PUIViewShape_Text(AEdit.TextView.Space.BaseShape).UITextData := 'GOOD';
 end;
 
 end.
