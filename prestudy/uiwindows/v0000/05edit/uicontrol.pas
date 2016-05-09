@@ -8,7 +8,9 @@ uses
   
 type
   TBaseUIControl = record
-    Layout: PUIViewLayout; 
+    View        : PUIView;
+    Border      : PUIView;
+    Background  : PUIView;    
   end;
   
 implementation

@@ -10,7 +10,9 @@ type
   PUIEdit         = ^TUIEdit;
   TUIEdit         = record
     Base          : TBaseUIControl;
-    View          : TUIView;
+    MainView      : TUIView;
+    TextView      : PUIView;
+    CaretView     : PUIView;
   end;
 
   procedure InitUIEdit(AEdit: PUIEdit);
@@ -23,13 +25,13 @@ uses
 procedure InitUIEdit(AEdit: PUIEdit);
 begin
       
-  AEdit.View.Space.BaseShape := @CheckOutShapeRect.BaseShape;
+  AEdit.MainView.Space.BaseShape := @CheckOutShapeRect.BaseShape;
 
-  AEdit.Base.Layout := @AEdit.View.Space.Layout;   
-  if nil <> AEdit.View.Space.BaseShape then
+  AEdit.Base.View := @AEdit.MainView;   
+  if nil <> AEdit.MainView.Space.BaseShape then
   begin
-    AEdit.View.Space.BaseShape.Width := 100;
-    AEdit.View.Space.BaseShape.Height := 20;
+    AEdit.MainView.Space.BaseShape.Width := 100;
+    AEdit.MainView.Space.BaseShape.Height := 20;
   end;
 end;
 

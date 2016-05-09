@@ -18,6 +18,7 @@ implementation
 
 uses
   uiview_shape,
+  uiview_space,
   uicontrol_edit,
   uiwindow_wndproc;
   
@@ -54,13 +55,8 @@ begin
       AUIWindow.BaseWnd.ClientRect.Right,
       AUIWindow.BaseWnd.ClientRect.Bottom);
                                    
-  InitUIEdit(@AUIWindow.TestUIEdit);   
-  AUIWindow.TestUIEdit.Base.Layout.Left := 50;
-  AUIWindow.TestUIEdit.Base.Layout.Top := 50; 
-  AUIWindow.TestUIEdit.View.Space.Layout.Right := AUIWindow.TestUIEdit.View.Space.Layout.Left + AUIWindow.TestUIEdit.View.Space.BaseShape.Width;
-  AUIWindow.TestUIEdit.View.Space.Layout.Bottom := AUIWindow.TestUIEdit.View.Space.Layout.Top + AUIWindow.TestUIEdit.View.Space.BaseShape.Height;
-
-
+  InitUIEdit(@AUIWindow.TestUIEdit);  
+  UpdateUISpaceLayout(@AUIWindow.TestUIEdit.Base.View.Space, 50, 50);   
   
   AUIWindow.BaseWnd.UIWndHandle := CreateWindowExW(
     //WS_EX_TOOLWINDOW

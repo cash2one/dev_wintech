@@ -84,7 +84,9 @@ const
 
   procedure UpdateUISpaceWidth(AUISpace: PUIViewSpace; AWidth: integer);
   procedure UpdateUISpaceHeight(AUISpace: PUIViewSpace; AHeight: integer);
-  
+  procedure UpdateUILayout(AUILayout: PUIViewLayout; ALeft: Integer; ATop: Integer);
+  procedure UpdateUISpaceLayout(AUISpace: PUIViewSpace; ALeft: Integer; ATop: Integer);
+
 implementation
 
 function POINT_HITTEST(AUILayout: PUIViewLayout; APoint: TSmallPoint; ABorder: Integer = 3): Integer;
@@ -199,6 +201,19 @@ begin
     AUISpace.BaseShape.Height := AHeight;
   end;
   AUISpace.Layout.Bottom := AUISpace.Layout.Top + AHeight;
+end;
+    
+procedure UpdateUILayout(AUILayout: PUIViewLayout; ALeft: Integer; ATop: Integer);
+begin
+  AUILayout.Left := ALeft;
+  AUILayout.Top := ATop; 
+end;
+
+procedure UpdateUISpaceLayout(AUISpace: PUIViewSpace; ALeft: Integer; ATop: Integer);
+begin
+  UpdateUILayout(@AUISpace.Layout, ALeft, ATop);   
+  AUISpace.Layout.Right := AUISpace.Layout.Left + AUISpace.BaseShape.Width;
+  AUISpace.Layout.Bottom := AUISpace.Layout.Top + AUISpace.BaseShape.Height;
 end;
 
 end.
