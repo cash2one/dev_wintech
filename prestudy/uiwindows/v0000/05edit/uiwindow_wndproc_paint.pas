@@ -115,21 +115,12 @@ begin
 
   FillRect(AMemDC.DCHandle, AUIWindow.BaseWnd.ClientRect, tmpBrush);
 
-  tmpRect.Left := 10;
-  tmpRect.Top := 10;
-  tmpRect.Right := tmpRect.Left + 100;
-  tmpRect.Bottom := tmpRect.Top + 50;
+  tmpRect.Left := AUIWindow.TestUIEdit.Space.Layout.Left;
+  tmpRect.Top := AUIWindow.TestUIEdit.Space.Layout.Top;
+  tmpRect.Right := AUIWindow.TestUIEdit.Space.Layout.Right;
+  tmpRect.Bottom := AUIWindow.TestUIEdit.Space.Layout.Bottom;
 
   FrameRect(AMemDC.DCHandle, tmpRect, tmpRectBrush);
-
-  if IsDragStarting then
-  begin
-    tmpRect.Left := DragStartPoint.x;
-    tmpRect.Top := DragStartPoint.y;
-    tmpRect.Right := WMMouseMove_CursorPoint.x;
-    tmpRect.Bottom := WMMouseMove_CursorPoint.y;
-    DrawFocusRect(AMemDC, tmpRect);
-  end;
 end;
 
 procedure UIWindowPaint(AUIWindow: PUIWindow);

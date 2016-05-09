@@ -2,10 +2,10 @@ program uiwin_edit;
 
 uses
   Windows,
-  BaseThread in '..\..\..\..\v0000\app_base\BaseThread.pas',
-  BaseRun in '..\..\..\..\v0000\app_base\BaseRun.pas',
+  base.run in '..\..\..\..\v0001\rec\app_base\base.run.pas',
+  Base.Thread in '..\..\..\..\v0001\rec\app_base\Base.Thread.pas',
+  win.thread in '..\..\..\..\v0001\rec\win_sys\win.thread.pas',
   ui.color in '..\..\..\..\v0000\uibase\ui.color.pas',
-  win.thread in '..\..\..\..\v0000\win_system\win.thread.pas',
   win.wnd_ui in '..\..\..\..\v0000\win_ui\win.wnd_ui.pas',
   uiwin.memdc in '..\..\..\..\v0000\win_ui\uiwin.memdc.pas',
   uiwin.gdi in '..\..\..\..\v0000\win_ui\uiwin.gdi.pas',
@@ -17,7 +17,12 @@ uses
   uiwindow_wndproc in 'uiwindow_wndproc.pas',
   uiwindow_wndproc_startend in 'uiwindow_wndproc_startend.pas',
   uiwindow_wndproc_uispace in 'uiwindow_wndproc_uispace.pas',
-  uiwindow in 'uiwindow.pas';
+  uiwindow in 'uiwindow.pas',
+  uiview in 'uiview.pas',
+  uiview_texture in 'uiview_texture.pas',
+  uiview_space in 'uiview_space.pas',
+  uicontrol_edit in 'uicontrol_edit.pas',
+  uiview_shape in 'uiview_shape.pas';
 
 {$R *.res}
 

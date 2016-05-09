@@ -17,6 +17,7 @@ var
 implementation
 
 uses
+  uiview_shape,
   uiwindow_wndproc;
   
 function UIWndProcW(AWnd: HWND; AMsg: UINT; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
@@ -51,11 +52,25 @@ begin
   UpdateMemDC(@AUIWindow.MemDC,
       AUIWindow.BaseWnd.ClientRect.Right,
       AUIWindow.BaseWnd.ClientRect.Bottom);
+                                   
+  AUIWindow.TestUIEdit.Space.Layout.Left := 50;
+  AUIWindow.TestUIEdit.Space.Layout.Top := 50;
 
+  AUIWindow.TestUIEdit.Space.BaseShape := @CheckOutShapeRect.BaseShape;
+
+  if nil <> AUIWindow.TestUIEdit.Space.BaseShape then
+  begin
+    AUIWindow.TestUIEdit.Space.BaseShape.Width := 100;
+    AUIWindow.TestUIEdit.Space.BaseShape.Height := 20;
+    AUIWindow.TestUIEdit.Space.Layout.Right := AUIWindow.TestUIEdit.Space.Layout.Left + AUIWindow.TestUIEdit.Space.BaseShape.Width;
+    AUIWindow.TestUIEdit.Space.Layout.Bottom := AUIWindow.TestUIEdit.Space.Layout.Top + AUIWindow.TestUIEdit.Space.BaseShape.Height;
+  end;
+
+  
   AUIWindow.BaseWnd.UIWndHandle := CreateWindowExW(
-    WS_EX_TOOLWINDOW
-      or WS_EX_TOPMOST
-      or WS_EX_OVERLAPPEDWINDOW
+    //WS_EX_TOOLWINDOW
+      //or WS_EX_TOPMOST
+    WS_EX_OVERLAPPEDWINDOW
     ,
     tmpRegWndClass.lpszClassName,
     '',
