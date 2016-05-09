@@ -18,6 +18,7 @@ implementation
 
 uses
   uiview_shape,
+  uicontrol_edit,
   uiwindow_wndproc;
   
 function UIWndProcW(AWnd: HWND; AMsg: UINT; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
@@ -53,18 +54,12 @@ begin
       AUIWindow.BaseWnd.ClientRect.Right,
       AUIWindow.BaseWnd.ClientRect.Bottom);
                                    
-  AUIWindow.TestUIEdit.Space.Layout.Left := 50;
-  AUIWindow.TestUIEdit.Space.Layout.Top := 50;
+  InitUIEdit(@AUIWindow.TestUIEdit);   
+  AUIWindow.TestUIEdit.Base.Layout.Left := 50;
+  AUIWindow.TestUIEdit.Base.Layout.Top := 50; 
+  AUIWindow.TestUIEdit.View.Space.Layout.Right := AUIWindow.TestUIEdit.View.Space.Layout.Left + AUIWindow.TestUIEdit.View.Space.BaseShape.Width;
+  AUIWindow.TestUIEdit.View.Space.Layout.Bottom := AUIWindow.TestUIEdit.View.Space.Layout.Top + AUIWindow.TestUIEdit.View.Space.BaseShape.Height;
 
-  AUIWindow.TestUIEdit.Space.BaseShape := @CheckOutShapeRect.BaseShape;
-
-  if nil <> AUIWindow.TestUIEdit.Space.BaseShape then
-  begin
-    AUIWindow.TestUIEdit.Space.BaseShape.Width := 100;
-    AUIWindow.TestUIEdit.Space.BaseShape.Height := 20;
-    AUIWindow.TestUIEdit.Space.Layout.Right := AUIWindow.TestUIEdit.Space.Layout.Left + AUIWindow.TestUIEdit.Space.BaseShape.Width;
-    AUIWindow.TestUIEdit.Space.Layout.Bottom := AUIWindow.TestUIEdit.Space.Layout.Top + AUIWindow.TestUIEdit.Space.BaseShape.Height;
-  end;
 
   
   AUIWindow.BaseWnd.UIWndHandle := CreateWindowExW(

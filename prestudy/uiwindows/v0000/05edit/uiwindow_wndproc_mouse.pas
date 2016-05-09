@@ -120,7 +120,7 @@ begin
   begin
     if Windows.ScreenToClient(AUIWindow.BaseWnd.UIWndHandle, AUIWindow.WMSetCursor_CursorPoint) then
     begin
-      tmpHitTest := POINT_HITTEST(@AUIWindow.TestUIEdit.Space.Layout, AUIWindow.WMMouseMove_CursorPoint);
+      tmpHitTest := POINT_HITTEST(AUIWindow.TestUIEdit.Base.Layout, AUIWindow.WMMouseMove_CursorPoint);
       if UpdateHitTestCursor(AUIWindow, tmpHitTest) then
       begin
         Exit;

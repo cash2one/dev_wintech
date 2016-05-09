@@ -7,7 +7,8 @@ uses
   Messages,
   uiwin.memdc,
   win.wnd_ui,
-  uiview;
+  uiview,
+  uicontrol_edit;
 
 type
   PUIWindow         = ^TUIWindow;    
@@ -15,7 +16,7 @@ type
     BaseWnd         : TUIBaseWnd;
     WndClientRect   : TRect;
     MemDC           : TWinMemDC;
-    TestUIEdit      : TUIView;
+    TestUIEdit      : TUIEdit;
 
     WMSetCursor_CursorPoint: TPoint;
     WMLButtonDown_CursorPoint: TSmallPoint;
