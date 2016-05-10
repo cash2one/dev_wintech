@@ -18,7 +18,7 @@ implementation
 
 function InitWinIocp(AIocp: PWinIocp): Boolean;
 begin
-  if 0 = AIocp.Handle then
+  if not IsValidWinIocp(AIocp) then
   begin
     AIocp.Handle := CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
   end;   
