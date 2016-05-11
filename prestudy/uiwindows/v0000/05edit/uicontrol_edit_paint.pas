@@ -4,10 +4,10 @@ interface
 
 uses
   Windows,
-  uiwin.memdc,
+  uiwin.dc,
   uicontrol_edit;
                  
-  procedure PaintView_UIEdit(AEdit: PUIEdit; AMemDC: PWinMemDC);
+  procedure PaintView_UIEdit(AEdit: PUIEdit; AMemDC: PWinDC);
 
 implementation
 
@@ -17,7 +17,7 @@ uses
 var
   tmpRectBrush: HBRUSH = 0;
 
-procedure PaintView_UIEdit(AEdit: PUIEdit; AMemDC: PWinMemDC);
+procedure PaintView_UIEdit(AEdit: PUIEdit; AMemDC: PWinDC);
 var
   tmpRect: TRect;
   tmpLogBrush: TLogBrush;

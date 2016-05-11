@@ -5,22 +5,18 @@ interface
 uses          
   Windows,
   Messages,
-  uiwin.memdc,
-  win.wnd_ui,
+  uiwin.dc,
+  uiwin.wnd,
   uiview,
   uicontrol_edit;
 
 type
   PUIWindow         = ^TUIWindow;    
   TUIWindow         = record
-    BaseWnd         : TUIBaseWnd;
-    WndClientRect   : TRect;
-    MemDC           : TWinMemDC;
+    BaseWnd         : TWndUI;
+    MemDC           : TWinDC;
     TestUIEdit      : TUIEdit;
 
-    WMSetCursor_CursorPoint: TPoint;
-    WMLButtonDown_CursorPoint: TSmallPoint;
-    WMMouseMove_CursorPoint: TSmallPoint;
 
     CursorHandle: HCURSOR;
     TestFocusUIView : PUIView;
