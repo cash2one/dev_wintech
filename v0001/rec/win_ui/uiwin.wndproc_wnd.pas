@@ -5,12 +5,17 @@ interface
 uses                                                                       
   Windows, Messages, uiwin.wnd;
                                 
-  function WndProcW_WMNCCreate(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;  
-  function WndProcW_WMCreate(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;   
+  function WndProcW_WMCreate(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+  function WndProcW_WMNCCreate(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+
   function WndProcW_WMDestroy(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+  function WndProcW_WMNCDESTROY(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+  
   function WndProcW_WMClose(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
 
   function WndProcW_WMActivate(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+  function WndProcW_WMNCACTIVATE(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+  
   function WndProcW_WMActivateApp(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
                                
   function WndProcW_WMSetFocus(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
@@ -36,6 +41,12 @@ begin
   Result := DefWindowProcW(AUIWnd.WndHandle, WM_DESTROY, wParam, lParam);
 end;
 
+function WndProcW_WMNCDESTROY(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+begin
+  PostQuitMessage(0);
+  Result := DefWindowProcW(AUIWnd.WndHandle, WM_NCDESTROY, wParam, lParam);
+end;
+
 function WndProcW_WMClose(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
   Result := DefWindowProcW(AUIWnd.WndHandle, WM_Close, wParam, lParam);
@@ -55,7 +66,12 @@ function WndProcW_WMActivate(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LR
 begin
   Result := DefWindowProcW(AUIWnd.WndHandle, WM_ACTIVATE, wParam, lParam);
 end;
-               
+                
+function WndProcW_WMNCACTIVATE(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+begin
+  Result := DefWindowProcW(AUIWnd.WndHandle, WM_NCACTIVATE, wParam, lParam);
+end;    
+                        
 function WndProcW_WMActivateApp(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
   Result := DefWindowProcW(AUIWnd.WndHandle, WM_ACTIVATEAPP, wParam, lParam);

@@ -28,6 +28,10 @@ type
     WMMOUSEMOVE_LParam    : DWORD;
     WMLBUTTONDOWN_LParam  : DWORD;
     WMLBUTTONUP_LParam    : DWORD;
+
+    WMSetCursor_CursorPoint: TPoint;
+    //WMLButtonDown_CursorPoint: TSmallPoint;
+    //WMMouseMove_CursorPoint: TSmallPoint;    
   end;
 
 implementation
