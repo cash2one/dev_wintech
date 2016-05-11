@@ -25,6 +25,8 @@ uses
   function WndProcW_WMMouseLeave(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
   function WndProcW_WMNCMOUSEMOVE(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
   
+  function WndProcW_WMDROPFILES(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+
   function WndProcW_WMNCLBUTTONDOWN(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
   function WndProcW_WMNCLBUTTONUP(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
   function WndProcW_WMNCLBUTTONDBLCLK(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
@@ -173,6 +175,11 @@ end;
 function WndProcW_WMNCMBUTTONDBLCLK(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
 begin
   Result := DefWindowProcW(AUIWnd.WndHandle, WM_NCMBUTTONDBLCLK, wParam, lParam);
+end;
+
+function WndProcW_WMDROPFILES(AUIWnd: PWndUI; wParam: WPARAM; lParam: LPARAM): LRESULT;
+begin
+  Result := DefWindowProcW(AUIWnd.WndHandle, WM_DROPFILES, wParam, lParam);
 end;
 
 end.
