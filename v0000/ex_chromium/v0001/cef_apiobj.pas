@@ -284,6 +284,7 @@ type
     Width             : integer;
     Height            : integer;
     CefUrl            : string;
+    ExParam           : Pointer;
     CefOnLoadEnd      : procedure (ACefClient: PCefClientObject; AUrl: string);
     CefOnPaintEnd     : procedure (ACefClient: PCefClientObject);
   end;

@@ -755,6 +755,7 @@ type
   TCefDomVisitor = record
     base: TCefBase;
     visit: procedure(self: PCefDomVisitor; document: PCefDomDocument); stdcall;
+    ExParam: Pointer;
   end;
 
   TCefDomDocument = record

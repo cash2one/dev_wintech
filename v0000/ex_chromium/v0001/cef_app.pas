@@ -6,13 +6,14 @@ uses
   Windows,
   BaseApp,
   BaseThread,
+  win.thread,
   cef_apiobj;
 
 type
   TCefApp = record
     CefLibrary: TCefLibrary;
     CefAppObject: TCefAppObject;
-    AppMainThread: TSysThread;
+    AppMainThread: TSysWinThread;
   end;
 
 var
