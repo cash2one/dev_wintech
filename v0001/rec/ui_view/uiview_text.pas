@@ -37,11 +37,19 @@ type
     NextSibling         : PUITextLineNodeW;
     TextLine            : PUITextLineW;
   end;
+                 
+  PUITextLinePos        = ^TUITextLinePos;
+  TUITextLinePos        = packed record
+    CurrentNode         : PUICharBufferNodeW;
+    Position            : Integer;
+  end;
 
-  function CheckOutUICharBufferW : PUICharBufferW;
-  procedure CheckInUICharBufferW(var ACharBuffer: PUICharBufferW);
-  function CheckOutUICharBufferNodeW: PUICharBufferNodeW;
+  //function CheckOutUICharBufferW : PUICharBufferW;
+  //procedure CheckInUICharBufferW(var ACharBuffer: PUICharBufferW);
+
+  function CheckOutUICharBufferNodeW(ATextLine: PUITextLineW; APrevNode: PUICharBufferNodeW): PUICharBufferNodeW;
   procedure CheckInUICharBufferNodeW(var ANode: PUICharBufferNodeW);
+  
   function CheckOutUITextLineW: PUITextLineW;
   procedure CheckInUITextLineW(var ATextLine: PUITextLineW);
   function CheckOutUITextLineNodeW: PUITextLineNodeW;
@@ -59,10 +67,11 @@ procedure CheckInUICharBufferW(var ACharBuffer: PUICharBufferW);
 begin
 end;
 
-function CheckOutUICharBufferNodeW: PUICharBufferNodeW;
+function CheckOutUICharBufferNodeW(ATextLine: PUITextLineW; APrevNode: PUICharBufferNodeW): PUICharBufferNodeW;
 begin
   Result := System.New(PUICharBufferNodeW);
   FillChar(Result^, SizeOf(TUICharBufferNodeW), 0);
+  Result.Buffer := CheckOutUICharBufferW;
 end;
 
 procedure CheckInUICharBufferNodeW(var ANode: PUICharBufferNodeW);
