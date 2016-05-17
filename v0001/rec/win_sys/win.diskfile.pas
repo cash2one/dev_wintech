@@ -3,7 +3,7 @@ unit win.diskfile;
 interface
 
 uses
-  types;
+  Types, Windows;
   
 type
   PFileUrl          = ^TFileUrl;                             
@@ -29,7 +29,18 @@ type
     SizeLow         : DWORD;
     MapView         : Pointer;
   end;
-                
+                    
+  PWinFileOpen      = ^TWinFileOpen;
+  TWinFileOpen      = record
+    FileName        : PAnsiChar;
+    DesiredAccess   : DWORD;   // GENERIC_READ
+    ShareMode       : DWORD;   // FILE_SHARE_READ
+    Security        : PSecurityAttributes; // FILE_SHARE_READ
+    Creation        : DWORD;   // OPEN_EXISTING
+    Attribs         : DWORD;   // FILE_ATTRIBUTE_NORMAL
+    TemplateFile    : THandle; // 0
+  end;
+
 const
   faSymLink     = $00000400 platform; // Only available on Vista and above
   faDirectory   = $00000010;
@@ -74,9 +85,6 @@ const
 
 implementation
 
-uses
-  Windows;
-               
 function CheckOutWinFile: PWinFile;                            
 begin
   Result := System.New(PWinFile);
