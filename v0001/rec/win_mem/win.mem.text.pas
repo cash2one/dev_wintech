@@ -2,21 +2,18 @@ unit win.mem.text;
 
 interface
 
-const
-  v_1k = 1024;  
-  v_1m = v_1k * v_1k;
-  //v_1g = v_1m * v_1m;
-  //v_1t = v_1g * v_1g;
+uses
+  sysdef_bufsize;
   
 type
   PTextBufferA          = ^TTextBufferA;
   TTextBufferA          = packed record
-    Data                : array[0..64 * v_1k - 1] of AnsiChar;
+    Data                : array[0..64 * c_1k - 1] of AnsiChar;
   end;
 
   PTextBufferW          = ^TTextBufferW;
   TTextBufferW          = packed record
-    Data                : array[0..64 * v_1k - 1] of WideChar;
+    Data                : array[0..64 * c_1k - 1] of WideChar;
   end;
 
   PTextBufferA_8        = ^TTextBufferA_8;
@@ -85,193 +82,193 @@ type
   end;
   
   PTextBufferW_512      = ^TTextBufferW_512;
-  TTextBufferW_512      = packed record // v_1k
-    Data                : array[0..512 - 1] of WideChar; // v_1k
+  TTextBufferW_512      = packed record // c_1k
+    Data                : array[0..512 - 1] of WideChar; // c_1k
   end;
              
   PTextBufferA_1k       = ^TTextBufferA_1k;
-  TTextBufferA_1k       = packed record // v_1k
-    Data                : array[0..v_1k - 1] of AnsiChar; // v_1k
+  TTextBufferA_1k       = packed record // c_1k
+    Data                : array[0..c_1k - 1] of AnsiChar; // c_1k
   end;
   
   PTextBufferW_1k       = ^TTextBufferW_1k;
-  TTextBufferW_1k       = packed record // v_1k * 2
-    Data                : array[0..v_1k - 1] of WideChar; // v_1k * 2
+  TTextBufferW_1k       = packed record // c_1k * 2
+    Data                : array[0..c_1k - 1] of WideChar; // c_1k * 2
   end;
           
   PTextBufferA_2k       = ^TTextBufferA_2k;
-  TTextBufferA_2k       = packed record // v_1k * 2
-    Data                : array[0..v_1k * 2 - 1] of AnsiChar; // v_1k * 2
+  TTextBufferA_2k       = packed record // c_1k * 2
+    Data                : array[0..c_1k * 2 - 1] of AnsiChar; // c_1k * 2
   end;
   
   PTextBufferW_2k       = ^TTextBufferW_2k;
-  TTextBufferW_2k       = packed record // v_1k * 4
-    Data                : array[0..2 * v_1k - 1] of WideChar; // v_1k * 4
+  TTextBufferW_2k       = packed record // c_1k * 4
+    Data                : array[0..2 * c_1k - 1] of WideChar; // c_1k * 4
   end;
           
   PTextBufferA_4k       = ^TTextBufferA_4k;
-  TTextBufferA_4k       = packed record // v_1k * 2
-    Data                : array[0..v_1k * 4 - 1] of AnsiChar; // v_1k * 2
+  TTextBufferA_4k       = packed record // c_1k * 2
+    Data                : array[0..c_1k * 4 - 1] of AnsiChar; // c_1k * 2
   end;
 
   PTextBufferW_4k       = ^TTextBufferW_4k;
-  TTextBufferW_4k       = packed record // v_1k * 8
-    Data                : array[0..4 * v_1k - 1] of WideChar; // v_1k * 8
+  TTextBufferW_4k       = packed record // c_1k * 8
+    Data                : array[0..4 * c_1k - 1] of WideChar; // c_1k * 8
   end;
             
   PTextBufferA_8k       = ^TTextBufferA_8k;
-  TTextBufferA_8k       = packed record // v_1k * 8
-    Data                : array[0..v_1k * 8 - 1] of AnsiChar; // v_1k * 2
+  TTextBufferA_8k       = packed record // c_1k * 8
+    Data                : array[0..c_1k * 8 - 1] of AnsiChar; // c_1k * 2
   end;
   
   PTextBufferW_8k       = ^TTextBufferW_8k;
-  TTextBufferW_8k       = packed record // v_1k * 16
-    Data                : array[0..8 * v_1k - 1] of WideChar; // 16
+  TTextBufferW_8k       = packed record // c_1k * 16
+    Data                : array[0..8 * c_1k - 1] of WideChar; // 16
   end;      
             
   PTextBufferA_16k      = ^TTextBufferA_16k;
-  TTextBufferA_16k      = packed record // v_1k * 16
-    Data                : array[0..v_1k * 16 - 1] of AnsiChar; // v_1k * 16
+  TTextBufferA_16k      = packed record // c_1k * 16
+    Data                : array[0..c_1k * 16 - 1] of AnsiChar; // c_1k * 16
   end;
 
   PTextBufferW_16k      = ^TTextBufferW_16k;
-  TTextBufferW_16k      = packed record // v_1k * 32
-    Data                : array[0..16 * v_1k - 1] of WideChar; // 8
+  TTextBufferW_16k      = packed record // c_1k * 32
+    Data                : array[0..16 * c_1k - 1] of WideChar; // 8
   end;
                  
   PTextBufferA_32k      = ^TTextBufferA_32k;
-  TTextBufferA_32k      = packed record // v_1k * 32
-    Data                : array[0..v_1k * 32 - 1] of AnsiChar; // v_1k * 32
+  TTextBufferA_32k      = packed record // c_1k * 32
+    Data                : array[0..c_1k * 32 - 1] of AnsiChar; // c_1k * 32
   end;
 
   PTextBufferW_32k      = ^TTextBufferW_32k;
-  TTextBufferW_32k      = packed record // v_1k * 64
-    Data                : array[0..32 * v_1k - 1] of WideChar; // 8
+  TTextBufferW_32k      = packed record // c_1k * 64
+    Data                : array[0..32 * c_1k - 1] of WideChar; // 8
   end;
             
   PTextBufferA_64k      = ^TTextBufferA_64k;
-  TTextBufferA_64k      = packed record // v_1k * 64
-    Data                : array[0..v_1k * 64 - 1] of AnsiChar; // v_1k * 32
+  TTextBufferA_64k      = packed record // c_1k * 64
+    Data                : array[0..c_1k * 64 - 1] of AnsiChar; // c_1k * 32
   end;
 
   PTextBufferW_64k      = ^TTextBufferW_64k;
-  TTextBufferW_64k      = packed record // v_1k * 128
-    Data                : array[0..64 * v_1k - 1] of WideChar; // 8
+  TTextBufferW_64k      = packed record // c_1k * 128
+    Data                : array[0..64 * c_1k - 1] of WideChar; // 8
   end;
                  
   PTextBufferA_128k     = ^TTextBufferA_128k;
-  TTextBufferA_128k     = packed record // v_1k * 128
-    Data                : array[0..v_1k * 128 - 1] of AnsiChar; // v_1k * 32
+  TTextBufferA_128k     = packed record // c_1k * 128
+    Data                : array[0..c_1k * 128 - 1] of AnsiChar; // c_1k * 32
   end;
 
   PTextBufferA_256k     = ^TTextBufferA_256k;
-  TTextBufferA_256k     = packed record // v_1k * 128
-    Data                : array[0..v_1k * 256 - 1] of AnsiChar; // v_1k * 32
+  TTextBufferA_256k     = packed record // c_1k * 128
+    Data                : array[0..c_1k * 256 - 1] of AnsiChar; // c_1k * 32
   end;
             
   PTextBufferA_512k     = ^TTextBufferA_512k;
-  TTextBufferA_512k     = packed record // v_1k * 512
-    Data                : array[0..v_1k * 512 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_512k     = packed record // c_1k * 512
+    Data                : array[0..c_1k * 512 - 1] of AnsiChar; // c_1k * 512
   end;
   
   PTextBufferA_1m       = ^TTextBufferA_1m;
-  TTextBufferA_1m       = packed record // v_1k * 512
-    Data                : array[0..v_1m - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_1m       = packed record // c_1k * 512
+    Data                : array[0..c_1m - 1] of AnsiChar; // c_1k * 512
   end;
                                           
   PTextBufferA_2m       = ^TTextBufferA_2m;
-  TTextBufferA_2m       = packed record // v_1k * 512
-    Data                : array[0..v_1m * 2 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_2m       = packed record // c_1k * 512
+    Data                : array[0..c_1m * 2 - 1] of AnsiChar; // c_1k * 512
   end;
   
   PTextBufferA_4m       = ^TTextBufferA_4m;
-  TTextBufferA_4m       = packed record // v_1k * 512
-    Data                : array[0..v_1m * 4 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_4m       = packed record // c_1k * 512
+    Data                : array[0..c_1m * 4 - 1] of AnsiChar; // c_1k * 512
   end;
 
   PTextBufferA_8m       = ^TTextBufferA_8m;
-  TTextBufferA_8m       = packed record // v_1k * 512
-    Data                : array[0..v_1m * 8 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_8m       = packed record // c_1k * 512
+    Data                : array[0..c_1m * 8 - 1] of AnsiChar; // c_1k * 512
   end;
 
   PTextBufferA_16m      = ^TTextBufferA_16m;
-  TTextBufferA_16m      = packed record // v_1k * 512
-    Data                : array[0..v_1m * 16 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_16m      = packed record // c_1k * 512
+    Data                : array[0..c_1m * 16 - 1] of AnsiChar; // c_1k * 512
   end;
   
   PTextBufferA_32m       = ^TTextBufferA_32m;
-  TTextBufferA_32m       = packed record // v_1k * 512
-    Data                : array[0..v_1m * 32 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_32m       = packed record // c_1k * 512
+    Data                : array[0..c_1m * 32 - 1] of AnsiChar; // c_1k * 512
   end;
   
   PTextBufferA_64m       = ^TTextBufferA_64m;
-  TTextBufferA_64m       = packed record // v_1k * 512
-    Data                : array[0..v_1m * 64 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_64m       = packed record // c_1k * 512
+    Data                : array[0..c_1m * 64 - 1] of AnsiChar; // c_1k * 512
   end;
 
   PTextBufferA_128m     = ^TTextBufferA_128m;
-  TTextBufferA_128m     = packed record // v_1k * 512
-    Data                : array[0..v_1m * 128 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_128m     = packed record // c_1k * 512
+    Data                : array[0..c_1m * 128 - 1] of AnsiChar; // c_1k * 512
   end;
 
   PTextBufferA_256m     = ^TTextBufferA_256m;
-  TTextBufferA_256m     = packed record // v_1k * 512
-    Data                : array[0..v_1m * 256 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_256m     = packed record // c_1k * 512
+    Data                : array[0..c_1m * 256 - 1] of AnsiChar; // c_1k * 512
   end;
 
   PTextBufferA_512m     = ^TTextBufferA_512m;
-  TTextBufferA_512m     = packed record // v_1k * 512
-    Data                : array[0..v_1m * 512 - 1] of AnsiChar; // v_1k * 512
+  TTextBufferA_512m     = packed record // c_1k * 512
+    Data                : array[0..c_1m * 512 - 1] of AnsiChar; // c_1k * 512
   end;
   
-  PTextBufferNodeW    = ^TTextBufferNodeW;
-  TTextBufferNodeW    = packed record       // 14
-    PrevSibling         : PTextBufferNodeW;
-    NextSibling         : PTextBufferNodeW;
-    Buffer              : PTextBufferW;
+  PTextBufferNode       = ^TTextBufferNode;
+  TTextBufferNode       = packed record       // 14
+    PrevSibling         : PTextBufferNode;
+    NextSibling         : PTextBufferNode;
+    Buffer              : Pointer;
     ExParam             : Pointer; // 4
     BufferSize          : LongWord;  // 1
     BufferLen           : LongWord;  // 1
   end;
-          
-  PTextLineW            = ^TTextLineW;
-  TTextLineW            = packed record        // 8
-    FirstCharBufferNode : PTextBufferNodeW;
-    LastCharBufferNode  : PTextBufferNodeW;  
+                
+  PTextLine             = ^TTextLine;
+  TTextLine             = packed record        // 8
+    FirstCharBufferNode : PTextBufferNode;
+    LastCharBufferNode  : PTextBufferNode;  
     ExParam             : Pointer; // 4
     TextLineLength      : LongWord;  // 1
   end;
             
-  PTextLineNodeW        = ^TTextLineNodeW;
-  TTextLineNodeW        = packed record       // 8
-    PrevSibling         : PTextLineNodeW;
-    NextSibling         : PTextLineNodeW;
-    TextLine            : PTextLineW;     
+  PTextLineNode         = ^TTextLineNode;
+  TTextLineNode         = packed record       // 8
+    PrevSibling         : PTextLineNode;
+    NextSibling         : PTextLineNode;
+    TextLine            : PTextLine;     
     RowIndex            : Integer;
   end;
               
-  PTextMultiLineW       = ^TTextMultiLineW;
-  TTextMultiLineW       = packed record        // 8
-    FirstTextLineNode   : PTextLineNodeW;
-    LastTextLineNode    : PTextLineNodeW;  
+  PTextMultiLine        = ^TTextMultiLine;
+  TTextMultiLine        = packed record        // 8
+    FirstTextLineNode   : PTextLineNode;
+    LastTextLineNode    : PTextLineNode;  
     ExParam             : Pointer; // 4
     LineCount           : Integer;  // 1
   end;
                
-  function CheckOutTextBufferNodeW(ATextLine: PTextLineW; APrevNode: PTextBufferNodeW): PTextBufferNodeW;
-  procedure CheckInTextBufferNodeW(var ANode: PTextBufferNodeW);
+  function CheckOutTextBufferNodeW(ATextLine: PTextLine; APrevNode: PTextBufferNode): PTextBufferNode;
+  procedure CheckInTextBufferNodeW(var ANode: PTextBufferNode);
   
-  function CheckOutTextLineW: PTextLineW;
-  procedure CheckInTextLineW(var ATextLine: PTextLineW);
+  function CheckOutTextLineW: PTextLine;
+  procedure CheckInTextLineW(var ATextLine: PTextLine);
 
-  function CheckOutTextLineNodeW: PTextLineNodeW;
-  procedure CheckInTextLineNodeW(var ANode: PTextLineNodeW);
+  function CheckOutTextLineNodeW: PTextLineNode;
+  procedure CheckInTextLineNodeW(var ANode: PTextLineNode);
 
-  function CheckOutTextMultiLineW: PTextMultiLineW;
-  procedure CheckInTextMultiLineW(var ATextMultiLine: PTextMultiLineW);
+  function CheckOutTextMultiLineW: PTextMultiLine;
+  procedure CheckInTextMultiLineW(var ATextMultiLine: PTextMultiLine);
                            
-  procedure AddTextBufferNodeW(ANode: PTextBufferNodeW; ATextLine: PTextLineW; APrevNode: PTextBufferNodeW); 
-  procedure RemoveTextBufferNodeW(ANode: PTextBufferNodeW; ATextLine: PTextLineW);
+  procedure AddTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine; APrevNode: PTextBufferNode); 
+  procedure RemoveTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine);
 
 implementation
 
@@ -285,21 +282,21 @@ procedure CheckInTextBufferW(var ACharBuffer: PTextBufferW);
 begin
 end;
 
-function CheckOutTextBufferNodeW(ATextLine: PTextLineW; APrevNode: PTextBufferNodeW): PTextBufferNodeW;
+function CheckOutTextBufferNodeW(ATextLine: PTextLine; APrevNode: PTextBufferNode): PTextBufferNode;
 begin
-  Result := System.New(PTextBufferNodeW);
-  FillChar(Result^, SizeOf(TTextBufferNodeW), 0);
+  Result := System.New(PTextBufferNode);
+  FillChar(Result^, SizeOf(TTextBufferNode), 0);
   Result.Buffer := CheckOutTextBufferW;
   Result.BufferSize := 255;
   
   AddTextBufferNodeW(Result, ATextLine, nil);
 end;
              
-procedure CheckInTextBufferNodeW(var ANode: PTextBufferNodeW);
+procedure CheckInTextBufferNodeW(var ANode: PTextBufferNode);
 begin
 end;
 
-procedure AddTextBufferNodeW(ANode: PTextBufferNodeW; ATextLine: PTextLineW; APrevNode: PTextBufferNodeW);
+procedure AddTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine; APrevNode: PTextBufferNode);
 begin
   if nil = ATextLine.FirstCharBufferNode then
   begin
@@ -330,7 +327,7 @@ begin
   end;
 end;
 
-procedure RemoveTextBufferNodeW(ANode: PTextBufferNodeW; ATextLine: PTextLineW);
+procedure RemoveTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine);
 begin
   if ANode.PrevSibling <> nil then
   begin
@@ -352,33 +349,33 @@ begin
   ANode.NextSibling := nil;
 end;
 
-function CheckOutTextLineW: PTextLineW;
+function CheckOutTextLineW: PTextLine;
 begin
-  Result := System.New(PTextLineW);
-  FillChar(Result^, SizeOf(TTextLineW), 0);
+  Result := System.New(PTextLine);
+  FillChar(Result^, SizeOf(TTextLine), 0);
 end;
 
-procedure CheckInTextLineW(var ATextLine: PTextLineW);
+procedure CheckInTextLineW(var ATextLine: PTextLine);
 begin
 end;
 
-function CheckOutTextLineNodeW: PTextLineNodeW;
+function CheckOutTextLineNodeW: PTextLineNode;
 begin                      
-  Result := System.New(PTextLineNodeW);
-  FillChar(Result^, SizeOf(TTextLineNodeW), 0);
+  Result := System.New(PTextLineNode);
+  FillChar(Result^, SizeOf(TTextLineNode), 0);
 end;
 
-procedure CheckInTextLineNodeW(var ANode: PTextLineNodeW);
+procedure CheckInTextLineNodeW(var ANode: PTextLineNode);
 begin
 end;
 
-function CheckOutTextMultiLineW: PTextMultiLineW;
+function CheckOutTextMultiLineW: PTextMultiLine;
 begin
-  Result := System.New(PTextMultiLineW);
-  FillChar(Result^, SizeOf(TTextMultiLineW), 0);
+  Result := System.New(PTextMultiLine);
+  FillChar(Result^, SizeOf(TTextMultiLine), 0);
 end;                                                
 
-procedure CheckInTextMultiLineW(var ATextMultiLine: PTextMultiLineW);
+procedure CheckInTextMultiLineW(var ATextMultiLine: PTextMultiLine);
 begin
 
 end;
