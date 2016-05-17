@@ -255,48 +255,53 @@ type
     LineCount           : Integer;  // 1
   end;
                
-  function CheckOutTextBufferNodeW(ATextLine: PTextLine; APrevNode: PTextBufferNode): PTextBufferNode;
-  procedure CheckInTextBufferNodeW(var ANode: PTextBufferNode);
+  function CheckOutTextBufferNode(ASizeMode: Integer = SizeMode_256): PTextBufferNode; overload;
+  function CheckOutTextBufferNode(ATextLine: PTextLine; APrevNode: PTextBufferNode; ASizeMode: Integer = SizeMode_256): PTextBufferNode; overload;
+  procedure CheckInTextBufferNode(var ANode: PTextBufferNode);
   
-  function CheckOutTextLineW: PTextLine;
-  procedure CheckInTextLineW(var ATextLine: PTextLine);
+  function CheckOutTextLine: PTextLine;
+  procedure CheckInTextLine(var ATextLine: PTextLine);
 
-  function CheckOutTextLineNodeW: PTextLineNode;
-  procedure CheckInTextLineNodeW(var ANode: PTextLineNode);
+  function CheckOutTextLineNode: PTextLineNode;
+  procedure CheckInTextLineNode(var ANode: PTextLineNode);
 
-  function CheckOutTextMultiLineW: PTextMultiLine;
-  procedure CheckInTextMultiLineW(var ATextMultiLine: PTextMultiLine);
+  function CheckOutTextMultiLine: PTextMultiLine;
+  procedure CheckInTextMultiLine(var ATextMultiLine: PTextMultiLine);
                            
-  procedure AddTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine; APrevNode: PTextBufferNode); 
-  procedure RemoveTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine);
+  procedure AddTextBufferNode(ANode: PTextBufferNode; ATextLine: PTextLine; APrevNode: PTextBufferNode);
+  procedure RemoveTextBufferNode(ANode: PTextBufferNode; ATextLine: PTextLine);
 
 implementation
 
-function CheckOutTextBufferW : PTextBufferW;
+function CheckOutTextBuffer(ASizeMode: Integer = SizeMode_256) : PTextBufferW;
 begin
   Result := System.New(PTextBufferW);
   FillChar(Result^, SizeOf(TTextBufferW), 0);
 end;
 
-procedure CheckInTextBufferW(var ACharBuffer: PTextBufferW);
+procedure CheckInTextBuffer(var ACharBuffer: PTextBufferW);
 begin
 end;
 
-function CheckOutTextBufferNodeW(ATextLine: PTextLine; APrevNode: PTextBufferNode): PTextBufferNode;
+function CheckOutTextBufferNode(ASizeMode: Integer = SizeMode_256): PTextBufferNode;
 begin
   Result := System.New(PTextBufferNode);
   FillChar(Result^, SizeOf(TTextBufferNode), 0);
-  Result.Buffer := CheckOutTextBufferW;
-  Result.BufferSize := 255;
-  
-  AddTextBufferNodeW(Result, ATextLine, nil);
+  Result.Buffer := CheckOutTextBuffer(ASizeMode);
+  Result.BufferSize := GetModeSize(ASizeMode);
+end;
+
+function CheckOutTextBufferNode(ATextLine: PTextLine; APrevNode: PTextBufferNode; ASizeMode: Integer = SizeMode_256): PTextBufferNode; 
+begin
+  Result := CheckOutTextBufferNode(ASizeMode);
+  AddTextBufferNode(Result, ATextLine, nil);
 end;
              
-procedure CheckInTextBufferNodeW(var ANode: PTextBufferNode);
+procedure CheckInTextBufferNode(var ANode: PTextBufferNode);
 begin
 end;
 
-procedure AddTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine; APrevNode: PTextBufferNode);
+procedure AddTextBufferNode(ANode: PTextBufferNode; ATextLine: PTextLine; APrevNode: PTextBufferNode);
 begin
   if nil = ATextLine.FirstCharBufferNode then
   begin
@@ -327,7 +332,7 @@ begin
   end;
 end;
 
-procedure RemoveTextBufferNodeW(ANode: PTextBufferNode; ATextLine: PTextLine);
+procedure RemoveTextBufferNode(ANode: PTextBufferNode; ATextLine: PTextLine);
 begin
   if ANode.PrevSibling <> nil then
   begin
@@ -349,35 +354,34 @@ begin
   ANode.NextSibling := nil;
 end;
 
-function CheckOutTextLineW: PTextLine;
+function CheckOutTextLine: PTextLine;
 begin
   Result := System.New(PTextLine);
   FillChar(Result^, SizeOf(TTextLine), 0);
 end;
 
-procedure CheckInTextLineW(var ATextLine: PTextLine);
+procedure CheckInTextLine(var ATextLine: PTextLine);
 begin
 end;
 
-function CheckOutTextLineNodeW: PTextLineNode;
+function CheckOutTextLineNode: PTextLineNode;
 begin                      
   Result := System.New(PTextLineNode);
   FillChar(Result^, SizeOf(TTextLineNode), 0);
 end;
 
-procedure CheckInTextLineNodeW(var ANode: PTextLineNode);
+procedure CheckInTextLineNode(var ANode: PTextLineNode);
 begin
 end;
 
-function CheckOutTextMultiLineW: PTextMultiLine;
+function CheckOutTextMultiLine: PTextMultiLine;
 begin
   Result := System.New(PTextMultiLine);
   FillChar(Result^, SizeOf(TTextMultiLine), 0);
 end;                                                
 
-procedure CheckInTextMultiLineW(var ATextMultiLine: PTextMultiLine);
-begin
-
+procedure CheckInTextMultiLine(var ATextMultiLine: PTextMultiLine);
+begin                         
 end;
 
 end.

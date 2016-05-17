@@ -60,14 +60,26 @@ const
   SizeMode_256t   = 50;
   SizeMode_512t   = 51;
   SizeMode_1p     = 52;
-                    
-  function GetSizeMode(ASize: Integer): Integer;
+
+  ModeSize: array[0..SizeMode_1g - 1] of Int64 = (
+    0,
+    1,         2,         4,          8,          16,
+    32,        64,        128,        256,        512,
+    1 * c_1k,  2 * c_1k,  4 * c_1k,   8 * c_1k,   16 * c_1k,
+    32 * c_1k, 64 * c_1k, 128 * c_1k, 256 * c_1k, 512 * c_1k,
+    1 * c_1m,  2 * c_1m,  4 * c_1m,   8 * c_1m,   16 * c_1m,
+    32 * c_1m, 64 * c_1m, 128 * c_1m, 256 * c_1m, 512 * c_1m,   
+    1 * c_1g
+  );
+               
+  function GetSizeMode(ASize: int64): Integer;  
+  function GetModeSize(ASizeMode: Integer): int64;
   
 implementation
-
-function GetSizeMode(ASize: Integer): Integer;
+  
+function GetSizeMode(ASize: int64): Integer;
 var
-  tmpSize: Integer;
+  tmpSize: Longword;
 begin
   Result := SizeMode_1;
   tmpSize := 1;
@@ -75,6 +87,15 @@ begin
   begin
     Result := Result + 1;
     tmpSize := tmpSize + tmpSize;
+  end;
+end;
+
+function GetModeSize(ASizeMode: Integer): int64;
+begin
+  Result := 0;
+  if (SizeMode_0 < ASizeMode) and (SizeMode_1g > ASizeMode) then
+  begin
+    Result := ModeSize[ASizeMode];
   end;
 end;
 
