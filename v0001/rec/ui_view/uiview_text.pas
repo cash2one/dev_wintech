@@ -60,7 +60,8 @@ type
   TUITextLineNodeW      = packed record       // 8
     PrevSibling         : PUITextLineNodeW;
     NextSibling         : PUITextLineNodeW;
-    TextLine            : PUITextLineW;
+    TextLine            : PUITextLineW;     
+    RowIndex            : Integer;
   end;
               
   PUITextMultiLineW     = ^TUITextMultiLineW;
@@ -91,6 +92,9 @@ type
 
   function CheckOutUITextMultiLineW: PUITextMultiLineW;
   procedure CheckInUITextMultiLineW(var AUITextMultiLine: PUITextMultiLineW);
+                           
+  procedure AddUICharBufferNodeW(ANode: PUICharBufferNodeW; ATextLine: PUITextLineW; APrevNode: PUICharBufferNodeW); 
+  procedure RemoveUICharBufferNodeW(ANode: PUICharBufferNodeW; ATextLine: PUITextLineW);
 
 implementation
 
@@ -109,10 +113,66 @@ begin
   Result := System.New(PUICharBufferNodeW);
   FillChar(Result^, SizeOf(TUICharBufferNodeW), 0);
   Result.Buffer := CheckOutUICharBufferW;
+  Result.BufferSize := 255;
+  
+  AddUICharBufferNodeW(Result, ATextLine, nil);
 end;
-
+             
 procedure CheckInUICharBufferNodeW(var ANode: PUICharBufferNodeW);
 begin
+end;
+
+procedure AddUICharBufferNodeW(ANode: PUICharBufferNodeW; ATextLine: PUITextLineW; APrevNode: PUICharBufferNodeW);
+begin
+  if nil = ATextLine.FirstCharBufferNode then
+  begin
+    ATextLine.FirstCharBufferNode := ANode;
+  end;
+  if (nil <> APrevNode) { and (APrevSibling.Owner = ATextLine)} then
+  begin
+    ANode.PrevSibling := APrevNode;
+    ANode.NextSibling := APrevNode.NextSibling;
+    if nil <> APrevNode.NextSibling then
+    begin
+      APrevNode.NextSibling.PrevSibling := ANode;
+    end;
+    APrevNode.NextSibling := ANode;
+    if ANode.NextSibling = nil then
+    begin
+      ATextLine.LastCharBufferNode := ANode;
+    end;
+  end else
+  begin
+    // insert to the last position
+    if nil <> ATextLine.LastCharBufferNode then
+    begin
+      ANode.PrevSibling := ATextLine.LastCharBufferNode;
+      ATextLine.LastCharBufferNode.NextSibling := ANode;
+    end;
+    ATextLine.LastCharBufferNode := ANode;
+  end;
+end;
+
+procedure RemoveUICharBufferNodeW(ANode: PUICharBufferNodeW; ATextLine: PUITextLineW);
+begin
+  if ANode.PrevSibling <> nil then
+  begin
+    ANode.PrevSibling.NextSibling := ANode.NextSibling
+  end else
+  begin
+    ATextLine.FirstCharBufferNode := ANode.NextSibling;
+//    ANode.Owner.FirstData := ANode.NextSibling;
+  end;
+  if ANode.NextSibling <> nil then
+  begin
+    ANode.NextSibling.PrevSibling := ANode.PrevSibling;
+  end else
+  begin
+    ATextLine.LastCharBufferNode := ANode.PrevSibling;
+//    ANode.Owner.LastData := ANode.PrevSibling;
+  end;
+  ANode.PrevSibling := nil;
+  ANode.NextSibling := nil;
 end;
 
 function CheckOutUITextLineW: PUITextLineW;
