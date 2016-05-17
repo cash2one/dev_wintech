@@ -220,7 +220,8 @@ end;
 
 function CheckOutWinFileMap: PWinFileMap;
 begin
-
+  Result := System.New(PWinFileMap);
+  FillChar(Result^, SizeOf(TWinFileMap), 0);
 end;
 
 procedure CheckInWinFileMap(var AWinFileMap: PWinFileMap);
@@ -235,17 +236,24 @@ end;
 
 function WinFileMapOpen(AWinFileMap: PWinFileMap): Boolean;
 begin
-  AWinFileMap.MapHandle := Windows.CreateFileMappingA(AWinFileMap.WinFile.FileHandle,
-    nil, //lpFileMappingAttributes: PSecurityAttributes;
-    0, //flProtect: DWORD
-    AWinFileMap.SizeHigh, //dwMaximumSizeHigh: DWORD
-    AWinFileMap.SizeLow, //dwMaximumSizeLow: DWORD
-    nil //lpName: PAnsiChar
-    );
-  if (0 <> AWinFileMap.MapHandle) and (INVALID_HANDLE_VALUE <> AWinFileMap.MapHandle) then
+  if nil = AWinFileMap.MapView then
   begin
-    AWinFileMap.MapView := Windows.MapViewOfFile(AWinFileMap.MapHandle, 0, 0, 0, AWinFileMap.MapSize);
+    if 0 = AWinFileMap.MapHandle then
+    begin
+      AWinFileMap.MapHandle := Windows.CreateFileMappingA(AWinFileMap.WinFile.FileHandle,
+        nil, //lpFileMappingAttributes: PSecurityAttributes;
+        0, //flProtect: DWORD
+        AWinFileMap.SizeHigh, //dwMaximumSizeHigh: DWORD
+        AWinFileMap.SizeLow, //dwMaximumSizeLow: DWORD
+        nil //lpName: PAnsiChar
+      );
+    end;
+    if (0 <> AWinFileMap.MapHandle) and (INVALID_HANDLE_VALUE <> AWinFileMap.MapHandle) then
+    begin
+      AWinFileMap.MapView := Windows.MapViewOfFile(AWinFileMap.MapHandle, 0, 0, 0, AWinFileMap.MapSize);
+    end;
   end;
+  Result := nil <> AWinFileMap.MapView;
 end;
 
 procedure WinFileMapClose(AWinFileMap: PWinFileMap);

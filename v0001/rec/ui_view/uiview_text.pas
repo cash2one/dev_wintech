@@ -12,6 +12,31 @@ type
   TUICharBufferW_8      = packed record // 16
     Data                : array[0..7] of WideChar; // 8
   end;
+                  
+  PUICharBufferW_16     = ^TUICharBufferW_16;
+  TUICharBufferW_16     = packed record // 16
+    Data                : array[0..16 - 1] of WideChar; // 8
+  end;
+  
+  PUICharBufferW_32     = ^TUICharBufferW_32;
+  TUICharBufferW_32     = packed record // 64
+    Data                : array[0..32 - 1] of WideChar; // 8
+  end;
+
+  PUICharBufferW_64     = ^TUICharBufferW_64;
+  TUICharBufferW_64     = packed record // 128
+    Data                : array[0..64 - 1] of WideChar; // 8
+  end;
+
+  PUICharBufferW_128    = ^TUICharBufferW_128;
+  TUICharBufferW_128    = packed record // 256
+    Data                : array[0..128 - 1] of WideChar; // 8
+  end;
+
+  PUICharBufferW_256    = ^TUICharBufferW_256;
+  TUICharBufferW_256    = packed record // 512
+    Data                : array[0..256 - 1] of WideChar; // 8
+  end;
   
   PUICharBufferNodeW    = ^TUICharBufferNodeW;
   TUICharBufferNodeW    = packed record       // 14
@@ -37,7 +62,15 @@ type
     NextSibling         : PUITextLineNodeW;
     TextLine            : PUITextLineW;
   end;
-                 
+              
+  PUITextMultiLineW     = ^TUITextMultiLineW;
+  TUITextMultiLineW     = packed record        // 8
+    FirstTextLineNode   : PUITextLineNodeW;
+    LastTextLineNode    : PUITextLineNodeW;  
+    ExParam             : Pointer; // 4
+    LineCount           : Integer;  // 1
+  end;
+               
   PUITextLinePos        = ^TUITextLinePos;
   TUITextLinePos        = packed record
     CurrentNode         : PUICharBufferNodeW;
@@ -52,9 +85,13 @@ type
   
   function CheckOutUITextLineW: PUITextLineW;
   procedure CheckInUITextLineW(var ATextLine: PUITextLineW);
+
   function CheckOutUITextLineNodeW: PUITextLineNodeW;
   procedure CheckInUITextLineNodeW(var ANode: PUITextLineNodeW);
-  
+
+  function CheckOutUITextMultiLineW: PUITextMultiLineW;
+  procedure CheckInUITextMultiLineW(var AUITextMultiLine: PUITextMultiLineW);
+
 implementation
 
 function CheckOutUICharBufferW : PUICharBufferW;
@@ -96,6 +133,17 @@ end;
 
 procedure CheckInUITextLineNodeW(var ANode: PUITextLineNodeW);
 begin
+end;
+
+function CheckOutUITextMultiLineW: PUITextMultiLineW;
+begin
+  Result := System.New(PUITextMultiLineW);
+  FillChar(Result^, SizeOf(TUITextMultiLineW), 0);
+end;
+
+procedure CheckInUITextMultiLineW(var AUITextMultiLine: PUITextMultiLineW);
+begin
+
 end;
 
 end.

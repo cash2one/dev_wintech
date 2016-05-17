@@ -34,7 +34,8 @@ implementation
 
 function CheckOutWinDC: PWinDC;
 begin
-
+  Result := System.New(PWinDC);
+  FillChar(Result^, SizeOf(TWinDC), 0);
 end;
 
 procedure CheckInWinDC(var ADC: PWinDC);
