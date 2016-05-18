@@ -12,6 +12,8 @@ type
   public
     function IsFileExists(AFileUrl: WideString): Boolean; virtual;
     function IsPathExists(APathUrl: WideString): Boolean; virtual;
+    function GetRootPath: WideString; virtual;               
+    function GetFileRelativePath(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString; virtual;
     function GetFilePath(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString; virtual;
     function GetFileName(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString; virtual;
     
@@ -39,8 +41,18 @@ function TBasePath.CheckOutFileUrl(ADBType: integer; ADataSrc: integer; AParamTy
 begin
   Result := '';
 end;
+                      
+function TBasePath.GetRootPath: WideString;
+begin
+  Result := '';
+end;
 
-function TBasePath.GetFilePath(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString; 
+function TBasePath.GetFileRelativePath(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString; 
+begin
+  Result := '';
+end;
+
+function TBasePath.GetFilePath(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString;
 begin
   Result := '';
 end;
