@@ -56,6 +56,7 @@ type
   function ParseHttpUrlInfo(AUrl: AnsiString; AInfo: PHttpUrlInfo): Boolean;
 
   procedure HttpBufferHeader_Parser(AHttpBuffer: PIOBuffer; AHttpHeadParseSession: PHttpHeadParseSession);
+  procedure SaveHttpResponseToFile(AHttpBuffer: PIOBuffer; AHttpHeadParseSession: PHttpHeadParseSession; AFileName: AnsiString);
 
   {* 将 URL 中的特殊字符转换成 %XX 的形式}
   function EncodeURL(const AUrl: string): string;
@@ -68,6 +69,7 @@ implementation
 uses
   Sysutils,
   //UtilsHttp_Indy,
+  win.diskfile,
   UtilsHttp_Socket;
 
 function CheckOutHttpClientSession: PHttpClientSession;
@@ -307,6 +309,40 @@ begin
         exit;
       end;
       tmpLastPos_CRLF := i;
+    end;
+  end;
+end;
+
+procedure SaveHttpResponseToFile(AHttpBuffer: PIOBuffer; AHttpHeadParseSession: PHttpHeadParseSession; AFileName: AnsiString);
+var
+  tmpFileHandle: THandle;
+  tmpBytesWrite: DWORD;
+  tmpBytesWritten: DWORD;  
+begin
+  tmpFileHandle := Windows.CreateFileA(PAnsiChar(AFileName),
+          Windows.GENERIC_ALL,         // GENERIC_READ
+          Windows.FILE_SHARE_READ or
+          Windows.FILE_SHARE_WRITE or
+          Windows.FILE_SHARE_DELETE,
+        nil,
+        CREATE_NEW,
+        FILE_ATTRIBUTE_NORMAL, 0);
+  if (0 <> tmpFileHandle) and (INVALID_HANDLE_VALUE <> tmpFileHandle) then
+  begin
+    try
+      tmpBytesWrite := AHttpBuffer.BufferHead.BufDataLength - AHttpHeadParseSession.HeadEndPos; 
+      if Windows.WriteFile(
+        tmpFileHandle, //hFile: THandle;
+        AHttpBuffer.Data[AHttpHeadParseSession.HeadEndPos + 1], // const Buffer;
+        tmpBytesWrite, //nNumberOfBytesToWrite: DWORD;
+        tmpBytesWritten, //var lpNumberOfBytesWritten: DWORD;
+        nil {lpOverlapped: POverlapped}) then
+      begin
+      
+      end;
+      //Windows.WriteFileEx();
+    finally
+      Windows.CloseHandle(tmpFileHandle);
     end;
   end;
 end;
