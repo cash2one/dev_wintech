@@ -308,6 +308,9 @@ procedure CefLoadLibDefault(ACefLibrary: PCefLibrary; ACefAppObject: PCefAppObje
 var
   CefLibraryName: string;
   tmpRet: integer;
+  //s: string;
+  //tmpCefString: TCefString;
+//  tmpPaths: TStringList;
 begin
   //CefLibraryName: string = {$IFDEF MSWINDOWS}'libcef.dll'{$ELSE}'libcef.dylib'{$ENDIF};
   CefLibraryName := '.\AppData\Chromium\1.1364.1123\libcef.dll';    
@@ -345,26 +348,6 @@ begin
     ACefLibrary.CefCoreSettings.user_agent := cefstring(ACefLibrary.CefUserAgent);
     ACefLibrary.CefCoreSettings.product_version := CefString(ACefLibrary.CefProductVersion);
     ACefLibrary.CefCoreSettings.locale := CefString(ACefLibrary.CefLocale);
-    (*//
-    s := ExtractFilePath(ParamStr(0)) + 'plugins\PepperFlash\';
-    s := ExtractFilePath(ParamStr(0)) + 'plugins\';
-    if (s <> '') then
-    begin
-      settings.extra_plugin_paths := cef_string_list_alloc;
-      paths := TStringList.Create;
-      try
-        paths.Delimiter := ';';
-        paths.DelimitedText := s; //ExtraPluginPaths
-        for i := 0 to paths.Count - 1 do
-        begin
-          p := cefString(paths[i]);
-          cef_string_list_append(settings.extra_plugin_paths, @p);
-        end;
-      finally
-        paths.free;
-      end;
-    end;
-    //*)
     ACefLibrary.CefCoreSettings.log_file := CefString(ACefLibrary.CefLogFile);
     ACefLibrary.CefCoreSettings.resources_dir_path := CefString(ACefLibrary.CefResourcesDirPath);
     ACefLibrary.CefCoreSettings.locales_dir_path := CefString(ACefLibrary.CefLocalesDirPath);
@@ -385,8 +368,28 @@ begin
     ACefLibrary.CefCoreSettings.session_storage_quota := ACefLibrary.CefSessionStorageQuota;
     ACefLibrary.CefCoreSettings.uncaught_exception_stack_size := ACefLibrary.CefUncaughtExceptionStackSize;
     ACefLibrary.CefCoreSettings.context_safety_implementation := ACefLibrary.CefContextSafetyImplementation;
-
+                                                             
     ACefLibrary.CefCoreSettings.extra_plugin_paths := ACefLibrary.cef_string_list_alloc;
+    (*//
+    s := ExtractFilePath(ParamStr(0)) + 'plugins\';
+    if (s <> '') then
+    begin
+      if DirectoryExists(s) then
+      begin
+        tmpCefString := cefString(s);
+        ACefLibrary.cef_string_list_append(ACefLibrary.CefCoreSettings.extra_plugin_paths, @tmpCefString);
+      end;
+    end;
+    s := ExtractFilePath(ParamStr(0)) + 'plugins\PepperFlash\';
+    if (s <> '') then
+    begin
+      if DirectoryExists(s) then
+      begin
+        tmpCefString := cefString(s);
+        ACefLibrary.cef_string_list_append(ACefLibrary.CefCoreSettings.extra_plugin_paths, @tmpCefString);
+      end;
+    end;
+    //*)
     tmpRet := ACefLibrary.cef_initialize(@ACefLibrary.CefCoreSettings, @ACefAppObject.CefAppIntf.CefApp);
 
     (*//
