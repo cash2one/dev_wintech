@@ -12,15 +12,19 @@ type
   public
     function IsFileExists(AFileUrl: WideString): Boolean; virtual;
     function IsPathExists(APathUrl: WideString): Boolean; virtual;
-    function GetRootPath: WideString; virtual;               
+
+    function GetRootPath: WideString; virtual;
     function GetFileRelativePath(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString; virtual;
     function GetFilePath(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString; virtual;
+
     function GetFileName(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString; virtual;
+    function GetFileExt(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString; virtual;
     
-    function CheckOutFileUrl(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString; virtual;
     function GetFileUrl(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer): WideString; overload; virtual;
     function GetFileUrl(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString; overload; virtual;
-    
+
+    function CheckOutFileUrl(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString; virtual;
+
     property InstallPath: WideString read GetInstallPath write SetInstallPath;  
     property DataBasePath[ADBType: integer; ADataSrc: integer]: WideString read GetDataBasePath write SetDataBasePath;
   end;
@@ -58,6 +62,11 @@ begin
 end;
 
 function TBasePath.GetFileName(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString; 
+begin
+  Result := '';
+end;
+
+function TBasePath.GetFileExt(ADBType: integer; ADataSrc: integer; AParamType: integer; AParam: Pointer; AFileExt: WideString): WideString;
 begin
   Result := '';
 end;
