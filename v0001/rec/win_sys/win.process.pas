@@ -58,7 +58,7 @@ begin
       nil, //lpProcessAttributes,
       nil, //lpThreadAttributes: PSecurityAttributes;
       false, //bInheritHandles: BOOL;
-      CREATE_NEW, //dwCreationFlags: DWORD;
+      CREATE_SUSPENDED,//CREATE_NEW, //dwCreationFlags: DWORD;
       nil, //lpEnvironment: Pointer;
       nil, //lpCurrentDirectory: PAnsiChar;
       AProcess.Run.StartInfoA, //const lpStartupInfo: TStartupInfoA;
@@ -67,13 +67,16 @@ begin
   begin
     AProcess.Core.ProcessHandle := AProcess.Run.ProcessInfo.hProcess;
     AProcess.Core.ProcessId := AProcess.Run.ProcessInfo.dwProcessId;
+
+    Windows.ResumeThread(AProcess.Run.ProcessInfo.hThread);
+    Sleep(1);
   end;
-  if tmpIsOwnedRun then
-  begin                   
-    FillChar(AProcess.Run^, SizeOf(TRunProcess), 0);
-    FreeMem(AProcess.Run);
-    AProcess.Run := nil;
-  end;
+//  if tmpIsOwnedRun then
+//  begin                   
+//    FillChar(AProcess.Run^, SizeOf(TRunProcess), 0);
+//    FreeMem(AProcess.Run);
+//    AProcess.Run := nil;
+//  end;
 end;
 
 end.
