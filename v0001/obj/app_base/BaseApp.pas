@@ -26,6 +26,7 @@ type
     function Initialize: Boolean; virtual;
     procedure Finalize; virtual;
     procedure Run; virtual;
+    procedure Terminate; virtual;
     property BaseAppData: PBaseAppData read GetBaseAppData; 
     property IsActiveStatus: Byte read fBaseAppData.IsActiveStatus write fBaseAppData.IsActiveStatus;
     property Path: TBaseAppPath read GetPath;
@@ -119,6 +120,9 @@ procedure TBaseApp.Run;
 begin
 end;
 
+procedure TBaseApp.Terminate;
+begin
+end;
 { TBaseAppObj }
 
 constructor TBaseAppObj.Create(App: TBaseApp);

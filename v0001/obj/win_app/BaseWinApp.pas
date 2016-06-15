@@ -28,9 +28,10 @@ type
   public
     constructor Create(AppClassId: AnsiString); override;
     procedure RunAppMsgLoop;
-    
+                                 
+    procedure DestroyAppCommandWindow;
     function CheckSingleInstance(AppMutexName: AnsiString): Boolean;
-
+    procedure Terminate; override;
     property BaseWinAppData: PBaseWinAppData read GetBaseWinAppData;
     property AppWindow: HWND read fBaseWinAppData.AppCmdWnd write fBaseWinAppData.AppCmdWnd;
   end;
@@ -50,6 +51,16 @@ begin
   inherited;
   FillChar(fBaseWinAppData, SizeOf(fBaseWinAppData), 0);
   GlobalBaseWinApp := Self;
+end;
+
+procedure TBaseWinApp.DestroyAppCommandWindow;
+begin
+//
+end;
+          
+procedure TBaseWinApp.Terminate;
+begin
+  PostQuitMessage(0);
 end;
 
 function TBaseWinApp.GetBaseWinAppData: PBaseWinAppData;

@@ -13,13 +13,13 @@ type
   
   TCoreProcess    = record
     ProcessHandle : THandle;
-    ProcessId     : DWORD;
+    ProcessId     : DWORD;  
+    AppCmdWnd     : HWND;
   end;
   
   { 自身运行进程控制 }
   TOwnedProcess   = record
     Core          : TCoreProcess;
-    AppCmdWnd     : HWND;
     Run           : PRunProcess;
   end;
 
@@ -71,12 +71,12 @@ begin
     Windows.ResumeThread(AProcess.Run.ProcessInfo.hThread);
     Sleep(1);
   end;
-//  if tmpIsOwnedRun then
-//  begin                   
-//    FillChar(AProcess.Run^, SizeOf(TRunProcess), 0);
-//    FreeMem(AProcess.Run);
-//    AProcess.Run := nil;
-//  end;
+  if tmpIsOwnedRun then
+  begin
+    FillChar(AProcess.Run^, SizeOf(TRunProcess), 0);
+    FreeMem(AProcess.Run);
+    AProcess.Run := nil;
+  end;
 end;
 
 end.
