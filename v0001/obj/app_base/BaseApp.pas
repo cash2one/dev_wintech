@@ -32,6 +32,19 @@ type
     property Path: TBaseAppPath read GetPath;
   end;
 
+  TBaseAppAgentData = record
+    HostApp: TBaseApp; 
+  end;
+  
+  TBaseAppAgent = class
+  protected
+    fBaseAppAgentData: TBaseAppAgentData;
+  public        
+    constructor Create(AHostApp: TBaseApp); virtual;
+    function Initialize: Boolean; virtual;
+    procedure Finalize; virtual;
+  end;
+  
   TBaseAppObjData = record
     App: TBaseApp;
   end;
@@ -137,6 +150,23 @@ constructor TBaseAppPath.Create(App: TBaseApp);
 begin
   FillChar(fBaseAppPathData, SizeOf(fBaseAppPathData), 0);
   fBaseAppPathData.App := App;
+end;
+
+{ TBaseAppAgent }
+
+constructor TBaseAppAgent.Create(AHostApp: TBaseApp);
+begin
+  FillChar(fBaseAppAgentData, SizeOf(fBaseAppAgentData), 0);
+  fBaseAppAgentData.HostApp := AHostApp;
+end;
+
+function TBaseAppAgent.Initialize: Boolean;
+begin
+  Result := true;
+end;
+
+procedure TBaseAppAgent.Finalize;
+begin
 end;
 
 end.
