@@ -43,6 +43,7 @@ type
     constructor Create(AHostApp: TBaseApp); virtual;
     function Initialize: Boolean; virtual;
     procedure Finalize; virtual;
+    procedure Run; virtual;
   end;
   
   TBaseAppObjData = record
@@ -166,6 +167,10 @@ begin
 end;
 
 procedure TBaseAppAgent.Finalize;
+begin
+end;
+
+procedure TBaseAppAgent.Run;
 begin
 end;
 
