@@ -35,7 +35,12 @@ type
     property BaseWinAppData: PBaseWinAppData read GetBaseWinAppData;
     property AppWindow: HWND read fBaseWinAppData.AppCmdWnd write fBaseWinAppData.AppCmdWnd;
   end;
-           
+
+  TBaseWinAppAgent = class(TBaseAppAgent)
+  protected
+  public
+  end;
+  
 var
   GlobalBaseWinApp: TBaseWinApp = nil;
     

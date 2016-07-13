@@ -13,6 +13,7 @@ type
   end;
 
   TBaseAppPath = class;
+  TBaseAppAgent = class;
   
   TBaseApp = class                 
   protected
@@ -33,19 +34,19 @@ type
   end;
 
   TBaseAppAgentData = record
-    HostApp: TBaseApp; 
+    HostApp: TBaseApp;
   end;
   
   TBaseAppAgent = class
   protected
     fBaseAppAgentData: TBaseAppAgentData;
-  public        
+  public
     constructor Create(AHostApp: TBaseApp); virtual;
     function Initialize: Boolean; virtual;
     procedure Finalize; virtual;
     procedure Run; virtual;
   end;
-  
+
   TBaseAppObjData = record
     App: TBaseApp;
   end;
@@ -163,7 +164,7 @@ end;
 
 function TBaseAppAgent.Initialize: Boolean;
 begin
-  Result := true;
+  Result := True;
 end;
 
 procedure TBaseAppAgent.Finalize;
