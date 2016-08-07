@@ -12,6 +12,9 @@ const
 
   WM_AppRequestEnd  = WM_CommonAppBase + 21;
   WM_AppNotifyEnd   = WM_CommonAppBase + 22;
+  
+  WM_AppNotifyShutdownMachine = WM_CommonAppBase + 26;
+  WM_AppNotifyRestartMachine  = WM_CommonAppBase + 27;
 
   // ½ø³Ì¼à¿Ø
   WM_ProcMonitorBase  = WM_USER + $300;    
