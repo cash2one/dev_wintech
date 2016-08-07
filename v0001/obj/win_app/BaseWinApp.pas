@@ -65,6 +65,8 @@ end;
           
 procedure TBaseWinApp.Terminate;
 begin
+  Self.IsActiveStatus := IsActiveStatus_RequestShutdown;              
+  Self.Finalize;
   PostQuitMessage(0);
 end;
 

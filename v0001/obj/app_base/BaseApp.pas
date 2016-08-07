@@ -4,6 +4,11 @@ interface
 
 uses
   BasePath;
+
+const
+  IsActiveStatus_Active = 1;      
+  IsActiveStatus_RequestShutdown = 2;    
+  IsActiveStatus_Shutdown = 3;
   
 type
   PBaseAppData      = ^TBaseAppData;
@@ -104,7 +109,7 @@ begin
   GlobalBaseApp := Self;
   FillChar(fBaseAppData, SizeOf(fBaseAppData), 0);
   fBaseAppData.AppClassId := AppClassId; 
-  fBaseAppData.IsActiveStatus := 1;
+  fBaseAppData.IsActiveStatus := IsActiveStatus_Active;
 end;
 
 destructor TBaseApp.Destroy;
