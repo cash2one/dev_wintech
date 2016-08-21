@@ -153,7 +153,8 @@ type
   function CheckOutIOBufferExNode(AIOBuffer: PIOBuffer): PIOBufferExNode; 
   procedure CheckInIOBufferExNode(AIOBufferExNode: PIOBufferExNode);
   
-  function RepackIOBuffer(AIOBuffer: PIOBuffer): PIOBuffer;
+  function RepackIOBuffer(AIOBuffer: PIOBuffer): PIOBuffer;  
+  procedure ClearIOBuffer(AIOBuffer: PIOBuffer);  
   
   function GetSizeMode(ASize: Integer): Integer;
 
@@ -188,9 +189,38 @@ begin
 end;
        
 procedure CheckInIOBuffer(var AIOBuffer: PIOBuffer);
+var
+  tmpNode: PIOBufferExNode;     
+  tmpNextNode: PIOBufferExNode;
 begin
+  if nil = AIOBuffer then
+    exit;
+  tmpNode := AIOBuffer.BufferHead.FirstExNode;
+  while nil <> tmpNode do
+  begin
+    tmpNextNode := tmpNode.NextSibling;
+    CheckInIOBufferExNode(tmpNode);
+    tmpNode := tmpNextNode;
+  end;
   FreeMem(AIOBuffer);
   AIOBuffer := nil;
+end;
+          
+procedure ClearIOBuffer(AIOBuffer: PIOBuffer);
+var
+  tmpExNode: PIOBufferExNode;    
+  tmpNextExNode: PIOBufferExNode;
+begin
+  tmpExNode := AIOBuffer.BufferHead.FirstExNode;
+  while nil <> tmpExNode do
+  begin
+    tmpNextExNode := tmpExNode.NextSibling;
+    CheckInIOBufferExNode(tmpExNode);
+    tmpExNode := tmpNextExNode;
+  end;
+  AIOBuffer.BufferHead.FirstExNode := nil;
+  AIOBuffer.BufferHead.LastExNode := nil;
+  FillChar(PIOBufferX(AIOBuffer).Data, AIOBuffer.BufferHead.Size, 0);
 end;
 
 function GetSizeMode(ASize: Integer): Integer;
@@ -252,6 +282,11 @@ end;
 
 procedure CheckInIOBufferExNode(AIOBufferExNode: PIOBufferExNode);
 begin
+  if nil <> AIOBufferExNode then
+  begin
+    FreeMem(AIOBufferExNode);
+    AIOBufferExNode := nil;
+  end;
 end;
 
 end.

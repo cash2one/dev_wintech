@@ -9,7 +9,7 @@ uses
   procedure CheckInSocketConnection(ANetSession: PHttpClientSession);
   procedure CloseSocketConnection(ANetSession: PHttpClientSession);
                           
-  function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
+  function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession; ABuffer: PIOBuffer; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
   function Http_GetFile(AUrl, AOutputFile: AnsiString; AHttpClientSession: PHttpClientSession): Boolean;
 
 implementation
@@ -273,7 +273,7 @@ begin
   end;
 end;
 
-function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
+function Http_GetString(AURL: AnsiString; AHttpClientSession: PHttpClientSession; ABuffer: PIOBuffer; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
   tmpHttpInfo: THttpUrlInfo;
   tmpTcpClient: PxlTcpClient;
@@ -328,14 +328,27 @@ begin
       exit;
     end;
     tmpRet := 0;
-    tmpBuffer := CheckOutIOBuffer(ABufferSizeMode);
+    if nil <> ABuffer then
+    begin
+      tmpBuffer := ABuffer;
+      ClearIOBuffer(ABuffer);
+    end else
+    begin
+      tmpBuffer := CheckOutIOBuffer(ABufferSizeMode);
+    end;
     if nil <> tmpBuffer then
     begin
       NetClientRecvBuf(tmpTcpClient, tmpBuffer, tmpRet);
       if 0 < tmpBuffer.BufferHead.ExNodeCount then
-      begin
-        Result := RepackIOBuffer(tmpBuffer);
-        CheckInIOBuffer(tmpBuffer);
+      begin                     
+        if nil <> ABuffer then
+        begin
+          Result := tmpBuffer;
+        end else
+        begin
+          Result := RepackIOBuffer(tmpBuffer);
+          CheckInIOBuffer(tmpBuffer);
+        end;
       end else
       begin
         Result := tmpBuffer;

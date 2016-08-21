@@ -45,8 +45,8 @@ type
   function CheckOutHttpClientSession: PHttpClientSession;
   procedure CheckInHttpClientSession(var ANetClientSession: PHttpClientSession);
 
-  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer; overload;      
-  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer; overload;
+  function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession; ABuffer: PIOBuffer; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer; overload;      
+  function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession; ABuffer: PIOBuffer; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer; overload;
   
   function GetHttpUrlFile(AUrl: AnsiString; AOutputFile: AnsiString; ANetSession: PHttpClientSession): Boolean; overload;
 
@@ -69,7 +69,7 @@ implementation
 uses
   Sysutils,
   //UtilsHttp_Indy,
-  win.diskfile,
+  //win.diskfile,
   UtilsHttp_Socket;
 
 function CheckOutHttpClientSession: PHttpClientSession;
@@ -183,7 +183,7 @@ begin
   end;
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
+function GetHttpUrlData(AUrl: AnsiString; ANetSession: PHttpClientSession; ABuffer: PIOBuffer; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
 //  tmpIConnection: PIndyConnectionSession;
   tmpOwnedConnection: Boolean;
@@ -200,7 +200,7 @@ begin
   end;
   //Result := Http_WinInet.Http_GetString(AUrl);
   //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
-  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession, ABufferSizeMode);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession, ABuffer, ABufferSizeMode);
   if tmpOwnedConnection then
   begin
     CheckInSocketConnection(ANetSession);
@@ -221,7 +221,7 @@ begin
   Result := UtilsHttp_Socket.Http_GetFile(AUrl, AOutputFile, ANetSession);
 end;
 
-function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
+function GetHttpUrlData(AUrl: AnsiString; APost: AnsiString; ANetSession: PHttpClientSession; ABuffer: PIOBuffer; ABufferSizeMode: Integer = SizeMode_16k): PIOBuffer;
 var
 //  tmpIConnection: PIndyConnectionSession;
   tmpOwnedConnection: Boolean;
@@ -238,7 +238,7 @@ begin
   end;
   //Result := Http_WinInet.Http_GetString(AUrl);
   //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
-  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession, ABufferSizeMode);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession, ABuffer, ABufferSizeMode);
   if tmpOwnedConnection then
   begin
     CheckInSocketConnection(ANetSession);
@@ -262,7 +262,7 @@ begin
   end;
   //Result := Http_WinInet.Http_GetString(AUrl);
   //Result := UtilsHttp_Indy.Http_GetString(AUrl, tmpConnection);
-  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession);
+  Result := UtilsHttp_Socket.Http_GetString(AUrl, ANetSession, nil);
   if tmpOwnedConnection then
   begin
     CheckInSocketConnection(ANetSession);

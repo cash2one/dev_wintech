@@ -10,17 +10,18 @@ const
   IsActiveStatus_RequestShutdown = 2;    
   IsActiveStatus_Shutdown = 3;
   
-type
-  PBaseAppData      = ^TBaseAppData;
-  TBaseAppData      = packed record
-    IsActiveStatus  : Byte;
-    AppClassId  : AnsiString;
-  end;
-
+type                    
   TBaseAppPath = class;
   TBaseAppAgent = class;
   
-  TBaseApp = class                 
+  PBaseAppData      = ^TBaseAppData;
+  TBaseAppData      = packed record
+    IsActiveStatus  : Byte;
+    AppAgent: TBaseAppAgent;
+    AppClassId  : AnsiString;
+  end;
+
+  TBaseApp = class
   protected
     fBaseAppData: TBaseAppData; 
     function GetPath: TBaseAppPath; virtual;
@@ -33,9 +34,10 @@ type
     procedure Finalize; virtual;
     procedure Run; virtual;
     procedure Terminate; virtual;
-    property BaseAppData: PBaseAppData read GetBaseAppData; 
+    property BaseAppData: PBaseAppData read GetBaseAppData;
     property IsActiveStatus: Byte read fBaseAppData.IsActiveStatus write fBaseAppData.IsActiveStatus;
     property Path: TBaseAppPath read GetPath;
+    property AppAgent: TBaseAppAgent read fBaseAppData.AppAgent write fBaseAppData.AppAgent;
   end;
 
   TBaseAppAgentData = record
