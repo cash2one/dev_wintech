@@ -6,34 +6,40 @@ uses
   Windows;
                
 type
-  POwnedProcess   = ^TOwnedProcess;
-  PExProcess      = ^TExProcess;
-  PRunProcess     = ^TRunProcess;
+  POwnedProcess   = ^TRT_OwnedProcess;
+  PExProcess      = ^TRT_ExProcess;
+  PRunProcess     = ^TRT_RunProcess;
   PCoreProcess    = ^TCoreProcess;
+  PParentProcess  = ^TRT_ParentProcess;
   
   TCoreProcess    = record
     ProcessHandle : THandle;
     ProcessId     : DWORD;  
     AppCmdWnd     : HWND;
+    Parent        : PParentProcess;
   end;
   
   { 自身运行进程控制 }
-  TOwnedProcess   = record
-    Core          : TCoreProcess;
-    Run           : PRunProcess;
+  TRT_OwnedProcess  = record
+    Core            : TCoreProcess;
+    Run             : PRunProcess;
   end;
 
   { 外部进程控制 }
-  TExProcess      = record
-    Core          : TCoreProcess;
+  TRT_ExProcess     = record
+    Core            : TCoreProcess;
   end;
 
-  TRunProcess     = record
-    ProcessInfo   : TProcessInformation;
-    StartInfoA    : TStartupInfoA;
-    StartInfoW    : TStartupInfoW;
+  TRT_RunProcess    = record
+    ProcessInfo     : TProcessInformation;
+    StartInfoA      : TStartupInfoA;
+    StartInfoW      : TStartupInfoW;
   end;
 
+  TRT_ParentProcess = record
+    Core            : TCoreProcess;
+  end;
+  
   procedure RunProcessA(AProcess: POwnedProcess; AExeFileUrl: AnsiString; ARunProcess: PRunProcess = nil);
 
 implementation
@@ -48,7 +54,7 @@ begin
   begin
     tmpIsOwnedRun := true;
     AProcess.Run := System.New(PRunProcess);
-    FillChar(AProcess.Run^, SizeOf(TRunProcess), 0);
+    FillChar(AProcess.Run^, SizeOf(TRT_RunProcess), 0);
     AProcess.Run.StartInfoA.cb := SizeOf(AProcess.Run.StartInfoA);
     AProcess.Run.StartInfoW.cb := SizeOf(AProcess.Run.StartInfoW);    
   end;
@@ -73,7 +79,7 @@ begin
   end;
   if tmpIsOwnedRun then
   begin
-    FillChar(AProcess.Run^, SizeOf(TRunProcess), 0);
+    FillChar(AProcess.Run^, SizeOf(TRT_RunProcess), 0);
     FreeMem(AProcess.Run);
     AProcess.Run := nil;
   end;

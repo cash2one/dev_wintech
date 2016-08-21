@@ -47,7 +47,9 @@ var
 implementation
 
 uses
-  SysUtils;
+  SysUtils,
+  messages,
+  windef_msg;
   
 { TBaseWinApp }
 
@@ -65,9 +67,17 @@ end;
           
 procedure TBaseWinApp.Terminate;
 begin
-  Self.IsActiveStatus := IsActiveStatus_RequestShutdown;              
-  Self.Finalize;
-  PostQuitMessage(0);
+  if IsActiveStatus_Active = Self.IsActiveStatus then
+  begin
+    Self.IsActiveStatus := IsActiveStatus_RequestShutdown;
+    if IsWIndow(fBaseWinAppData.AppCmdWnd) then
+    begin
+      PostMessage(fBaseWinAppData.AppCmdWnd, WM_AppRequestEnd, 0, 0);
+    end;
+    Self.Finalize;       
+      PostMessage(fBaseWinAppData.AppCmdWnd, WM_Quit, 0, 0);
+    PostQuitMessage(0);
+  end;
 end;
 
 function TBaseWinApp.GetBaseWinAppData: PBaseWinAppData;
