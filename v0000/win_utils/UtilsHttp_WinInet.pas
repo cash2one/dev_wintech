@@ -15,7 +15,8 @@ type
 
   function Http_GetString(AURL: string): string;       
   function GetHTTPStream(AHttpUrlInfo: PHttpUrlInfo; AWinInetSession: PWinInetSession;
-      AStream: TStream; APost: TStrings): Boolean;
+      AStream: TStream; APost: TStrings): Boolean;    
+  function IsUrlValid(AUrl: AnsiString): boolean;
 
 implementation
 
@@ -155,6 +156,43 @@ end;
 function Http_GetString(AURL: string): string;
 begin
 //  Result := CnInet_GetString(AURL);
+end;
+
+// 检查URL是否有效的函数
+function IsUrlValid(AUrl: AnsiString): boolean;
+var
+  tmpWinInet: TWinInetSession;
+  dwindex: dword;
+  dwcodelen: dword;
+  dwcode: array[1..20] of AnsiChar;
+  res: PAnsiChar;
+  tmpAgent: AnsiString;
+begin
+  Result := false;
+  if Pos('://', lowercase(AUrl)) < 1 then
+    AUrl := 'http://' + AUrl;
+
+  tmpAgent := 'InetURL:/1.0';
+  tmpWinInet.Session := InternetOpenA(PAnsiChar(tmpAgent), INTERNET_OPEN_TYPE_PRECONFIG, nil, nil, 0);
+  if Assigned(tmpWinInet.Session) then
+  begin
+    try
+      tmpWinInet.Request := InternetOpenUrlA(tmpWinInet.Session, PAnsiChar(AUrl), nil, 0, INTERNET_FLAG_RELOAD, 0);
+      try
+        dwIndex := 0;
+        dwCodeLen := 10;
+        if HttpQueryInfoA(tmpWinInet.Request, HTTP_QUERY_STATUS_CODE, @dwcode, dwcodeLen, dwIndex) then
+        begin
+          res := PAnsiChar(@dwcode);
+          result := (res = '200') or (res = '302');
+        end;
+      finally
+        InternetCloseHandle(tmpWinInet.Request);
+      end;
+    finally           
+      InternetCloseHandle(tmpWinInet.Session);
+    end;
+  end;
 end;
 
 end.
