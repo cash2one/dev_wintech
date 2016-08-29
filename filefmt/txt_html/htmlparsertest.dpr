@@ -2,6 +2,7 @@ program htmlparsertest;
 
 uses
   Forms,
+  VirtualTrees in '..\..\..\devdcomps\virtualtree\VirtualTrees.pas',
   windef_msg in '..\..\v0001\windef\windef_msg.pas',
   BaseApp in '..\..\v0001\obj\app_base\BaseApp.pas',
   BasePath in '..\..\v0001\obj\app_base\BasePath.pas',

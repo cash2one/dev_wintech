@@ -13,4 +13,59 @@ object frmHtmlParser: TfrmHtmlParser
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 13
+  object spl1: TSplitter
+    Left = 455
+    Top = 0
+    Height = 444
+    Align = alRight
+  end
+  object pnlRight: TPanel
+    Width = 185
+    Align = alRight
+    BevelOuter = bvNone
+    Ctl3D = False
+    ParentCtl3D = False
+    TabOrder = 0
+    object vthtmldomnode: TVirtualStringTree
+      Align = alClient
+      Header.AutoSizeIndex = 0
+      Header.Font.Charset = DEFAULT_CHARSET
+      Header.Font.Color = clWindowText
+      Header.Font.Height = -11
+      Header.Font.Name = 'Tahoma'
+      Header.Font.Style = []
+      Header.MainColumn = -1
+      TabOrder = 0
+      OnGetText = vthtmldomnodeGetText
+      Columns = <>
+    end
+  end
+  object pnlmain: TPanel
+    Align = alClient
+    BevelOuter = bvNone
+    Ctl3D = False
+    ParentCtl3D = False
+    object mmo1: TMemo
+      Align = alClient
+      Ctl3D = False
+      ParentCtl3D = False
+      ScrollBars = ssBoth
+    end
+    object pnl1: TPanel
+      Height = 41
+      Align = alBottom
+      DesignSize = (
+        455
+        41)
+      object btnParser: TButton
+        Left = 358
+        Top = 6
+        Width = 75
+        Height = 25
+        Anchors = [akTop, akRight]
+        Caption = 'Parser'
+        OnClick = btnParserClick
+      end
+    end
+  end
 end
