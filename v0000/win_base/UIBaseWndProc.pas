@@ -12,6 +12,9 @@ implementation
 function UIWndProcA(AWindow: PUIBaseWnd; AWnd: HWND; AMsg: UINT; wParam: WPARAM; lParam: LPARAM): HRESULT;
 begin
   case AMsg of
+    WM_Destroy: begin
+      PostQuitMessage(0);
+    end;
     WM_WINDOWPOSCHANGING: begin
 
     end;
