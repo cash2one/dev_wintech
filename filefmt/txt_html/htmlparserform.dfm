@@ -13,14 +13,11 @@ object frmHtmlParser: TfrmHtmlParser
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 13
-  object spl1: TSplitter
-    Left = 455
-    Top = 0
-    Height = 444
-    Align = alRight
-  end
   object pnlRight: TPanel
+    Left = 458
+    Top = 0
     Width = 185
+    Height = 444
     Align = alRight
     BevelOuter = bvNone
     Ctl3D = False
@@ -40,6 +37,12 @@ object frmHtmlParser: TfrmHtmlParser
       Columns = <>
     end
   end
+  object spl1: TSplitter
+    Left = 455
+    Top = 0
+    Height = 444
+    Align = alRight
+  end
   object pnlmain: TPanel
     Align = alClient
     BevelOuter = bvNone
@@ -52,6 +55,9 @@ object frmHtmlParser: TfrmHtmlParser
       ScrollBars = ssBoth
     end
     object pnl1: TPanel
+      Left = 0
+      Top = 403
+      Width = 455
       Height = 41
       Align = alBottom
       DesignSize = (

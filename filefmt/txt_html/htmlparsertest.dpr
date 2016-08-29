@@ -11,7 +11,10 @@ uses
   BaseForm in '..\..\v0001\obj\win_uiform\BaseForm.pas' {frmBase},
   htmlparserform in 'htmlparserform.pas' {frmHtmlParser},
   WStrings in 'WStrings.pas',
-  HTMLParserAll3 in 'HTMLParserAll3.pas';
+  HTMLParserAll3 in 'HTMLParserAll3.pas',
+  define_htmldom in 'define_htmldom.pas',
+  html_helperclass in 'html_helperclass.pas',
+  html_utils in 'html_utils.pas';
 
 {$R *.res}
 

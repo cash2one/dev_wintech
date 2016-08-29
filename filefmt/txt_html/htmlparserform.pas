@@ -5,7 +5,7 @@ interface
 uses
   Windows, Forms, StdCtrls, Classes, Controls,
   ExtCtrls, Sysutils,
-  BaseForm, VirtualTrees, HTMLParserAll3;
+  BaseForm, VirtualTrees, define_htmldom, HTMLParserAll3;
 
 type
   TfrmHtmlParser = class(TfrmBase)
@@ -29,7 +29,7 @@ type
 implementation
 
 {$R *.dfm}
-
+  
 type
   PHtmlDomPointerNode = ^THtmlDomPointerNode;
   THtmlDomPointerNode = record
@@ -48,6 +48,7 @@ begin
   fRootHtmlDomNode := HtmlParserParseString(mmo1.Lines.Text);
   vthtmldomnode.Clear;
   AddHtmlDomTree(nil, PHtmlDomNode(fRootHtmlDomNode));
+  vthtmldomnode.FullExpand(nil);
 end;
 
 function getNodeTypeText(ANodeType: integer): string;
