@@ -43,17 +43,22 @@ const
   function CheckOutElementDomNode(ownerDocument: PHtmlDocDomNode; const namespaceURI, qualifiedName: WideString; withNS: Boolean): PHtmlElementDomNode;     
   function CheckOutTextDomNode(ANodeType: Integer; ownerDocument: PHtmlDocDomNode; data: WideString): PHtmlDomNode; overload;
   function CheckOutEntityReferenceNode(ownerDocument: PHtmlDocDomNode; const name: WideString): PHtmlDomNode;
-
+                                
+  procedure HtmlDomNodeFree(var ADomNode: PHtmlDomNode);
+  function HtmlDomNodeGetName(AHtmlDomNode: PHtmlDomNode): WideString;
   function HtmlDomNodeAppendChild(AHtmlDomNode, newChild: PHtmlDomNode): PHtmlDomNode;
-                                  
-  function HtmlDocGetDocumentElement(ADocument: PHtmlDocDomNode): PHtmlElementDomNode;
-                                            
   function NodeGetParentDomNode(AHtmlDomNode: PHtmlDomNode): PHtmlDomNode;
+                           
+  procedure HtmlDocSetDocType(ADocument: PHtmlDocDomNode; value: PHtmlDocTypeDomNode{TDocumentTypeObj});
+  function HtmlDocGetDocumentElement(ADocument: PHtmlDocDomNode): PHtmlElementDomNode;
+                                                
+  function DecValue(const Digit: WideChar): Word;
+  function HexValue(const HexChar: WideChar): Word;
 
 implementation
 
 uses
-  html_helperclass;
+  html_helperclass, html_entity, define_htmltag;
               
 const
   ExceptionMsg: array[ERR_INDEX_SIZE..ERR_INVALID_ACCESS] of String = (
@@ -79,7 +84,87 @@ begin
   inherited Create(ExceptionMsg[code]);
   FCode := code
 end;
-                  
+                    
+function DecValue(const Digit: WideChar): Word;
+begin
+  Result := Ord(Digit) - Ord('0')
+end;
+
+function HexValue(const HexChar: WideChar): Word;
+var
+  C: Char;
+begin
+  if Ord(HexChar) in define_htmltag.decDigit then
+    Result := Ord(HexChar) - Ord('0')
+  else
+  begin
+    C := UpCase(Chr(Ord(HexChar)));
+    Result := Ord(C) - Ord('A')
+  end
+end;
+       
+procedure HtmlDomNodeFree(var ADomNode: PHtmlDomNode);
+var
+  i: integer;
+  tmpNode: PHtmlDomNode;
+begin
+  if nil = ADomNode then
+    exit;
+  //Windows.InterlockedDecrement(GlobalTestNodeCount);
+
+  if nil <> ADomNode.OwnerDocument then
+  begin
+    if (nil <> ADomNode.OwnerDocument.AllOwnedNodes) then
+    begin
+      i := ADomNode.OwnerDocument.AllOwnedNodes.IndexOf(ADomNode);
+      if 0 <= i then
+        ADomNode.OwnerDocument.AllOwnedNodes.Delete(i);
+    end;
+  end;     
+  if (nil <> ADomNode.ChildNodes) then
+  begin
+    ADomNode.ChildNodes.NodeListClear(true);
+    ADomNode.ChildNodes.Free;
+    ADomNode.ChildNodes := nil;
+  end;
+  if (nil <> ADomNode.Attributes) then
+  begin
+    ADomNode.Attributes.NodeListClear(true);
+    ADomNode.Attributes.Free;
+    ADomNode.Attributes := nil;
+  end;   
+
+  if HTMLDOM_NODE_DOCUMENT = ADomNode.NodeType then
+  begin
+    if nil <> PHtmlDocDomNode(ADomNode).DocTypeDomNode then
+    begin
+      HtmlDomNodeFree(PHtmlDomNode(PHtmlDocDomNode(ADomNode).DocTypeDomNode));
+    end;
+    if nil <> PHtmlDocDomNode(ADomNode).AllOwnedNodes then
+    begin
+      while 0 < PHtmlDocDomNode(ADomNode).AllOwnedNodes.Count do
+      begin
+        tmpNode := PHtmlDocDomNode(ADomNode).AllOwnedNodes.Items[0];
+        HtmlDomNodeFree(tmpNode);
+      end;
+      PHtmlDocDomNode(ADomNode).AllOwnedNodes.Free;
+    end; 
+    PHtmlDocDomNode(ADomNode).NamespaceURIList.Free;
+    PHtmlDocDomNode(ADomNode).SearchNodeLists.Free;
+  end;  
+  FreeMem(ADomNode);
+  ADomNode := nil;
+end;
+                            
+procedure HtmlDocSetDocType(ADocument: PHtmlDocDomNode; value: PHtmlDocTypeDomNode{TDocumentTypeObj});
+begin
+  if (nil <> ADocument.DocTypeDomNode) then
+  begin
+    HtmlDomNodeFree(PHtmlDomNode(ADocument.DocTypeDomNode));
+  end;
+  ADocument.DocTypeDomNode := value;
+end;
+           
 function CharacterDataNodeGetLength(AHtmlDomNode: PHtmlDomNode): Integer;
 begin
   Result := System.Length(AHtmlDomNode.NodeValue)
@@ -360,7 +445,78 @@ begin
   if (nil <> AHtmlDomNode.ownerDocument) then
     HtmlDocInvalidateSearchNodeLists(AHtmlDomNode.ownerDocument)
 end;
-                        
+                   
+function HtmlDomNodeGetName(AHtmlDomNode: PHtmlDomNode): WideString;
+begin
+  if HTMLDOM_NODE_CDATA_SECTION = AHtmlDomNode.NodeType then
+  begin      
+    Result := '#cdata-section';
+    exit;
+  end;    
+  if HTMLDOM_NODE_COMMENT = AHtmlDomNode.NodeType then
+  begin    
+    Result := '#comment';
+    exit;
+  end;          
+  if HTMLDOM_NODE_TEXT = AHtmlDomNode.NodeType then
+  begin    
+    Result := '#text';
+    exit;
+  end;      
+  if HTMLDOM_NODE_DOCUMENT_FRAGMENT = AHtmlDomNode.NodeType then
+  begin
+    Result := '#document-fragment';
+    exit;
+  end;       
+  if HTMLDOM_NODE_DOCUMENT = AHtmlDomNode.NodeType then
+  begin
+    Result := '#document';
+    Exit;
+  end;
+  if AHtmlDomNode.Prefix <> '' then
+  begin
+    Result := AHtmlDomNode.Prefix + ':' + AHtmlDomNode.NodeName;
+  end else
+  begin
+    Result := AHtmlDomNode.NodeName;
+  end;
+end;
+          
+function NodeGetValue(AHtmlDomNode: PHtmlDomNode): WideString;  
+var
+  Node: PHtmlDomNode;
+  Len, Pos, I, J: Integer;
+begin
+  Result := '';
+  if nil = AHtmlDomNode then
+    exit;
+  if HTMLDOM_NODE_ATTRIBUTE = AHtmlDomNode.NodeType then
+  begin
+    Len := AttrGetLength(PHtmlAttribDomNode(AHtmlDomNode));
+    SetLength(Result, Len);
+    Pos := 0;
+    for I := 0 to AHtmlDomNode.childNodes.length - 1 do
+    begin
+      Node := AHtmlDomNode.childNodes.item(I);
+      if Node.NodeType = HTMLDOM_NODE_TEXT then
+      begin
+        for J := 1 to CharacterDataNodeGetLength(Node) do
+        begin
+          Inc(Pos);
+          Result[Pos] := Node.NodeValue[J]
+        end
+      end else if Node.NodeType = HTMLDOM_NODE_ENTITY_REFERENCE then
+      begin
+        Inc(Pos);
+        Result[Pos] := html_entity.GetEntValue(HtmlDomNodeGetName(Node))
+      end
+    end
+  end else
+  begin
+    Result := AHtmlDomNode.NodeValue;
+  end;
+end;
+     
 procedure NodeSetValue(AHtmlDomNode: PHtmlDomNode; const value: WideString); 
 begin
   if HTMLDOM_NODE_ATTRIBUTE = AHtmlDomNode.NodeType then

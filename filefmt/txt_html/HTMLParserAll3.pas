@@ -7,150 +7,18 @@ uses
   define_htmldom, define_htmlparser,
   html_helperclass, html_helper_tag;
                     
-//=======================================================
-// 
-//=======================================================
-
   function HtmlParserParseString(const htmlStr: WideString): PHtmlDocDomNode; overload;
   function HtmlParserParseString(AHtmlParser: PHtmlParser; const htmlStr: WideString): PHtmlDocDomNode; overload;
   function CheckOutHtmlParser: PHtmlParser;
   procedure CheckInHtmlParser(var AHtmlParser: PHtmlParser);
                           
-  procedure HtmlDomNodeFree(var ADomNode: PHtmlDomNode); 
-  function HtmlDomNodeGetName(AHtmlDomNode: PHtmlDomNode): WideString;
-
-
 implementation
 
 uses
   html_entity,
   define_htmltag,
   html_utils;
-         
-function HtmlDomNodeGetName(AHtmlDomNode: PHtmlDomNode): WideString;
-begin
-  if HTMLDOM_NODE_CDATA_SECTION = AHtmlDomNode.NodeType then
-  begin      
-    Result := '#cdata-section';
-    exit;
-  end;    
-  if HTMLDOM_NODE_COMMENT = AHtmlDomNode.NodeType then
-  begin    
-    Result := '#comment';
-    exit;
-  end;          
-  if HTMLDOM_NODE_TEXT = AHtmlDomNode.NodeType then
-  begin    
-    Result := '#text';
-    exit;
-  end;      
-  if HTMLDOM_NODE_DOCUMENT_FRAGMENT = AHtmlDomNode.NodeType then
-  begin
-    Result := '#document-fragment';
-    exit;
-  end;       
-  if HTMLDOM_NODE_DOCUMENT = AHtmlDomNode.NodeType then
-  begin
-    Result := '#document';
-    Exit;
-  end;
-  if AHtmlDomNode.Prefix <> '' then
-  begin
-    Result := AHtmlDomNode.Prefix + ':' + AHtmlDomNode.NodeName;
-  end else
-  begin
-    Result := AHtmlDomNode.NodeName;
-  end;
-end;
-                                   
-procedure HtmlDomNodeFree(var ADomNode: PHtmlDomNode);
-var
-  i: integer;
-  tmpNode: PHtmlDomNode;
-begin
-  if nil = ADomNode then
-    exit;
-  //Windows.InterlockedDecrement(GlobalTestNodeCount);
-
-  if nil <> ADomNode.OwnerDocument then
-  begin
-    if (nil <> ADomNode.OwnerDocument.AllOwnedNodes) then
-    begin
-      i := ADomNode.OwnerDocument.AllOwnedNodes.IndexOf(ADomNode);
-      if 0 <= i then
-        ADomNode.OwnerDocument.AllOwnedNodes.Delete(i);
-    end;
-  end;     
-  if (nil <> ADomNode.ChildNodes) then
-  begin
-    ADomNode.ChildNodes.NodeListClear(true);
-    ADomNode.ChildNodes.Free;
-    ADomNode.ChildNodes := nil;
-  end;
-  if (nil <> ADomNode.Attributes) then
-  begin
-    ADomNode.Attributes.NodeListClear(true);
-    ADomNode.Attributes.Free;
-    ADomNode.Attributes := nil;
-  end;   
-
-  if HTMLDOM_NODE_DOCUMENT = ADomNode.NodeType then
-  begin
-    if nil <> PHtmlDocDomNode(ADomNode).DocTypeDomNode then
-    begin
-      HtmlDomNodeFree(PHtmlDomNode(PHtmlDocDomNode(ADomNode).DocTypeDomNode));
-    end;
-    if nil <> PHtmlDocDomNode(ADomNode).AllOwnedNodes then
-    begin
-      while 0 < PHtmlDocDomNode(ADomNode).AllOwnedNodes.Count do
-      begin
-        tmpNode := PHtmlDocDomNode(ADomNode).AllOwnedNodes.Items[0];
-        HtmlDomNodeFree(tmpNode);
-      end;
-      PHtmlDocDomNode(ADomNode).AllOwnedNodes.Free;
-    end; 
-    PHtmlDocDomNode(ADomNode).NamespaceURIList.Free;
-    PHtmlDocDomNode(ADomNode).SearchNodeLists.Free;
-  end;  
-  FreeMem(ADomNode);
-  ADomNode := nil;
-end;
-                      
-function NodeGetValue(AHtmlDomNode: PHtmlDomNode): WideString;  
-var
-  Node: PHtmlDomNode;
-  Len, Pos, I, J: Integer;
-begin
-  Result := '';
-  if nil = AHtmlDomNode then
-    exit;
-  if HTMLDOM_NODE_ATTRIBUTE = AHtmlDomNode.NodeType then
-  begin
-    Len := AttrGetLength(PHtmlAttribDomNode(AHtmlDomNode));
-    SetLength(Result, Len);
-    Pos := 0;
-    for I := 0 to AHtmlDomNode.childNodes.length - 1 do
-    begin
-      Node := AHtmlDomNode.childNodes.item(I);
-      if Node.NodeType = HTMLDOM_NODE_TEXT then
-      begin
-        for J := 1 to CharacterDataNodeGetLength(Node) do
-        begin
-          Inc(Pos);
-          Result[Pos] := Node.NodeValue[J]
-        end
-      end else if Node.NodeType = HTMLDOM_NODE_ENTITY_REFERENCE then
-      begin
-        Inc(Pos);
-        Result[Pos] := GetEntValue(HtmlDomNodeGetName(Node))
-      end
-    end
-  end else
-  begin
-    Result := AHtmlDomNode.NodeValue;
-  end;
-end;
-            
+                                                             
 function HtmlParserGetMainElement(AHtmlParser: PHtmlParser; const tagName: WideString): PHtmlElementDomNode;
 var
   child: PHtmlDomNode;
@@ -325,44 +193,27 @@ begin
 end;
 
 procedure HtmlParserProcessCDataSection(AHtmlReader: PHtmlReader);
-var
-  CDataSection: PHtmlDomNode;
 begin
-  CDataSection := CheckOutTextDomNode(HTMLDOM_NODE_CDATA_SECTION, 
+  HtmlDomNodeappendChild(AHtmlReader.HtmlParser.CurrentNode,
+      CheckOutTextDomNode(HTMLDOM_NODE_CDATA_SECTION,
       AHtmlReader.HtmlParser.HtmlDocument,
-      AHtmlReader.HtmlParser.HtmlReader.nodeValue);
-  HtmlDomNodeappendChild(AHtmlReader.HtmlParser.CurrentNode, CDataSection);
+      AHtmlReader.HtmlParser.HtmlReader.nodeValue));
 end;
 
 procedure HtmlParserProcessComment(AHtmlReader: PHtmlReader);
-var
-  Comment: PHtmlDomNode;
 begin
-  Comment := CheckOutTextDomNode(HTMLDOM_NODE_COMMENT,
+  HtmlDomNodeappendChild(AHtmlReader.HtmlParser.CurrentNode,
+      CheckOutTextDomNode(HTMLDOM_NODE_COMMENT,
       AHtmlReader.HtmlParser.HtmlDocument,
-      AHtmlReader.HtmlParser.HtmlReader.nodeValue);
-  HtmlDomNodeappendChild(AHtmlReader.HtmlParser.CurrentNode, Comment);
+      AHtmlReader.HtmlParser.HtmlReader.nodeValue));
 end;
-                 
-procedure HtmlDocSetDocType(ADocument: PHtmlDocDomNode; value: PHtmlDocTypeDomNode{TDocumentTypeObj});
-begin
-  if (nil <> ADocument.DocTypeDomNode) then
-  begin
-    HtmlDomNodeFree(PHtmlDomNode(ADocument.DocTypeDomNode));
-  end;
-  ADocument.DocTypeDomNode := value;
-end;
-                
+                      
 procedure HtmlParserProcessDocType(AHtmlReader: PHtmlReader);
-var
-  tmpDocType: PHtmlDocTypeDomNode;
 begin
-  //with fHtmlParserData.HtmlReader do
-  tmpDocType := createDocumentType(
+  HtmlDocSetdocType(AHtmlReader.HtmlParser.HtmlDocument, createDocumentType(
         HtmlReaderGetNodeName(AHtmlReader.HtmlParser.HtmlReader),
         AHtmlReader.HtmlParser.HtmlReader.publicID,
-        AHtmlReader.HtmlParser.HtmlReader.systemID);
-    HtmlDocSetdocType(AHtmlReader.HtmlParser.HtmlDocument, tmpDocType);
+        AHtmlReader.HtmlParser.HtmlReader.systemID));
 end;
 
 procedure HtmlParserProcessElementEnd(AHtmlReader: PHtmlReader);
@@ -435,25 +286,7 @@ begin
   AHtmlReader.HtmlStr := Value;
   AHtmlReader.Position := 1
 end;
-                   
-function DecValue(const Digit: WideChar): Word;
-begin
-  Result := Ord(Digit) - Ord('0')
-end;
-
-function HexValue(const HexChar: WideChar): Word;
-var
-  C: Char;
-begin
-  if Ord(HexChar) in decDigit then
-    Result := Ord(HexChar) - Ord('0')
-  else
-  begin
-    C := UpCase(Chr(Ord(HexChar)));
-    Result := Ord(C) - Ord('A')
-  end
-end;
-                      
+                                  
 function CheckOutHtmlReader: PHtmlReader;
 begin
   Result := System.New(PHtmlReader);
