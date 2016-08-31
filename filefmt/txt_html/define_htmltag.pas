@@ -149,7 +149,16 @@ const
   CDataEndStr = ']]>';
   CommentStartStr = '--';
   CommentEndStr = '-->';
-                    
+                       
+const
+  {HTML DTDs}
+  DTD_HTML_STRICT    = 1;
+  DTD_HTML_LOOSE     = 2;
+  DTD_HTML_FRAMESET  = 3;
+  DTD_XHTML_STRICT   = 4;
+  DTD_XHTML_LOOSE    = 5;
+  DTD_XHTML_FRAMESET = 6;
+
 implementation
 
 end.

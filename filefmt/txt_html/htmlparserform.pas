@@ -106,9 +106,27 @@ procedure TfrmHtmlParser.AddHtmlDomTree(AParentNode: PVirtualNode; AHtmlDomNode:
 var
   tmpVNode: PVirtualNode;
   tmpVNodeData: PHtmlDomPointerNode;
+  tmpIsNeedAdd: Boolean;
   i: integer;
 begin
   if nil = AHtmlDomNode then
+    exit;
+  tmpIsNeedAdd := true;
+  if HTMLDOM_NODE_TEXT = AHtmlDomNode.NodeType then
+  begin
+    if ('' = Trim(AHtmlDomNode.NodeName)) and ('' = Trim(AHtmlDomNode.NodeValue)) then
+    begin
+      tmpIsNeedAdd := false;
+      if nil <> AHtmlDomNode.ChildNodes then
+        tmpIsNeedAdd := 0 < AHtmlDomNode.ChildNodes.FList.Count;
+      if not tmpIsNeedAdd then
+      begin
+        if nil <> AHtmlDomNode.Attributes then
+          tmpIsNeedAdd := 0 < AHtmlDomNode.Attributes.length;
+      end;
+    end;
+  end;
+  if not tmpIsNeedAdd then
     exit;
   tmpVNode := vthtmldomnode.AddChild(AParentNode);
   tmpVNodeData := vthtmldomnode.GetNodeData(tmpVNode);

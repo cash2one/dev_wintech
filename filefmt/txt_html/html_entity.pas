@@ -291,7 +291,20 @@ implementation
 
 uses
   Sysutils;
-               
+              
+function GetEntName(Code: Word): String;
+var
+  I: Integer;
+begin
+  for I := 0 to EntCount - 1 do
+    if EntTab[I].Code = Code then
+    begin
+      Result := EntTab[I].Name;
+      Exit
+    end;
+  Result := ''
+end;
+ 
 function GetEntValue(const Name: String): WideChar;
 begin
   Result := WideChar(EntityList.Code[Name])

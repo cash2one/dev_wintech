@@ -17,7 +17,8 @@ uses
   html_utils in 'html_utils.pas',
   define_htmltag in 'define_htmltag.pas',
   html_helper_tag in 'html_helper_tag.pas',
-  html_entity in 'html_entity.pas';
+  html_entity in 'html_entity.pas',
+  define_htmlparser in 'define_htmlparser.pas';
 
 {$R *.res}
 
