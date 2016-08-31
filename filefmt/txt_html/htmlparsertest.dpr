@@ -14,7 +14,10 @@ uses
   HTMLParserAll3 in 'HTMLParserAll3.pas',
   define_htmldom in 'define_htmldom.pas',
   html_helperclass in 'html_helperclass.pas',
-  html_utils in 'html_utils.pas';
+  html_utils in 'html_utils.pas',
+  define_htmltag in 'define_htmltag.pas',
+  html_helper_tag in 'html_helper_tag.pas',
+  html_entity in 'html_entity.pas';
 
 {$R *.res}
 

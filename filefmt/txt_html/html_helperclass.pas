@@ -3,7 +3,7 @@ unit html_helperclass;
 interface
 
 uses
-  Classes, WStrings;
+  Classes, SysUtils, WStrings;
   
 type
   TNodeList = class
@@ -63,6 +63,19 @@ type
     function Add(const NamespaceURI: WideString): Integer;
     property Item[I: Integer]: WideString read GetItem; default;
   end;
+                 
+  TURLSchemes = class(TStringList)
+  private
+    FMaxLen: Integer;
+  public
+    function Add(const S: String): Integer; override;
+    function IsURL(const S: String): Boolean;
+    function GetScheme(const S: String): String;
+    property MaxLen: Integer read FMaxLen;
+  end;
+         
+var
+  URLSchemes: TURLSchemes = nil;
 
 implementation
 
@@ -351,5 +364,50 @@ begin
     end;
   Result := FList.Add(NamespaceURI)
 end;
-                   
+
+function TURLSchemes.Add(const S: String): Integer;
+begin
+  if Length(S) > FMaxLen then
+    FMaxLen := Length(S);
+  Result := inherited Add(S)
+end;
+
+function TURLSchemes.IsURL(const S: String): Boolean;
+begin
+  Result := IndexOf(LowerCase(S)) >= 0
+end;
+
+function TURLSchemes.GetScheme(const S: String): String;
+const
+  SchemeChars = [Ord('A')..Ord('Z'), Ord('a')..Ord('z')];
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := 1 to MaxLen + 1 do
+  begin
+    if I > Length(S) then
+      Exit;
+    if S[I] = ':' then
+    begin
+      if IsURL(Copy(S, 1, I - 1)) then
+        Result := Copy(S, 1, I - 1);
+      Exit
+    end
+  end
+end;
+
+initialization
+  URLSchemes := TURLSchemes.Create;
+  URLSchemes.Add('http');
+  URLSchemes.Add('https');
+  URLSchemes.Add('ftp');
+  URLSchemes.Add('mailto');
+  URLSchemes.Add('news');
+  URLSchemes.Add('nntp');
+  URLSchemes.Add('gopher');     
+
+finalization       
+  URLSchemes.Free;
+                                               
 end.
